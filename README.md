@@ -2,7 +2,7 @@
 
 A trident maple that lives on the real calendar. It keeps growing while the app is closed, buds open when they would on a real tree, and spring arrives when it does outside. Wire, prune, pinch and defoliate it over the seasons, working toward fine ramification.
 
-**Play:** https://mmzeller.github.io/living-bonsai/
+**Play:** https://mmzeller.github.io/Living-bonsai/
 
 Anyone who opens the link gets their own trees. Nothing is shared between people.
 
