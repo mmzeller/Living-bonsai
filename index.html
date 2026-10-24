@@ -164,6 +164,8 @@ h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line
   height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid var(--warn); background: var(--surface); color: var(--warn);
   font: 700 0.8125rem var(--font-ui); cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14); white-space: nowrap;
 }
+.pill.go { border-color: var(--accent); color: var(--accent); }
+#candleBar .wire-row, #needleBar .wire-row { justify-content: flex-start; }
 .ram-hint { margin: 14px 0 0; }
 .tools { background: var(--surface); border-top: 1px solid var(--line); padding: 8px 10px 10px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
 .tool {
@@ -205,6 +207,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .btn { height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); font: 500 0.875rem var(--font-ui); cursor: pointer; }
 .btn.danger { border-color: var(--warn); color: var(--warn); }
 .btn.solid { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+.btn.go { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.add-tree { margin-top: 10px; padding: 2px 12px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.add-tree .field-label { margin-top: 12px; }
+.add-tree .btns { margin-top: 14px; }
+#addTreeRow { margin-top: 10px; }
 .confirm { display: grid; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--warn); font-size: 0.875rem; line-height: 1.45; }
 .confirm .btns { display: flex; gap: 8px; flex-wrap: wrap; }
 .field-label { display: block; margin: 16px 0 6px; font-size: 0.8125rem; color: var(--muted); }
@@ -300,6 +307,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
         </div>
       </div>
     </div>
+    <div class="wirebar" id="candleBar" hidden>
+      <div class="wire-row">
+        <button class="pill go" id="decandleStrongBtn" hidden>Decandle strong areas</button>
+        <button class="pill go" id="decandleAllBtn" hidden>Decandle all</button>
+        <button class="pill go" id="twoBudsBtn" hidden>Keep two buds</button>
+      </div>
+    </div>
+    <div class="wirebar" id="needleBar" hidden>
+      <div class="wire-row">
+        <button class="pill go" id="pullOldBtn">Pull old needles</button>
+        <button class="pill go" id="thinStrongBtn">Thin strong areas</button>
+      </div>
+    </div>
     <div class="viewbar" role="group" aria-label="View">
       <button class="vbtn" id="frontBtn">Front</button>
       <div class="dial">
@@ -318,7 +338,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     </button>
     <button class="tool" id="toolPinch" aria-pressed="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"/><path d="M12 15c-3.6.3-5.8-1.6-6.2-5 3.4-.2 5.6 1.4 6.2 5Z"/><path d="M12 12.5c3-.1 4.9-1.8 5.2-4.6-2.9-.1-4.8 1.3-5.2 4.6Z"/><path d="M9.5 4.5 12 7l2.5-2.5"/></svg>
-      Pinch
+      <span id="pinchLabel">Pinch</span>
     </button>
     <button class="tool" id="toolWire" aria-pressed="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 19.5 4.5"/><path d="M6.6 13.4c1.8-.9 4 1.3 3.1 3.1M9.6 10.4c1.8-.9 4 1.3 3.1 3.1M12.6 7.4c1.8-.9 4 1.3 3.1 3.1"/></svg>
@@ -326,7 +346,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     </button>
     <button class="tool" id="toolLeaves" aria-pressed="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20v-6"/><path d="M10 14c-3.2 0-5.4-1.6-6-4.6 1.3-.5 2.4-.4 3.3.1-.3-1.6 0-3 1-4.2 1 .8 1.6 1.8 1.7 3 .3-1.2 1.1-2.2 2.4-2.8.6 1.3.6 2.6 0 3.9 1-.3 2-.2 3 .3-.9 2.7-3 4.3-5.4 4.3Z"/><path d="M16.5 15.5h5"/></svg>
-      Leaves
+      <span id="leavesLabel">Leaves</span>
     </button>
     <button class="tool" id="toolWater">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10h10v7.5a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2Z"/><path d="M14.5 12.5 20 8.5"/><path d="M7 10V8.2a2.5 2.5 0 0 1 5 0V10"/><path d="M20.5 12v.5M18.5 14.5v.5M21 16v.5"/></svg>
@@ -354,7 +374,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     <section>
       <dl class="stats" id="stats"></dl>
       <p class="hint ram-hint" id="ramOrders"></p>
-      <p class="hint ram-hint">Ramification counts how many times each primary branch has divided into fine twigs: 3 means about 8 twigs per branch, 5 about 32. It rises as buds break along existing twigs. Pinch long shoots, cut back to a bud, defoliate a strong tree in early summer, and wire branches out flat so light reaches inside.</p>
+      <p class="hint ram-hint" id="ramHint">Ramification counts how many times each primary branch has divided into fine twigs: 3 means about 8 twigs per branch, 5 about 32. It rises as buds break along existing twigs. Pinch long shoots, cut back to a bud, defoliate a strong tree in early summer, and wire branches out flat so light reaches inside.</p>
     </section>
 
     <section>
@@ -363,8 +383,26 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     </section>
 
     <section>
-      <h3>Your trees</h3>
+      <h3>Your bench</h3>
       <div class="radios" id="treeRadios"></div>
+      <div class="btns" id="addTreeRow"><button class="btn" id="addTreeBtn">Add a tree</button></div>
+      <p class="hint" id="benchFull" hidden>Your bench is full. Take a tree off in Settings to make room.</p>
+      <div class="add-tree" id="addTree" hidden>
+        <p class="field-label">Species</p>
+        <div class="radios">
+          <label class="radio" for="add-maple"><input type="radio" name="addSp" id="add-maple" value="maple" checked><span><b>Trident maple</b><small>Acer buergerianum. Deciduous. Buds back readily and answers pinching, pruning and defoliation with fine twigs.</small></span></label>
+          <label class="radio" for="add-pine"><input type="radio" name="addSp" id="add-pine" value="pine"><span><b>Japanese black pine</b><small>Pinus thunbergii. Evergreen, with one flush of candles a year. Shaped by candle pinching, decandling, needle work and patience.</small></span></label>
+        </div>
+        <p class="field-label">Clock</p>
+        <div class="radios">
+          <label class="radio" for="add-real"><input type="radio" name="addClock" id="add-real" value="real" checked><span><b>Real time</b><small>Follows today’s date and grows at a real tree’s pace. No shortcuts.</small></span></label>
+          <label class="radio" for="add-practice"><input type="radio" name="addClock" id="add-practice" value="practice"><span><b>Practice</b><small>Its clock can run faster, for learning and experimenting.</small></span></label>
+        </div>
+        <div class="btns">
+          <button class="btn go" id="addYes">Put it on the bench</button>
+          <button class="btn" id="addNo">Cancel</button>
+        </div>
+      </div>
     </section>
 
     <section>
@@ -401,7 +439,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
     <section>
       <h3>Back up and move</h3>
-      <p class="hint">Save both trees to a file, then open it in Living Bonsai on another device or browser to carry them over.</p>
+      <p class="hint">Save every tree on your bench to a file, then open it in Living Bonsai on another device or browser to carry them over.</p>
       <div class="btns">
         <button class="btn" id="exportBtn">Export trees</button>
         <button class="btn" id="importBtn">Import a backup</button>
@@ -424,15 +462,26 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
         <button class="btn danger" id="newTreeBtn">New tree</button>
       </div>
       <div class="confirm" id="newTreeConfirm" hidden>
-        <span>This replaces this tree and its journal. Your other tree stays as it is. You can't get this one back.</span>
+        <span>This replaces this tree and its journal with a new one of the same kind. Your other trees stay as they are. You can't get this one back.</span>
         <div class="btns">
           <button class="btn solid" id="newTreeYes">Replace my tree</button>
           <button class="btn" id="newTreeNo">Keep my tree</button>
         </div>
       </div>
+      <div class="row" id="removeTreeRow">
+        <span>Take this tree off the bench</span>
+        <button class="btn danger" id="removeTreeBtn">Remove</button>
+      </div>
+      <div class="confirm" id="removeTreeConfirm" hidden>
+        <span>This removes the tree and its journal from your bench. Export first if you might want it back.</span>
+        <div class="btns">
+          <button class="btn solid" id="removeTreeYes">Remove this tree</button>
+          <button class="btn" id="removeTreeNo">Keep it</button>
+        </div>
+      </div>
     </section>
 
-    <p class="version" id="version">Living Bonsai · version 0.7.1</p>
+    <p class="version" id="version">Living Bonsai · version 0.8.0</p>
   </div>
 </div>
 
@@ -441,6 +490,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 const Sim = (() => {
   'use strict';
   const YEAR = 365, START_DOY = 96, MAX_NODES = 1400, TIP_R = 0.72, HALF_PI = Math.PI / 2, SET_DAYS = 55;
+  const SPECIES = {
+    maple: { key: 'maple', name: 'Trident maple', latin: 'Acer buergerianum', setDays: 55, stiff: 1.9, startDoy: 96 },
+    pine: { key: 'pine', name: 'Japanese black pine', latin: 'Pinus thunbergii', setDays: 100, stiff: 1.7, startDoy: 80 },
+  };
+  const spec = T => SPECIES[T && T.sp] || SPECIES.maple;
 
   function mulberry32(a) {
     return function () {
@@ -525,6 +579,7 @@ const Sim = (() => {
   function blank(id, p, daz, del, len, born) {
     return { id, p, daz, del, len, born, r: TIP_R, tip: false, grow: 0, bud: 0, rel: 0, side: 1, ord: 0, sl: 0, pin: false, scar: 0, crack: 0,
       pk: 0, rg: 0, rgd: 0, sm: 1, // plucked leaves (bitmask), day new leaves open, day they opened, leaf size
+      nd: -1, bc: 0, dc: 0, dk: 0, f2: 0, // pine: needle age (-1 for broadleaves), buds set, decandle regrowth day and shoot count, second flush
       pi: -1, ch: [], az: 0, el: HALF_PI, x: 0, y: 0, z: 0, dl: 0, gf: 1, light: 0.6, depth: 0 };
   }
   function place(n, par, L) {
@@ -533,7 +588,7 @@ const Sim = (() => {
   }
   function makeNode(T, par, daz, del, len, born) {
     const n = blank(T.nextId++, par.id, daz, del, len, born);
-    n.ord = par.ord; n.pi = T._idx.get(par.id);
+    n.ord = par.ord; n.pi = T._idx.get(par.id); n.nd = par.nd >= 0 ? 1 : -1;
     n.az = par.az + daz; n.el = par.el + del; n.x = par.x; n.y = par.y; n.z = par.z; n.light = par.light;
     const i = T.nodes.length;
     T.nodes.push(n); T._idx.set(n.id, i); T.nodes[n.pi].ch.push(i);
@@ -584,9 +639,9 @@ const Sim = (() => {
       n.depth = m + 1;
     }
   }
-  const isLeafy = n => n.pi >= 0 && n.r < 2.4 && n.depth <= 4;
+  const isLeafy = n => n.pi >= 0 && (n.nd >= 0 ? n.nd > 0 : n.r < 2.4 && n.depth <= 4);
   // ---------- leaves and defoliation ----------
-  const leafCount = n => n.ch.length ? (h01(n.id, 1) < 0.55 ? 2 : 3) : 4;
+  const leafCount = n => n.nd >= 0 ? 3 : n.ch.length ? (h01(n.id, 1) < 0.55 ? 2 : 3) : 4; // a pine shoot has three needle groups
   function pluckedFrac(n) {
     if (!n.pk) return 0;
     const c = leafCount(n); let b = n.pk & ((1 << c) - 1), k = 0;
@@ -606,7 +661,7 @@ const Sim = (() => {
     const bit = 1 << k; if (n.pk & bit) return false;
     n.pk |= bit;
     const win = defolWindow(doyOf(d));
-    if (!n.rg && (win === 'ideal' || win === 'soft')) n.rg = r3(d + 16 + h01(n.id, Math.floor(d)) * 12 + (win === 'soft' ? 7 : 0) + (T.vigor < 45 ? 12 : 0));
+    if (T.sp !== 'pine' && !n.rg && (win === 'ideal' || win === 'soft')) n.rg = r3(d + 16 + h01(n.id, Math.floor(d)) * 12 + (win === 'soft' ? 7 : 0) + (T.vigor < 45 ? 12 : 0));
     T.stats.plucked = (T.stats.plucked || 0) + 1;
     return true;
   }
@@ -654,18 +709,20 @@ const Sim = (() => {
 
   // ---------- new tree (nursery stock, informal upright) ----------
   function dirOf(lx, lz) { return [Math.hypot(lx, lz) < 1e-6 ? 0 : Math.atan2(lz, lx), Math.atan2(1, Math.hypot(lx, lz))]; }
-  function newTree(seed, now) {
+  function newTree(seed, now, sp, startDay) {
+    if (sp === 'pine') return newPine(seed, now, startDay === undefined ? SPECIES.pine.startDoy : startDay);
+    if (startDay === undefined) startDay = START_DOY;
     const rng = mulberry32(seed);
     const T = {
-      v: 2, seed, species: 'Trident maple', created: now, speed: 'quick', clock: 'practice', realOffset: 0,
-      anchorReal: now, anchorGarden: START_DOY + 0.35, day: START_DOY, startDay: START_DOY,
+      v: 2, seed, sp: 'maple', species: 'Trident maple', created: now, speed: 'quick', clock: 'practice', realOffset: 0,
+      anchorReal: now, anchorGarden: startDay + 0.35, day: startDay, startDay,
       moisture: 74, vigor: 86, leafCap: 0, scorch: 0, dryDays: 0, leafy: 0,
       nextId: 1, nodes: [], log: [], stats: { cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0 },
       lastRain: -99, lastBackbudLog: -99, lastWateredReal: 0, savedAt: now, actedAt: now, fresh: true,
       front: 0, roots: makeRoots(seed), wires: [], ramHi: 0, ramHi2: 0,
     };
     T._idx = new Map();
-    const born = START_DOY - 760;
+    const born = startDay - 760;
     const add = (par, az, el, len, ord) => {
       const n = blank(T.nextId++, par ? par.id : -1, 0, 0, len, born);
       if (par) { n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el; place(n, par, len); }
@@ -733,8 +790,8 @@ const Sim = (() => {
     const base = t.ord === 0 ? 3 : 2, extra = t.ord <= 1 ? 4 : 3;
     return Math.round(base + extra * vig);
   }
-  function extend(T, t, born, rng, rel, vig) {
-    const L = clamp((3.5 + 6 * clamp(rel, 0.2, 1.8) / 1.8) * (0.55 + 0.5 * vig), 2.8, 12);
+  function extend(T, t, born, rng, rel, vig, lenScale = 1) {
+    const L = clamp((3.5 + 6 * clamp(rel, 0.2, 1.8) / 1.8) * (0.55 + 0.5 * vig), 2.8, 12) * lenScale;
     const up = Math.cos(t.el) >= 0;
     const elEff = up ? t.el : Math.PI - t.el, azEff = up ? t.az : t.az + Math.PI;
     let dEl = angDiff(HALF_PI, t.el) * (t.ord === 0 ? 0.2 : 0.07), dAz = 0;
@@ -853,6 +910,7 @@ const Sim = (() => {
   }
 
   function stepDay(T, ev) {
+    if (T.sp === 'pine') return stepDayPine(T, ev);
     const d = T.day + 1, doy = doyOf(d);
     const rng = mulberry32(hash2(T.seed, d));
     if (doy === 0) logE(T, d, 'A new year begins in the garden.');
@@ -903,6 +961,315 @@ const Sim = (() => {
     if (doy === 262) logE(T, d, 'The first leaves are turning.');
     if (doy === 325) logE(T, d, 'The last leaves have dropped. The tree is dormant.');
     T.day = d;
+  }
+
+  // ================= Japanese black pine =================
+  // Evergreen. One flush a year: buds set at the shoot tips in late summer open as candles in spring,
+  // spare buds become a whorl around the leader. Needles live about three years and the oldest drop in autumn.
+  // Pines don't bud back on bare wood, so a cut must leave needles. Decandling in early summer brings a
+  // shorter second flush with shorter needles and more shoots.
+  const PINE_START = 85; // around March 26, when candles begin to move
+  const pineFlush = doy => ramp(doy, [[85, 0], [95, 0.7], [106, 1], [140, 1], [155, 0.25], [165, 0]]);
+  const pineWood = doy => ramp(doy, [[88, 0], [118, 1], [240, 1], [275, 0]]);
+  const pineYear = d => Math.floor((d - PINE_START) / YEAR);
+  const pineYearStart = d => pineYear(d) * YEAR + PINE_START;
+  const DECANDLE_FROM = 160, DECANDLE_TO = 206; // about June 9 to July 25
+  function updateNeedles(T, d) {
+    const y = pineYear(d), doy = doyOf(d);
+    for (const n of T.nodes) {
+      if (n.pi < 0 || n.r > 3.4) { n.nd = 0; continue; }
+      const a = y - pineYear(n.born);
+      // 1 = this year's needles, 2 = last year's, 3 = the oldest, which yellow and drop in autumn
+      n.nd = a <= 0 ? 1 : a === 1 ? 2 : a === 2 && doy >= PINE_START && doy < 322 ? 3 : 0;
+    }
+  }
+  function phaseNotePine(doy) {
+    if (doy < 60 || doy >= 330) return 'Dormant. A good time to wire. Pine wire often stays on for a year before the branch sets.';
+    if (doy < PINE_START) return 'Buds are swelling. Candles start to move soon.';
+    if (doy < 120) return 'Candles are extending. Pinch the strongest ones to keep growth even.';
+    if (doy < DECANDLE_FROM) return 'New needles are emerging from the candles.';
+    if (doy < DECANDLE_TO) return 'Decandling time for a strong pine. Cut this year’s candles and a shorter second flush follows.';
+    if (doy < 232) return 'The new needles are hardening.';
+    if (doy < 280) return 'Buds for next spring are forming at the shoot tips.';
+    return 'The oldest needles are yellowing. Pull old needles and keep two buds per tip.';
+  }
+  function whorlShoot(T, i, d, rng, k, extra) {
+    const n = T.nodes[i];
+    const phi = (k / Math.max(1, extra)) * Math.PI * 2 + rng() * 0.8;
+    const c = makeNode(T, n, Math.cos(phi) * (0.7 + rng() * 0.3), Math.sin(phi) * 0.5 - 0.12, 2.2 + rng(), d + rng() * 2);
+    c.tip = true; c.ord = Math.min(6, n.ord + 1); c.sl = 0; c.side = rng() < 0.5 ? 1 : -1; c.nd = 1;
+    T.stats.shoots++;
+    return c;
+  }
+  function maxCandle(t, vig) { return t.ord <= 1 ? 2 + Math.round(3 * vig) : 1 + Math.round(2 * vig); }
+  function growPine(T, d, rng, g, ev) {
+    const N = T.nodes, vig = T.vigor / 100;
+    let maxY = 20; for (const n of N) if (n.y > maxY) maxY = n.y;
+    const tips = [], ws = []; let sumW = 0, total = 0;
+    for (const n of N) {
+      if (!n.tip || n.pi < 0) continue;
+      total++;
+      if (n.pin || n.f2 || n.sl >= maxCandle(n, vig)) continue;
+      const h = Math.max(0, n.y) / maxY, p = N[n.pi];
+      const of = clamp(0.62 + 0.45 * Math.sin(n.el), 0.18, 1.07);
+      // thinned needles on last year's shoot leave less strength for this year's candle
+      const weak = 1 - 0.6 * Math.max(n.pk ? pluckedFrac(n) : 0, p.pk ? pluckedFrac(p) : 0);
+      const w = (0.2 + n.light) * (0.5 + h * h) * of * weak * (n.ord === 0 ? 1.8 : 1 / (1 + 0.3 * (n.ord - 1)));
+      tips.push(n); ws.push(w); sumW += w;
+    }
+    if (!tips.length) return;
+    const crowd = N.length > MAX_NODES * 0.8 ? Math.max(0, (MAX_NODES - N.length) / (MAX_NODES * 0.2)) : 1;
+    const budget = 0.7 * Math.sqrt(total) * g * (0.3 + 0.7 * vig) * crowd, wMean = sumW / tips.length;
+    for (let i = 0; i < tips.length; i++) {
+      let t = tips[i];
+      t.grow += Math.min(budget * ws[i] / sumW, 0.7);
+      let guard = 0;
+      while (t.grow >= 1 && t.sl < maxCandle(t, vig) && T.nodes.length < MAX_NODES && guard++ < 3) {
+        t.grow -= 1;
+        t = extend(T, t, d + rng() * 0.9, rng, ws[i] / wMean, vig, 0.8);
+        T.stats.internodes++; if (ev) ev.internodes++;
+      }
+    }
+  }
+  function updateVigorPine(T, doy) {
+    let leafy = 0;
+    for (const n of T.nodes) if (n.nd > 0) leafy += 1 - (n.pk ? pluckedFrac(n) : 0);
+    T.leafy = leafy;
+    T.leafCap = Math.max(leafy, T.leafCap * 0.985 + leafy * 0.015);
+    const frac = T.leafCap > 0 ? leafy / T.leafCap : 1;
+    let target = 100 * clamp(0.2 + frac, 0.25, 1);
+    if (T.moisture < 12) target = Math.min(target, 35);
+    target *= 1 - 0.5 * T.scorch;
+    T.vigor = clamp(T.vigor + (target - T.vigor) * (pineWood(doy) > 0 ? 0.05 : 0.012), 8, 100);
+  }
+  function selfPrunePine(T, d) {
+    const kill = [];
+    for (const n of T.nodes) {
+      if (n.pi < 0 || n.ch.length || n.ord < 1 || n.r >= 1.8) continue;
+      if (n.nd === 0 || (n.tip && !n.bc && n.light < 0.12)) kill.push(n.id); // bare or starved twigs die
+    }
+    if (!kill.length) return;
+    removeSubtree(T, new Set(kill));
+    logE(T, d, kill.length === 1 ? 'A bare or shaded twig died back. Pines need needles left on a branch to keep it alive.' : `${kill.length} bare or shaded twigs died back. Pines need needles left on a branch to keep it alive.`);
+  }
+  function stepDayPine(T, ev) {
+    const d = T.day + 1, doy = doyOf(d), vig = T.vigor / 100;
+    const rng = mulberry32(hash2(T.seed, d));
+    if (doy === 0) logE(T, d, 'A new year begins in the garden.');
+    if (rng() < rainChance(doy)) { T.moisture = Math.min(100, T.moisture + 40 + rng() * 35); T.lastRain = d; if (ev) ev.rain++; }
+    T.moisture = Math.max(0, T.moisture - evapRate(doy) * 0.8 * (0.85 + rng() * 0.3)); // pines like to dry a little between waterings
+    if (T.moisture < 12) { T.dryDays++; if (T.dryDays === 1 && d - (T._dryLog || -99) > 10) { logE(T, d, 'The soil dried out.'); T._dryLog = d; } } else T.dryDays = 0;
+    if (T.dryDays > 5) T.scorch = Math.min(1, T.scorch + 0.04); else T.scorch = Math.max(0, T.scorch - 0.02);
+    const wet = T.moisture < 12 ? 0 : T.moisture < 28 ? 0.5 : 1;
+    const gF = pineFlush(doy) * wet, gW = pineWood(doy) * wet;
+    if (doy === PINE_START) {
+      // candles wake: the leader bud extends and spare buds open into a whorl around it
+      for (const n of T.nodes) { n.sl = 0; n.pin = false; n.f2 = 0; }
+      const L = T.nodes.length;
+      for (let i = 0; i < L; i++) {
+        const n = T.nodes[i]; if (!n.tip || n.pi < 0) continue;
+        if (!n.bc) { n.pin = true; continue; }
+        for (let k = 1; k < n.bc && T.nodes.length < MAX_NODES; k++) whorlShoot(T, i, d, rng, k, n.bc - 1);
+        n.bc = 0;
+      }
+      logE(T, d, 'Candles are starting to move.');
+    }
+    updateNeedles(T, d);
+    layout(T, d); computeDepth(T); computeLight(T);
+    updateVigorPine(T, doy);
+    if (gF > 0) growPine(T, d, rng, gF, ev);
+    // a second, shorter flush where candles were cut
+    let flushed = 0;
+    for (let i = 0, L = T.nodes.length; i < L; i++) {
+      const n = T.nodes[i];
+      if (!n.dc || d < n.dc) continue;
+      const k = n.dk; n.dc = 0; n.dk = 0;
+      for (let q = 0; q < k && T.nodes.length < MAX_NODES; q++) {
+        const c = whorlShoot(T, i, d, rng, q, k);
+        if (q === 0) { c.ord = n.ord; c.daz = (rng() - 0.5) * 0.3; c.del = (rng() - 0.5) * 0.2; }
+        c.f2 = 1; c.sm = 0.62;
+      }
+      if (k) { n.tip = false; flushed++; }
+    }
+    if (flushed && d - (T._f2Log || -99) > 5) { logE(T, d, 'A second flush of shorter candles is pushing where you decandled.'); T._f2Log = d; }
+    if (doy < 240 && gW > 0) {
+      for (const n of T.nodes.slice()) if (n.tip && n.f2 && n.sl < 2 && T.nodes.length < MAX_NODES && rng() < 0.09 * wet) { const c = extend(T, n, d + rng() * 0.9, rng, 0.8, vig, 0.5); c.f2 = 1; c.sm = 0.62; }
+    }
+    if (gW > 0) {
+      // pines rarely bud back, and only where there are needles
+      const N = T.nodes, L = N.length;
+      for (let i = 0; i < L; i++) {
+        const n = N[i];
+        if (n.pi < 0 || !(n.nd > 0) || n.rel < 0.3 || n.bud <= 0.05 || T.nodes.length >= MAX_NODES) continue;
+        if (rng() < 0.04 * n.bud * n.rel * gW * clamp((n.light - 0.08) / 0.4, 0, 1) * (0.4 + 0.6 * vig)) { const c = sprout(T, n, d + rng() * 0.9, rng); c.nd = 1; if (ev) ev.shoots++; }
+      }
+      thicken(T, gW * 0.8);
+      for (const n of N) if (n.rel > 0) n.rel *= 0.965;
+    }
+    if (doy === 232) {
+      // next spring's buds: strong, well-lit tips set a cluster, weak ones one bud or none
+      for (const n of T.nodes) if (n.tip && n.pi >= 0) {
+        const s = clamp(n.light * (0.35 + 0.65 * vig) * (1 - 0.6 * (n.pk ? pluckedFrac(n) : 0)), 0, 1);
+        n.bc = n.light < 0.1 ? 0 : n.f2 ? 1 + Math.round(rng() * 2 * s) : 1 + Math.round(rng() * (1 + 3.2 * s));
+      }
+      logE(T, d, 'Buds for next spring have set at the shoot tips.');
+    }
+    if (doy === 300) selfPrunePine(T, d);
+    updateWires(T, d, gW);
+    if (gW > 0 && d % 7 === 0) checkRamification(T, d);
+    for (const n of T.nodes) {
+      if (n.crack > 0) n.crack = Math.max(0, n.crack - 0.01 * gW - 0.002);
+      if (n.scar > 0) n.scar = Math.max(0, n.scar - 0.0002);
+    }
+    computeRadius(T); computeDepth(T);
+    if (doy === 140) logE(T, d, 'New needles are emerging from the candles.');
+    if (doy === DECANDLE_FROM) logE(T, d, 'The candles have finished. From now to late July you can decandle a strong pine.');
+    if (doy === 290) logE(T, d, 'The oldest needles are yellowing.');
+    if (doy === 322) logE(T, d, 'The oldest needles have dropped.');
+    T.day = d;
+  }
+  // The first node of this year's shoot that contains node i, or -1 if i is older wood.
+  function candleBase(T, i, d) {
+    const N = T.nodes, ys = pineYearStart(d);
+    let k = i; if (!N[k] || N[k].born < ys) return -1;
+    while (N[k].pi >= 0 && N[N[k].pi].born >= ys && N[N[k].pi].ord === N[k].ord) k = N[k].pi;
+    return k;
+  }
+  function decandle(T, i, d) {
+    const b = candleBase(T, i, d); if (b < 0) return null;
+    const base = T.nodes[b], par = T.nodes[base.pi]; if (!par || par.pi < 0) return null;
+    const removed = removeSubtree(T, new Set([base.id]));
+    const p = T.nodes[T._idx.get(par.id)];
+    if (!p.ch.length) p.tip = true;
+    const doy = doyOf(d);
+    if (doy < DECANDLE_TO + 10 && T.vigor >= 40) {
+      if (!p.dc) p.dc = r3(d + 21 + h01(p.id, Math.floor(d)) * 14);
+      p.dk = Math.min(4, Math.max(p.dk || 0, 2 + (h01(p.id, Math.floor(d) + 1) < 0.5 ? 1 : 0) + (T.vigor > 85 ? 1 : 0)));
+    }
+    T.vigor = Math.max(8, T.vigor - 0.15);
+    T.wires = T.wires.filter(w => T._idx.has(w.id));
+    T.stats.decandled = (T.stats.decandled || 0) + 1;
+    computeDepth(T);
+    return { removed, parentId: p.id };
+  }
+  // Rank this year's candles by strength (light and height) so strong areas can be worked first.
+  function candleBases(T, d) {
+    const N = T.nodes, seen = new Set(), out = [];
+    let maxY = 1; for (const n of N) if (n.y > maxY) maxY = n.y;
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i]; if (!n.tip || n.pi < 0) continue;
+      const b = candleBase(T, i, d); if (b < 0 || seen.has(b)) continue;
+      seen.add(b); out.push([N[b].id, n.light * 0.6 + Math.max(0, n.y) / maxY * 0.4]);
+    }
+    return out.sort((a, b) => b[1] - a[1]);
+  }
+  function decandleMany(T, d, strongOnly) {
+    const bases = candleBases(T, d), take = strongOnly ? Math.ceil(bases.length * 0.6) : bases.length;
+    let c = 0;
+    for (let q = 0; q < take; q++) { const i = T._idx.get(bases[q][0]); if (i !== undefined && decandle(T, i, d)) c++; }
+    if (c) logE(T, d, strongOnly ? `Decandled ${c} strong candles, leaving the weaker areas to catch up.` : `Decandled the whole tree (${c} candles).`);
+    return c;
+  }
+  // Pull last year's and older needles where this year's shoot carries on; a shoot with only old needles keeps them.
+  function pullOldNeedles(T) {
+    let c = 0;
+    for (const n of T.nodes) if (n.nd >= 2 && n.ch.length && (n.pk & 7) !== 7) { n.pk = 7; c++; }
+    T.stats.plucked = (T.stats.plucked || 0) + c;
+    return c;
+  }
+  // Thin this year's needles on the strongest shoots so weaker areas get a share next spring.
+  function thinStrong(T) {
+    const N = T.nodes; let maxY = 1; for (const n of N) if (n.y > maxY) maxY = n.y;
+    const list = N.filter(n => n.nd === 1).map(n => [n, n.light * 0.6 + Math.max(0, n.y) / maxY * 0.4]).sort((a, b) => b[1] - a[1]);
+    let c = 0;
+    for (let q = 0; q < Math.ceil(list.length * 0.35); q++) { const n = list[q][0]; if ((n.pk & 3) !== 3) { n.pk |= 3; c++; } }
+    T.stats.plucked = (T.stats.plucked || 0) + c;
+    return c;
+  }
+  function keepTwoBuds(T) {
+    let c = 0;
+    for (const n of T.nodes) if (n.bc > 2) { n.bc = 2; c++; }
+    return c;
+  }
+  // Nursery stock: an informal upright with movement, branches in loose whorls, needles on the last two years of growth.
+  function newPine(seed, now, startDay) {
+    const rng = mulberry32((seed ^ 0x2F6A1B3) >>> 0);
+    const T = {
+      v: 2, seed, sp: 'pine', species: 'Japanese black pine', created: now, speed: 'quick', clock: 'practice', realOffset: 0,
+      anchorReal: now, anchorGarden: startDay + 0.35, day: startDay, startDay,
+      moisture: 70, vigor: 88, leafCap: 0, scorch: 0, dryDays: 0, leafy: 0,
+      nextId: 1, nodes: [], log: [], stats: { cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0, decandled: 0 },
+      lastRain: -99, lastBackbudLog: -99, lastWateredReal: 0, savedAt: now, actedAt: now, fresh: true,
+      front: 0, roots: makeRoots(seed), wires: [], ramHi: 0, ramHi2: 0,
+    };
+    T._idx = new Map();
+    const ys = pineYearStart(startDay), doy = doyOf(startDay);
+    const shoot0 = startDay >= ys + 85 ? ys + 25 : ys - YEAR + 25; // the most recent finished candles
+    const old = startDay - 1600;
+    const add = (par, az, el, len, ord, born) => {
+      const n = blank(T.nextId++, par ? par.id : -1, 0, 0, len, born);
+      if (par) { n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el; place(n, par, len); }
+      n.ord = ord; n.side = rng() < 0.5 ? 1 : -1; n.r = 0; n.nd = 0;
+      T._idx.set(n.id, T.nodes.length); T.nodes.push(n);
+      return n;
+    };
+    const root = add(null, 0, HALF_PI, 0, 0, old);
+    const mx = rng() < 0.5 ? 1 : -1;
+    const LX = [0.18, 0.42, 0.1, -0.34, -0.12, 0.3, 0.16, -0.08, 0.02];
+    const LZ = [0.0, 0.06, 0.12, 0.04, -0.06, 0.06, 0.14, 0.2, 0.1];
+    const lens = [22, 21, 19, 17, 15, 13, 11, 9, 8];
+    const trunk = []; let prev = root;
+    for (let i = 0; i < LX.length; i++) {
+      const [az, el] = dirOf(mx * LX[i] + (rng() - 0.5) * 0.06, LZ[i] + (rng() - 0.5) * 0.06);
+      const yrs = LX.length - 1 - i; // the top of the trunk is the newest wood
+      const n = add(prev, az, el, lens[i] * (0.9 + rng() * 0.2), 0, yrs === 0 ? shoot0 : yrs === 1 ? shoot0 - YEAR : old + i * 60);
+      trunk.push(n); prev = n;
+    }
+    prev.tip = true;
+    const AZ = [Math.PI + 0.25, -0.2, -HALF_PI + 0.3, Math.PI - 0.9, 0.6, -HALF_PI - 0.8, HALF_PI + 0.4];
+    const primaries = [];
+    for (let i = 1; i < trunk.length - 1; i++) {
+      const tn = trunk[i], hf = i / (trunk.length - 1);
+      const count = rng() < 0.35 && i < trunk.length - 2 ? 2 : 1; // now and then two branches leave one point, as pines do
+      for (let w = 0; w < count; w++) {
+        let az = AZ[(i - 1) % AZ.length] + w * 2.3 + (rng() - 0.5) * 0.35;
+        if (mx < 0) az = Math.PI - az;
+        let el = lerp(-0.18, 0.32, hf) + (rng() - 0.5) * 0.12;
+        const segs = hf < 0.5 ? 3 : 2, blen = lerp(15, 9, hf);
+        let bp = tn; const prim = [];
+        for (let s = 0; s < segs; s++) {
+          const yrs = segs - 1 - s;
+          const n = add(bp, az, el, blen * (0.85 + rng() * 0.3), 1, yrs === 0 ? shoot0 : yrs === 1 ? shoot0 - YEAR : shoot0 - 2 * YEAR);
+          prim.push(n); bp = n;
+          az += (rng() - 0.5) * 0.3; el += 0.05 + (rng() - 0.5) * 0.12;
+        }
+        bp.tip = true;
+        primaries.push({ nodes: prim, hf });
+        prim.forEach((pn, k) => {
+          if (k === prim.length - 1) return;
+          const yrs = prim.length - 1 - k;
+          // where last year's candle began, a whorl: shoots to both sides; further in, one side shoot
+          for (const s2 of yrs <= 1 ? [1, -1] : [k % 2 === 0 ? 1 : -1]) {
+            let sp = add(pn, pn.az + s2 * (0.6 + rng() * 0.4), pn.el + (rng() - 0.5) * 0.2, 6 + rng() * 3, 2, yrs <= 1 ? shoot0 : shoot0 - YEAR);
+            if (yrs > 1) sp = add(sp, sp.az + (rng() - 0.5) * 0.3, sp.el + (rng() - 0.4) * 0.15, 5 + rng() * 2, 2, shoot0);
+            sp.tip = true;
+          }
+        });
+      }
+    }
+    for (const n of T.nodes) if (!n.tip && n.p !== -1) n.bud = 0.25 + rng() * 0.3;
+    index(T);
+    computeRadius(T);
+    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(9.5, 2.0, i / (trunk.length - 1))); });
+    for (const p of primaries) p.nodes.forEach((n, s) => { n.r = Math.max(n.r, lerp(2.8, 1.0, s / p.nodes.length) * (1 - p.hf * 0.35)); });
+    computeRadius(T);
+    root.r = trunk[0].r;
+    // buds already set if the tree arrives between late summer and the start of spring
+    if (doy >= 232 || doy < PINE_START) for (const n of T.nodes) if (n.tip) n.bc = 1 + Math.floor(rng() * 3);
+    updateNeedles(T, startDay);
+    layout(T, startDay); computeDepth(T); computeLight(T);
+    logE(T, startDay, 'Your Japanese black pine arrived from the nursery.');
+    return T;
   }
 
   // ---------- player actions ----------
@@ -1013,7 +1380,8 @@ const Sim = (() => {
     }
   }
   // how far wood of a given radius bends before it cracks (radians)
-  const maxBend = r => clamp(1.9 / (1 + 0.5 * r), 0.15, 1.5);
+  const maxBend = (r, T) => clamp(spec(T).stiff / (1 + 0.5 * r), 0.15, 1.5);
+  const setDays = T => spec(T).setDays;
   function wireSums(w, id) {
     let v = 0, h = 0;
     for (const o of w.ops || []) if (o[0] === id) { if (o[1]) h += o[2]; else v += o[2]; }
@@ -1028,7 +1396,7 @@ const Sim = (() => {
   }
   // Taking a wire off before the branch has set lets it spring partway back: undo its bends in reverse, in part.
   function removeWire(T, w, dayF) {
-    const set = Math.min(1, w.gd / SET_DAYS), back = (1 - set) * 0.7;
+    const set = Math.min(1, w.gd / setDays(T)), back = (1 - set) * 0.7;
     if (back > 0.005) {
       if (w.ops && w.ops.length) {
         for (let q = w.ops.length - 1; q >= 0; q--) {
@@ -1050,9 +1418,10 @@ const Sim = (() => {
     for (const w of T.wires) {
       const i = T._idx.get(w.id); if (i === undefined) { w.dead = 1; continue; }
       w.gd += 0.12 + g;
-      if (w.gd >= SET_DAYS && !w.sl) { w.sl = 1; logE(T, d, 'A wired branch has set. Its wire can come off now.'); }
-      if (w.gd > SET_DAYS + 20 && g > 0) {
-        w.bite = Math.min(1, w.bite + 0.018 * g * (0.5 + T.vigor / 100));
+      const sd = setDays(T);
+      if (w.gd >= sd && !w.sl) { w.sl = 1; logE(T, d, 'A wired branch has set. Its wire can come off now.'); }
+      if (w.gd > sd + 20 && g > 0) {
+        w.bite = Math.min(1, w.bite + 0.018 * g * (0.5 + T.vigor / 100) * (T.sp === 'pine' ? 0.6 : 1));
         if (w.bite > 0.05 && !w.bl) { w.bl = 1; logE(T, d, 'A wire is starting to bite into the bark. Take it off soon.'); }
         if (w.bite > 0.35) for (const k of chainFrom(T, i, w.len)) T.nodes[k].scar = Math.max(T.nodes[k].scar, Math.min(1, (w.bite - 0.35) * 1.4));
       }
@@ -1095,12 +1464,12 @@ const Sim = (() => {
   }
 
   // ---------- save format ----------
-  const META = ['v', 'seed', 'species', 'created', 'speed', 'anchorReal', 'anchorGarden', 'day', 'startDay', 'moisture', 'vigor', 'leafCap', 'scorch', 'dryDays', 'leafy', 'nextId', 'log', 'stats', 'lastRain', 'lastBackbudLog', 'lastWateredReal', 'savedAt', 'actedAt', 'fresh', 'front', 'roots', 'wires', 'ramHi', 'ramHi2', 'clock', 'realOffset'];
+  const META = ['v', 'seed', 'species', 'created', 'speed', 'anchorReal', 'anchorGarden', 'day', 'startDay', 'moisture', 'vigor', 'leafCap', 'scorch', 'dryDays', 'leafy', 'nextId', 'log', 'stats', 'lastRain', 'lastBackbudLog', 'lastWateredReal', 'savedAt', 'actedAt', 'fresh', 'front', 'roots', 'wires', 'ramHi', 'ramHi2', 'clock', 'realOffset', 'sp'];
   function serialize(T) {
     const o = {};
     for (const k of META) o[k] = T[k];
     o.v = 4;
-    o.nodes = T.nodes.map(n => [n.id, n.p, r3(n.daz), r3(n.del), r3(n.len), r3(n.born), r3(n.r), n.tip ? 1 : 0, r3(n.grow), r3(n.bud), r3(n.rel), n.side, n.ord, n.sl, n.pin ? 1 : 0, r3(n.scar), r3(n.crack), n.pk | 0, r3(n.rg), r3(n.rgd), r3(n.sm)]);
+    o.nodes = T.nodes.map(n => [n.id, n.p, r3(n.daz), r3(n.del), r3(n.len), r3(n.born), r3(n.r), n.tip ? 1 : 0, r3(n.grow), r3(n.bud), r3(n.rel), n.side, n.ord, n.sl, n.pin ? 1 : 0, r3(n.scar), r3(n.crack), n.pk | 0, r3(n.rg), r3(n.rgd), r3(n.sm), n.bc | 0, r3(n.dc), n.dk | 0, n.f2 | 0]);
     o.wires = (T.wires || []).map(w => [w.id, w.day, w.r0, r3(w.gd), r3(w.bite), w.len, w.orig || [], w.sl, w.bl, w.ops || []]);
     return o;
   }
@@ -1132,6 +1501,7 @@ const Sim = (() => {
     T.log = Array.isArray(o.log) ? o.log.slice(-80) : [];
     T.stats = Object.assign({ cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0 }, o.stats || {});
     T.speed = !T.speed || T.speed === 'living' ? 'steady' : T.speed;
+    T.sp = SPECIES[o.sp] ? o.sp : 'maple'; T.species = SPECIES[T.sp].name;
     T.realOffset = T.realOffset || 0;
     T.scorch = T.scorch || 0; T.dryDays = T.dryDays || 0; T.leafCap = T.leafCap || 0;
     T.lastBackbudLog = T.lastBackbudLog ?? -99; T.actedAt = T.actedAt || T.savedAt || 0;
@@ -1147,6 +1517,7 @@ const Sim = (() => {
         n.r = a[6]; n.tip = !!a[7]; n.grow = a[8]; n.bud = a[9]; n.rel = a[10]; n.side = a[11] || 1; n.ord = a[12] | 0; n.sl = a[13] | 0; n.pin = !!a[14];
         n.scar = a[15] || 0; n.crack = a[16] || 0;
         n.pk = a[17] | 0; n.rg = a[18] || 0; n.rgd = a[19] || 0; n.sm = a[20] || 1;
+        n.bc = a[21] | 0; n.dc = a[22] || 0; n.dk = a[23] | 0; n.f2 = a[24] | 0;
       }
       return n;
     });
@@ -1156,13 +1527,17 @@ const Sim = (() => {
     T.ramHi = T.ramHi || 0;
     if (typeof T.ramHi2 !== 'number') T.ramHi2 = Math.floor(ramification(T).level); // no milestone toasts for levels already reached
     T.v = 4;
+    if (T.sp === 'pine') updateNeedles(T, T.day);
     layout(T, T.day); computeDepth(T); computeLight(T);
     return T;
   }
+  const growthOf = (T, doy) => T.sp === 'pine' ? pineWood(doy) : growthFactor(doy);
 
   return {
     YEAR, START_DOY, newTree, stepDay, layout, cut, pinch, serialize, deserialize, isLeafy, leafState, growthFactor,
     doyOf, yearOf, seasonName, dateLabel, shortDate, phaseNote, isWinter, h01, countTips, treeHeight, logAction, logE, computeDepth, angDiff,
+    SPECIES, spec, setDays, growthOf, PINE_START, DECANDLE_FROM, DECANDLE_TO, pineYearStart, phaseNotePine,
+    decandle, decandleMany, candleBase, pullOldNeedles, thinStrong, keepTwoBuds,
     relabel, subtreeOf, leafCount, pluckedFrac, defolWindow, pluck, chainFrom, branchStart, addWire, removeWire, SET_DAYS, captureBend, bendTo, maxBend, wireSums, addWireOp, ramification, ORD_NAMES, checkRamification,
   };
 })();
@@ -1170,7 +1545,7 @@ const Sim = (() => {
 
 (() => {
   'use strict';
-  const VERSION = '0.7.1';
+  const VERSION = '0.8.0';
   const WEB_BUILD = /*WEB_BUILD*/true; // true in the GitHub Pages copy
   const $ = s => document.querySelector(s);
   const canvas = $('#scene'), mainCtx = canvas.getContext('2d');
@@ -1217,12 +1592,14 @@ const Sim = (() => {
     t.clock = 'real';
     return moved;
   }
-  function makeTree(slot, now) {
-    const t = Sim.newTree(randomSeed(), now);
-    if (slot === 'real') { toRealClock(t, now); t.log.length = 0; Sim.logE(t, t.day, 'Your trident maple arrived from the nursery.'); }
+  // A new tree for a place on the bench. A real-time pine arrives in today's season, so its buds and needles are right for the date.
+  function makeTree(entry, now) {
+    const real = entry.clock === 'real';
+    const t = entry.sp === 'pine' ? Sim.newTree(randomSeed(), now, 'pine', real ? Math.floor(realDoy(new Date(now))) : undefined) : Sim.newTree(randomSeed(), now, 'maple');
+    if (real) { toRealClock(t, now); t.log.length = 0; Sim.logE(t, t.day, `Your ${SP_LC[t.sp]} arrived from the nursery.`); }
     return t;
   }
-  // Make sure a loaded tree runs on the clock its slot calls for.
+  // Make sure a loaded tree runs on the clock its place on the bench calls for.
   function fitToSlot(t, slot, now) {
     if (slot === 'real' && t.clock !== 'real') {
       const was = Sim.doyOf(t.day);
@@ -1260,35 +1637,38 @@ const Sim = (() => {
   const css = (c, al) => al === undefined ? `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})` : `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${al})`;
 
   // ---------- storage: this browser + account sync ----------
-  // Two trees, each saved in this browser and synced to your account: the real-time tree and the practice tree.
+  // Every tree on the bench is saved in this browser and synced to your account. The first two keep the names earlier versions gave them.
   const Store = {
     slot: 'real', prefKey: 'living-bonsai.prefs.v1',
-    keys: { real: 'living-bonsai.tree.v1', practice: 'living-bonsai.practice.v1' }, docs: { real: 'tree', practice: 'practice' },
     makeRef: null, ref: null, checked: false, writing: false, pending: null, lastJson: '', timer: 0,
-    get key() { return this.keys[this.slot]; },
-    loadLocal(slot) { try { const s = localStorage.getItem(this.keys[slot || this.slot]); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
+    keyFor(id) { return id === 'real' ? 'living-bonsai.tree.v1' : id === 'practice' ? 'living-bonsai.practice.v1' : 'living-bonsai.tree.' + id + '.v1'; },
+    docFor(id) { return id === 'real' ? 'tree' : id === 'practice' || id === 'bench' ? id : 'tree-' + id; },
+    get key() { return this.keyFor(this.slot); },
+    loadLocal(id) { try { const s = localStorage.getItem(this.keyFor(id || this.slot)); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
     saveLocal(o) { try { localStorage.setItem(this.key, JSON.stringify(o)); } catch (e) { /* storage unavailable */ } },
+    removeLocal(id) { try { localStorage.removeItem(this.keyFor(id)); } catch (e) { /* ignore */ } },
     setSlot(slot) {
       if (this.pending) { clearTimeout(this.timer); this.flush(); }
       this.slot = slot; this.lastJson = '';
       this.ref = this.makeRef ? this.makeRef(slot) : null;
     },
-    async initRemote(onRemote) {
+    async initRemote(onRemote, onBench) {
       try {
         if (WEB_BUILD) {
           Sync.load();
           if (!Sync.available() || !Sync.enabled) { this.checked = true; return; }
           await Sync.connect();
-          this.makeRef = slot => Sync.ref(slot);
+          this.makeRef = id => Sync.ref(id);
         } else {
           if (!window.claude || typeof window.claude.use !== 'function') { this.checked = true; return; }
           const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
           if (!db || !user) { this.checked = true; return; }
-          const id = await user.id();
-          if (!id) { this.checked = true; return; }
-          this.makeRef = slot => db.doc('data/users/' + id + '/' + this.docs[slot]);
+          const uid = await user.id();
+          if (!uid) { this.checked = true; return; }
+          this.makeRef = id => db.doc('data/users/' + uid + '/' + this.docFor(id));
         }
         this.ref = this.makeRef(this.slot);
+        if (await Bench.pull()) onBench();
         await this.refresh(onRemote);
       } catch (e) { this.ref = null; if (WEB_BUILD) Sync.fail(e); }
       this.checked = true;
@@ -1327,6 +1707,56 @@ const Sim = (() => {
     loadPrefs() { try { Object.assign(prefs, JSON.parse(localStorage.getItem(this.prefKey) || '{}')); } catch (e) { /* default prefs */ } },
     savePrefs() { try { localStorage.setItem(this.prefKey, JSON.stringify(prefs)); } catch (e) { /* ignore */ } },
   };
+
+  // ---------- the bench: which trees you have ----------
+  // Each place on the bench holds one tree with its species and clock. The list syncs like a tree does; the newest list wins.
+  const BENCH_KEY = 'living-bonsai.bench.v1', MAX_TREES = 8;
+  const SP_LC = { maple: 'trident maple', pine: 'Japanese black pine' };
+  const Bench = {
+    list: [], at: 0,
+    clean(list) {
+      const seen = new Set(), out = [];
+      for (const e of Array.isArray(list) ? list : []) {
+        if (!e || typeof e.id !== 'string' || !/^[a-z0-9-]{1,24}$/.test(e.id) || e.id === 'bench' || seen.has(e.id)) continue;
+        seen.add(e.id);
+        out.push({ id: e.id, sp: e.sp === 'pine' ? 'pine' : 'maple', clock: e.clock === 'practice' ? 'practice' : 'real' });
+      }
+      return out.slice(0, MAX_TREES);
+    },
+    load() {
+      let b = null; try { b = JSON.parse(localStorage.getItem(BENCH_KEY) || 'null'); } catch (e) { b = null; }
+      const list = b ? this.clean(b.list) : [];
+      if (list.length) { this.list = list; this.at = b.at || 0; return; }
+      // earlier versions had two fixed trees
+      const spOf = id => { const o = Store.loadLocal(id); return o && o.sp === 'pine' ? 'pine' : 'maple'; };
+      this.list = [{ id: 'real', sp: spOf('real'), clock: 'real' }, { id: 'practice', sp: spOf('practice'), clock: 'practice' }];
+      this.at = 0;
+    },
+    store() { try { localStorage.setItem(BENCH_KEY, JSON.stringify({ list: this.list, at: this.at })); } catch (e) { /* ignore */ } },
+    save() { this.at = Date.now(); this.store(); this.push(); },
+    get(id) { return this.list.find(e => e.id === id) || null; },
+    newId() { let id; do { id = 't-' + (randomSeed() % 2176782336).toString(36).padStart(6, '0'); } while (this.get(id) || id === 't-bench'); return id; },
+    label(e) { return (e.clock === 'practice' ? 'Practice ' + SP_LC[e.sp] : Sim.SPECIES[e.sp].name) + this.num(e); },
+    // the header has the clock chip beside it, so it just names the species
+    short(e) { return Sim.SPECIES[e.sp].name + this.num(e); },
+    num(e) { const same = this.list.filter(x => x.sp === e.sp && x.clock === e.clock); return same.length > 1 ? ' ' + (same.indexOf(e) + 1) : ''; },
+    doc() { return { v: 2, day: 0, actedAt: this.at, savedAt: this.at, tree: JSON.stringify({ list: this.list, at: this.at }) }; },
+    async push() { if (!Store.makeRef) return; try { await Store.makeRef('bench').set(this.doc()); } catch (e) { /* the next change sends it again */ } },
+    read(snap) {
+      if (!snap || !snap.exists) return null;
+      try { const b = JSON.parse(snap.data().tree), list = this.clean(b.list); return list.length ? { list, at: b.at || 0 } : null; } catch (e) { return null; }
+    },
+    // fetch the synced list; true if it replaced this device's list
+    async pull() {
+      if (!Store.makeRef) return false;
+      let r = null;
+      try { r = this.read(await Store.makeRef('bench').get()); } catch (e) { return false; }
+      if (r && r.at > this.at) { this.list = r.list; this.at = r.at; this.store(); return true; }
+      if (!r || r.at < this.at) this.push();
+      return false;
+    },
+  };
+  const curEntry = () => Bench.get(Store.slot) || Bench.list[0];
 
   // ---------- sync between devices (the web copy) ----------
   // No accounts. A random sync code decides where the trees live in Firestore (a hash of it)
@@ -1409,16 +1839,17 @@ const Sim = (() => {
   };
   // Point the save queue at the synced copy of each tree (or at nothing, when sync is off).
   async function attachSync() {
-    Store.makeRef = slot => Sync.ref(slot);
+    Store.makeRef = id => Sync.ref(id);
     Store.ref = Store.makeRef(Store.slot); Store.lastJson = ''; Store.checked = true;
   }
-  // Send both trees as they are on this device.
+  // Send every tree on the bench, and the bench itself, as they are on this device.
   async function pushAllSlots() {
-    for (const slot of ['real', 'practice']) {
-      const o = slot === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(slot);
+    for (const e of Bench.list) {
+      const o = e.id === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(e.id);
       if (!o || o.fresh) continue;
-      await Store.makeRef(slot).set({ v: 2, day: o.day, actedAt: o.actedAt || 0, savedAt: o.savedAt || 0, tree: JSON.stringify(o) });
+      await Store.makeRef(e.id).set({ v: 2, day: o.day, actedAt: o.actedAt || 0, savedAt: o.savedAt || 0, tree: JSON.stringify(o) });
     }
+    await Store.makeRef('bench').set(Bench.doc());
   }
   async function syncTurnOn() {
     Sync.key = Sync.newKey(); Sync.enabled = true; Sync.save();
@@ -1432,12 +1863,16 @@ const Sim = (() => {
     try {
       await Sync.connect(); await attachSync();
       let got = 0;
-      for (const slot of ['real', 'practice']) {
-        const r = await Sync.ref(slot).get();
-        if (r.exists) { try { localStorage.setItem(Store.keys[slot], r.data().tree); got++; } catch (e) { /* storage full */ } }
+      // the synced bench says which trees there are; codes from before the bench had just the first two
+      const b = Bench.read(await Sync.ref('bench').get());
+      if (b) { Bench.list = b.list; Bench.at = Math.max(b.at, 1); Bench.store(); }
+      for (const id of b ? b.list.map(e => e.id) : ['real', 'practice']) {
+        const r = await Sync.ref(id).get();
+        if (r.exists) { try { localStorage.setItem(Store.keyFor(id), r.data().tree); got++; } catch (e) { /* storage full */ } }
       }
       if (!got) { await pushAllSlots(); toast('Joined. There were no trees under that code yet, so this device’s trees were sent.', 6000); }
       else { T = null; openSlot(Store.slot, { initial: true }); await pushAllSlots(); toast('Joined. Your synced trees are on this device now.', 5000); }
+      if (!$('#sheetWrap').hidden) openSheet();
     } catch (e) { Sync.fail(e); }
     renderSync();
   }
@@ -1459,8 +1894,8 @@ const Sim = (() => {
   function exportPayload() {
     saveNow();
     const trees = {};
-    for (const slot of ['real', 'practice']) { const o = slot === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(slot); if (o) trees[slot] = o; }
-    return { app: 'living-bonsai', format: 1, exported: new Date().toISOString(), trees };
+    for (const e of Bench.list) { const o = e.id === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(e.id); if (o) trees[e.id] = o; }
+    return { app: 'living-bonsai', format: 2, exported: new Date().toISOString(), bench: Bench.list.filter(e => trees[e.id]), trees };
   }
   async function exportTrees() {
     const data = JSON.stringify(exportPayload());
@@ -1491,27 +1926,44 @@ const Sim = (() => {
   let pendingImport = null;
   function readImport(text) {
     let obj; try { obj = JSON.parse(text); } catch (e) { return { error: 'That file isn’t a Living Bonsai backup.' }; }
-    let trees = {};
-    if (obj && obj.app === 'living-bonsai' && obj.trees) trees = obj.trees;
-    else if (obj && Array.isArray(obj.nodes)) trees[obj.clock === 'real' ? 'real' : 'practice'] = obj;
-    else return { error: 'That file isn’t a Living Bonsai backup.' };
-    const out = {}, notes = [];
-    for (const slot of ['real', 'practice']) {
-      const t = trees[slot] && Sim.deserialize(trees[slot]); if (!t) continue;
-      // no shortcuts: only a tree that has always lived on the real calendar can become your real-time tree
-      if (slot === 'real' && t.clock !== 'real') { notes.push('The real-time tree in that file wasn’t on the real calendar, so it was left out.'); continue; }
-      out[slot] = t;
+    let trees = {}, entries = [];
+    if (obj && obj.app === 'living-bonsai' && obj.trees && typeof obj.trees === 'object') {
+      trees = obj.trees;
+      // format 1 files had the two fixed trees
+      entries = Array.isArray(obj.bench) ? Bench.clean(obj.bench) : ['real', 'practice'].filter(k => trees[k]).map(k => ({ id: k, sp: trees[k].sp === 'pine' ? 'pine' : 'maple', clock: k }));
+    } else if (obj && Array.isArray(obj.nodes)) {
+      const id = obj.clock === 'real' ? 'real' : 'practice';
+      trees[id] = obj; entries = [{ id, sp: obj.sp === 'pine' ? 'pine' : 'maple', clock: id }];
+    } else return { error: 'That file isn’t a Living Bonsai backup.' };
+    const out = [], notes = [];
+    let skipped = 0;
+    for (const e of entries) {
+      const t = trees[e.id] && Sim.deserialize(trees[e.id]); if (!t) continue;
+      // no shortcuts: only a tree that has always lived on the real calendar can come back as a real-time tree
+      if (e.clock === 'real' && t.clock !== 'real') { skipped++; continue; }
+      e.sp = t.sp;
+      if (!Bench.get(e.id) && Bench.list.length + out.filter(x => !Bench.get(x.e.id)).length >= MAX_TREES) { notes.push(`Your bench holds ${MAX_TREES} trees, so some in the backup were left out.`); continue; }
+      out.push({ e, t });
     }
-    if (!Object.keys(out).length) return { error: notes[0] || 'That file has no trees in it.' };
-    return { trees: out, exported: obj.exported, notes };
+    if (skipped) notes.unshift(skipped === 1 ? 'A real-time tree in that file wasn’t on the real calendar, so it was left out.' : `${skipped} real-time trees in that file weren’t on the real calendar, so they were left out.`);
+    if (!out.length) return { error: notes[0] || 'That file has no trees in it.' };
+    return { trees: out, exported: obj.exported, notes: [...new Set(notes)] };
   }
+  const listWords = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  const aTree = e => (e.clock === 'practice' ? 'a practice ' : 'a ') + SP_LC[e.sp];
+  // a tree's name inside a sentence: "your practice trident maple", "your Japanese black pine 2"
+  const yourTree = e => { const l = Bench.label(e); return 'your ' + (e.clock === 'practice' || e.sp === 'maple' ? l[0].toLowerCase() + l.slice(1) : l); };
   function askImport(text) {
     const r = readImport(text);
     if (r.error) { toast(r.error, 5000); return; }
     pendingImport = r;
-    const names = Object.keys(r.trees).map(s => s === 'real' ? 'your real-time tree' : 'your practice tree');
+    const replaced = r.trees.filter(x => Bench.get(x.e.id)).map(x => yourTree(Bench.get(x.e.id)));
+    const added = r.trees.filter(x => !Bench.get(x.e.id)).map(x => aTree(x.e));
     const when = r.exported ? ` from ${new Date(r.exported).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : '';
-    setText($('#importMsg'), `This replaces ${names.join(' and ')} on this device with the ones in the backup${when}.` + (r.notes.length ? ' ' + r.notes.join(' ') : ''));
+    const parts = [];
+    if (replaced.length) parts.push(`replaces ${listWords(replaced)} on this device`);
+    if (added.length) parts.push(`adds ${listWords(added)} to your bench`);
+    setText($('#importMsg'), `Importing the backup${when} ${parts.join(' and ')}.` + (r.notes.length ? ' ' + r.notes.join(' ') : ''));
     $('#importConfirm').hidden = false;
   }
   async function doImport() {
@@ -1519,12 +1971,15 @@ const Sim = (() => {
     if (!r) return;
     saveNow();
     const now = Date.now();
-    for (const [slot, t] of Object.entries(r.trees)) {
+    for (const { e, t } of r.trees) {
       t.fresh = false; t.actedAt = now; t.savedAt = now;
       const o = Sim.serialize(t);
-      try { localStorage.setItem(Store.keys[slot], JSON.stringify(o)); } catch (e) { toast('There isn’t room to store that here.'); return; }
-      if (Store.makeRef) { try { await Store.makeRef(slot).set({ v: 2, day: o.day, actedAt: o.actedAt, savedAt: o.savedAt, tree: JSON.stringify(o) }); } catch (e) { /* the save queue retries */ } }
+      try { localStorage.setItem(Store.keyFor(e.id), JSON.stringify(o)); } catch (err) { toast('There isn’t room to store that here.'); return; }
+      const have = Bench.get(e.id);
+      if (have) have.sp = e.sp; else Bench.list.push({ id: e.id, sp: e.sp, clock: e.clock });
+      if (Store.makeRef) { try { await Store.makeRef(e.id).set({ v: 2, day: o.day, actedAt: o.actedAt, savedAt: o.savedAt, tree: JSON.stringify(o) }); } catch (err) { /* the save queue retries */ } }
     }
+    Bench.save();
     T = null; openSlot(Store.slot, { initial: true });
     closeSheet(); setMode('view');
     toast('Imported. Any time that passed since the backup will play out now.', 5000);
@@ -1542,8 +1997,8 @@ const Sim = (() => {
 
   function adoptRemote(obj) {
     const r = Sim.deserialize(obj);
-    if (!r || !T) return;
-    fitToSlot(r, Store.slot, Date.now());
+    if (!r || !T || r.sp !== T.sp) return;
+    fitToSlot(r, curEntry().clock, Date.now());
     if (T.fresh || (r.actedAt || 0) > (T.actedAt || 0) + 1000) {
       const wasFresh = T.fresh;
       setTree(r);
@@ -1569,25 +2024,66 @@ const Sim = (() => {
     if (T._toReal) {
       const how = T._toReal; delete T._toReal; saveNow();
       const d = new Date();
-      setTimeout(() => toast(`Your tree now follows the real calendar. It\u2019s ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, so it grows at a real tree\u2019s pace from here${how === 'moved' ? ', starting from today\u2019s season' : ''}. Faster clocks are on the practice tree in the menu.`, 9000), 700);
+      setTimeout(() => toast(`Your tree now follows the real calendar. It\u2019s ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, so it grows at a real tree\u2019s pace from here${how === 'moved' ? ', starting from today\u2019s season' : ''}. Faster clocks are for practice trees, which you can add in the menu.`, 9000), 700);
     }
+    renderName();
     updateUI(true);
+  }
+  // The header and tools speak the tree's language: a pine has candles and needles, a maple shoots and leaves.
+  function renderName() {
+    const e = curEntry(), pine = T.sp === 'pine';
+    setText($('#treeName'), Bench.short(e));
+    setText($('#pinchLabel'), pine ? 'Candles' : 'Pinch');
+    setText($('#leavesLabel'), pine ? 'Needles' : 'Leaves');
+    document.title = `${Bench.label(e)} \u00b7 Living Bonsai`;
   }
 
   const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  function openSlot(slot, opts = {}) {
-    const now = Date.now();
+  function openSlot(id, opts = {}) {
+    const now = Date.now(), entry = Bench.get(id) || Bench.list[0];
     if (T && !opts.initial) saveNow();
-    Store.setSlot(slot); prefs.slot = slot; Store.savePrefs();
+    Store.setSlot(entry.id); prefs.slot = entry.id; Store.savePrefs();
     let t = opts.tree ? Sim.deserialize(opts.tree) : null;
-    if (!t) t = Sim.deserialize(Store.loadLocal(slot));
+    if (t && t.sp !== entry.sp) t = null;
+    if (!t) t = Sim.deserialize(Store.loadLocal(entry.id));
     let fresh = false;
-    if (!t) { t = makeTree(slot, now); fresh = true; }
-    fitToSlot(t, slot, now);
+    if (!t) { t = makeTree(entry, now); fresh = true; }
+    if (t.sp !== entry.sp) { entry.sp = t.sp; Bench.store(); }
+    fitToSlot(t, entry.clock, now);
     setTree(t);
     if (fresh) saveNow();
     if (!opts.initial) Store.refresh(adoptRemote);
     return fresh;
+  }
+  // The synced bench changed on another device: stay with the tree on screen if it's still there.
+  function benchChanged() {
+    if (!Bench.get(Store.slot)) { Store.pending = null; T = null; openSlot(Bench.list[0].id, { initial: true }); }
+    else renderName();
+    if (!$('#sheetWrap').hidden) renderTrees();
+  }
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  function addTree(sp, clock) {
+    if (Bench.list.length >= MAX_TREES) { toast(`Your bench holds ${MAX_TREES} trees. Take one off to make room.`); return; }
+    const now = Date.now(), e = { id: Bench.newId(), sp, clock };
+    saveNow();
+    Bench.list.push(e); Bench.save();
+    const t = makeTree(e, now); t.fresh = false; t.actedAt = now;
+    try { localStorage.setItem(Store.keyFor(e.id), JSON.stringify(Sim.serialize(t))); } catch (err) { /* openSlot makes one */ }
+    openSlot(e.id); saveNow();
+    closeSheet(); setMode('view');
+    toast(`${cap(aTree(e))} is on your bench.` + (clock === 'practice' ? ' Its clock runs at Quick. You can change that in the menu under Clock.' : ' It follows the real calendar and grows at a real tree’s pace.'), 6500);
+  }
+  function removeTree() {
+    const id = Store.slot, i = Bench.list.findIndex(e => e.id === id);
+    if (Bench.list.length < 2 || i < 0) return;
+    const name = yourTree(Bench.list[i]);
+    Bench.list.splice(i, 1); Bench.save();
+    clearTimeout(saveTimer); clearTimeout(Store.timer); Store.pending = null;
+    Store.removeLocal(id);
+    T = null; openSlot(Bench.list[Math.max(0, i - 1)].id, { initial: true });
+    Store.refresh(adoptRemote);
+    closeSheet(); setMode('view');
+    toast(`${cap(name)} is off the bench.`);
   }
   function beginCatchup(target) {
     let days = target - T.day;
@@ -1740,6 +2236,9 @@ const Sim = (() => {
     hills: rgb('#5B7266'), overcast: rgb('#8E989E'),
     barkWarm: rgb('#86604A'), barkCool: rgb('#6C6C68'), bud: rgb('#6A4533'), budSwell: rgb('#93803F'),
     copper: rgb('#BE7A3E'), copperOld: rgb('#7E5537'), strainWarn: rgb('#E3A43A'), strainBad: rgb('#D9443A'),
+    // Japanese black pine
+    needle: rgb('#2F5B36'), needleNew: rgb('#9CBB57'), needleOld: rgb('#3B5235'), needleYellow: rgb('#C8A646'), needleWinter: rgb('#55653C'), needleBrown: rgb('#8E6C47'),
+    pineTwig: rgb('#7E6650'), pineOld: rgb('#4B4643'), candle: rgb('#D6C79E'), pineBud: rgb('#E4DCC8'),
   };
 
   // Trident maple leaf: three forward lobes, unit length, pointing up from the origin
@@ -1813,12 +2312,60 @@ const Sim = (() => {
     }
     return out;
   }
+  // Pine needles grow in bundles of two all along each year's shoot. A needled shoot is split into thirds, which can be
+  // pulled separately; needles spiral along each third, more of them on a longer shoot, and a tip carries a forward tuft.
+  // Older needles spread wider and droop a little.
+  function needleParams(n, q) {
+    const tip = !n.ch.length, per = clamp(Math.round(n.len / 2), 2, 8);
+    const key = (tip ? 1 : 0) + q * 2 + n.nd * 8 + per * 64;
+    if (n._np && n._npK === key) return n._np;
+    const id = n.id, baseA = n.nd === 1 ? 0.62 : n.nd === 2 ? 0.86 : 1.02, g = [], scale = q === 0 ? 0.45 : q === 1 ? 0.7 : 1;
+    for (let k = 0; k < 3; k++) {
+      const side = Math.max(1, Math.round(per * scale)), tuft = tip && k === 2 ? Math.max(2, Math.round(6 * scale)) : 0, cnt = side + tuft;
+      const arr = new Float32Array(cnt * 6), off = Sim.h01(id, 40 + k) * TAU;
+      for (let j = 0; j < cnt; j++) {
+        const r = m => Sim.h01(id * 13 + j, k * 7 + m), inTuft = j >= side;
+        const a = inTuft ? 0.28 + 0.4 * r(1) : baseA + (r(1) - 0.5) * 0.36;
+        const ph = off + j * 2.4 + (r(2) - 0.5) * 0.5; // a spiral around the shoot
+        const t = inTuft ? 0.9 + 0.1 * r(4) : (k + (j + 0.25 + 0.5 * r(4)) / side) / 3;
+        const o = j * 6;
+        arr[o] = Math.cos(a); arr[o + 1] = Math.sin(a); arr[o + 2] = Math.cos(ph); arr[o + 3] = Math.sin(ph); arr[o + 4] = 0.8 + 0.32 * r(3); arr[o + 5] = t;
+      }
+      g.push(arr);
+    }
+    n._npK = key;
+    return (n._np = { g, t: [1 / 6, 0.5, tip ? 0.88 : 5 / 6] });
+  }
+  // needle length in world units: shorter on weak inner shoots, on finer orders, and on a second flush
+  const needleLen = n => 15 * (n.sm || 1) * (0.78 + 0.32 * clamp(n.light, 0, 1)) / (1 + 0.05 * Math.min(n.ord, 6));
+  // how far this year's needles have grown out of the candle (0 to 1)
+  const needleGrowth = n => n.nd !== 1 ? 1 : n.f2 ? clamp((dispDay - n.born - 10) / 34, 0, 1) : clamp((dispDay - n.born - 22) / 48, 0, 1);
+  function needleColor(n, dayInt, lvl) {
+    if (n._ncD !== dayInt) {
+      const doy = Sim.doyOf(dispDay);
+      let c = n.nd === 1 ? C.needle : n.nd === 2 ? mixA(C.needle, C.needleOld, 0.5) : C.needleOld;
+      c = mixA(c, C.leafShade, (1 - Math.round(clamp(n.light, 0, 1) * 3) / 3) * 0.28);
+      if (n.nd === 1) { const y = clamp(1 - (dispDay - n.born - (n.f2 ? 14 : 30)) / (n.f2 ? 45 : 70), 0, 1); if (y > 0) c = mixA(c, C.needleNew, y * 0.85); }
+      if (n.nd === 3 && doy >= 270) c = mixA(c, C.needleYellow, clamp((doy - 270) / 40, 0, 1));
+      if (Sim.isWinter(doy)) c = mixA(c, C.needleWinter, 0.3);
+      if (T.scorch > 0) c = mixA(c, C.scorch, T.scorch * 0.7);
+      // rounded so neighboring shoots share a color and draw in one batch
+      n._ncB = c.map(v => Math.round(v / 5) * 5); n._ncD = dayInt; n._nc = [];
+    }
+    return n._nc[lvl] || (n._nc[lvl] = [css(mixA(n._ncB, C.fog, lvl * FOG_STEP))]);
+  }
   function barkRGB(n, dayInt) {
     if (n._bcD === dayInt) return n._bc;
     const age = dispDay - n.born;
-    const k = clamp((n.r - 1.0) / 2.8, 0, 1);
-    let c = mixA(C.twig, C.old, k);
-    if (age < 45) c = mixA(C.young, c, clamp(age / 45, 0, 1));
+    let c;
+    if (T.sp === 'pine') {
+      // pale candles, orange-brown twigs, then the dark gray bark the black pine is named for
+      c = mixA(C.pineTwig, C.pineOld, clamp((n.r - 1.2) / 3.2, 0, 1));
+      if (age < 90) c = n.f2 ? mixA(C.candle, c, clamp((age - 8) / 30, 0, 1)) : mixA(C.candle, c, clamp((age - 30) / 60, 0, 1));
+    } else {
+      c = mixA(C.twig, C.old, clamp((n.r - 1.0) / 2.8, 0, 1));
+      if (age < 45) c = mixA(C.young, c, clamp(age / 45, 0, 1));
+    }
     // small per-branch variation so the wood isn't one flat color
     const j = Sim.h01(n.id, 77);
     c = mixA(c, j < 0.5 ? C.barkWarm : C.barkCool, Math.abs(j - 0.5) * 0.4);
@@ -1867,10 +2414,12 @@ const Sim = (() => {
   let IT_D = new Float32Array(8192), IT_K = new Uint8Array(8192), IT_I = new Int32Array(8192);
   let LF = new Float32Array(8192 * 6), LF_PX = new Float32Array(8192), PET = new Float32Array(8192 * 4); const LF_COL = [];
   let LF_N = new Int32Array(8192), LF_K = new Uint8Array(8192), LF_DD = new Float32Array(8192), LF_GH = new Uint8Array(8192), LF_COUNT = 0;
+  let NBV = new Float32Array(2048 * 8), NGX = 0, NGY = 1; // per needled shoot: its axes on screen, needle length and droop
   let Q = 2, drawAvg = 10, qFrames = 0; // detail level adapts to how fast this device draws
   const order = [];
   function ensureCap(nNodes, nItems) {
     if (PX.length < nNodes) { const c = nNodes * 2; PX = new Float32Array(c); PY = new Float32Array(c); PD = new Float32Array(c); }
+    if (NBV.length < nNodes * 8) NBV = new Float32Array(nNodes * 16);
     if (IT_D.length < nItems) { const c = nItems * 2; IT_D = new Float32Array(c); IT_K = new Uint8Array(c); IT_I = new Int32Array(c); LF = new Float32Array(c * 6); LF_PX = new Float32Array(c); PET = new Float32Array(c * 4); LF_N = new Int32Array(c); LF_K = new Uint8Array(c); LF_DD = new Float32Array(c); LF_GH = new Uint8Array(c); }
   }
 
@@ -2032,7 +2581,23 @@ const Sim = (() => {
         }
       }
     }
-    if (ls.fall > 0 && ls.doy < 345) {
+    if (T.sp === 'pine') {
+      // shed needles collect on the soil from late autumn until spring growth covers them
+      const doy = ls.doy, amt = doy >= 296 ? clamp((doy - 296) / 26, 0, 1) : doy < 140 ? 1 - 0.75 * doy / 140 : 0.2;
+      const count = snowy ? 0 : Math.round(amt * 46);
+      if (count) {
+        ctx.strokeStyle = css(C.needleBrown, 0.85); ctx.lineWidth = Math.max(0.5, 0.3 * s); ctx.lineCap = 'round'; ctx.beginPath();
+        for (let i = 0; i < count; i++) {
+          const fx = (Sim.h01(T.seed + 5, i) - 0.5) * (POT_W - 24), fz = (Sim.h01(T.seed + 7, i) - 0.5) * (POT_D - 22);
+          if (Math.hypot(fx, fz) < 10) continue;
+          const a = Sim.h01(T.seed + 6, i) * TAU, len = 7 + Sim.h01(T.seed + 8, i) * 5;
+          proj(fx, 1, fz); const x0 = _x, y0 = _y;
+          projDir(Math.cos(a), 0, Math.sin(a));
+          ctx.moveTo(x0, y0); ctx.lineTo(x0 + _x * len, y0 + _y * len);
+        }
+        ctx.stroke();
+      }
+    } else if (ls.fall > 0 && ls.doy < 345) {
       const count = Math.round(ls.fall * Math.min(24, T.leafy / 4));
       for (let i = 0; i < count; i++) {
         const onBench = i % 3 === 2;
@@ -2049,9 +2614,38 @@ const Sim = (() => {
 
   function pushItem(n, k, idx, depth) { IT_K[n] = k; IT_I[n] = idx; IT_D[n] = depth; }
 
+  // Needles are stroked in batches, one path per color. A batch is laid down whenever a branch thick enough
+  // to hide needles behind it comes up in the back-to-front order; thin twigs don't interrupt it.
+  const nbPaths = new Map();
+  let nbOpen = false;
+  function flushNeedles() {
+    if (!nbOpen) return;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.lineWidth = Math.max(0.6, 0.32 * cam.s); ctx.lineCap = 'butt';
+    for (const [key, path] of nbPaths) {
+      ctx.globalAlpha = key.charCodeAt(0) === 126 ? 0.3 : 1;
+      ctx.strokeStyle = key.charCodeAt(0) === 126 ? key.slice(1) : key; ctx.stroke(path);
+    }
+    ctx.globalAlpha = 1; nbPaths.clear(); nbOpen = false;
+  }
+  function needleGroup(k) {
+    const key = LF_GH[k] ? '~' + LF_COL[k][0] : LF_COL[k][0];
+    let path = nbPaths.get(key);
+    if (!path) { path = new Path2D(); nbPaths.set(key, path); }
+    nbOpen = true;
+    const i = LF_N[k], n = T.nodes[i], o = i * 8, arr = n._np.g[LF_K[k]];
+    const ax = NBV[o], ay = NBV[o + 1], bx = NBV[o + 2], by = NBV[o + 3], cx = NBV[o + 4], cy = NBV[o + 5], NLw = NBV[o + 6], dr = NBV[o + 7];
+    const px0 = PX[n.pi], py0 = PY[n.pi], ddx = PX[i] - px0, ddy = PY[i] - py0;
+    for (let j = 0; j < arr.length; j += 6) {
+      const ca = arr[j], sa = arr[j + 1], cp = arr[j + 2], sp = arr[j + 3], lm = arr[j + 4] * NLw, x0 = px0 + ddx * arr[j + 5], y0 = py0 + ddy * arr[j + 5];
+      path.moveTo(x0, y0);
+      path.lineTo(x0 + (ax * ca + (bx * cp + cx * sp) * sa + NGX * dr) * lm, y0 + (ay * ca + (by * cp + cy * sp) * sa + NGY * dr) * lm);
+    }
+  }
+
   function drawTree(ls, dayInt, snowy) {
-    const N = T.nodes, s = cam.s;
-    const leafSeason = ls.doy >= 79 && ls.fall < 1;
+    const N = T.nodes, s = cam.s, pine = T.sp === 'pine';
+    const leafSeason = !pine && ls.doy >= 79 && ls.fall < 1;
     ensureCap(N.length + 4, N.length * 5 + T.roots.length + 16);
     for (let i = 0; i < N.length; i++) { const n = N[i]; proj(n.x, n.y, n.z); PX[i] = _x; PY[i] = _y; PD[i] = _d; n._main = -1; }
     for (let i = 0; i < N.length; i++) {
@@ -2120,6 +2714,43 @@ const Sim = (() => {
         }
       }
     }
+    if (pine) {
+      projDir(0, -1, 0); NGX = _x / Math.max(1e-3, s); NGY = _y / Math.max(1e-3, s);
+      for (let i = 1; i < N.length; i++) {
+        const n = N[i];
+        if (!(n.nd > 0) || (n.pk & 7) === 7 || n.dl < 0.02) continue;
+        if (focusOn && !focusSet[i]) continue;
+        const NLw = needleLen(n) * needleGrowth(n) * (0.4 + 0.6 * clamp(n.gf, 0, 1));
+        if (NLw * s < 1.2) continue;
+        const p = N[n.pi];
+        let dx = n.x - p.x, dy = n.y - p.y, dz = n.z - p.z;
+        const Lw = Math.hypot(dx, dy, dz) || 1; dx /= Lw; dy /= Lw; dz /= Lw;
+        let sx = -dz, sz = dx, sl = Math.hypot(sx, sz);
+        if (sl < 0.15) { sx = 1; sz = 0; sl = 1; }
+        sx /= sl; sz /= sl;
+        const ux = -sz * dy, uy = sz * dx - sx * dz, uz = sx * dy;
+        const o8 = i * 8;
+        projDir(dx, dy, dz); NBV[o8] = _x; NBV[o8 + 1] = _y;
+        projDir(sx, 0, sz); NBV[o8 + 2] = _x; NBV[o8 + 3] = _y;
+        projDir(ux, uy, uz); NBV[o8 + 4] = _x; NBV[o8 + 5] = _y;
+        NBV[o8 + 6] = NLw; NBV[o8 + 7] = (n.nd === 3 ? 0.3 : n.nd === 2 ? 0.15 : 0.04) * s;
+        const np = needleParams(n, Q);
+        for (let g = 0; g < 3; g++) {
+          if (n.pk & (1 << g)) continue;
+          const t = np.t[g];
+          const bx = PX[n.pi] + (PX[i] - PX[n.pi]) * t, by = PY[n.pi] + (PY[i] - PY[n.pi]) * t, bd = PD[n.pi] + (PD[i] - PD[n.pi]) * t;
+          const o = lfCount * 6;
+          LF[o] = 0; LF[o + 1] = 0; LF[o + 2] = 0; LF[o + 3] = 0;
+          LF[o + 4] = bx + NBV[o8] * NLw * 0.35; LF[o + 5] = by + NBV[o8 + 1] * NLw * 0.35;
+          PET[lfCount * 4] = bx; PET[lfCount * 4 + 1] = by;
+          LF_PX[lfCount] = NLw * s;
+          LF_COL[lfCount] = needleColor(n, dayInt, fogLevel(bd));
+          LF_N[lfCount] = i; LF_K[lfCount] = g; LF_DD[lfCount] = bd; LF_GH[lfCount] = focusOn ? 1 : 0;
+          pushItem(cnt++, 1, lfCount, bd + 0.5);
+          lfCount++;
+        }
+      }
+    }
     LF_COUNT = lfCount;
     order.length = cnt;
     for (let i = 0; i < cnt; i++) order[i] = i;
@@ -2127,7 +2758,7 @@ const Sim = (() => {
 
     const D = DPR;
     // leaf stalks, drawn first so each leaf sits over its own stalk
-    if (Q >= 1 && lfCount && !focusOn) {
+    if (Q >= 1 && lfCount && !focusOn && !pine) {
       ctx.strokeStyle = ls.autumn > 0.3 ? 'rgba(150,70,40,0.85)' : 'rgba(104,98,52,0.85)';
       ctx.lineWidth = Math.max(0.45, 0.28 * s); ctx.lineCap = 'round';
       ctx.beginPath();
@@ -2149,6 +2780,7 @@ const Sim = (() => {
       const it = order[oi], kind = IT_K[it], idx = IT_I[it];
       if (focusOn && (kind === 2 || kind === 3 || (kind === 0 && !focusSet[idx]))) continue;
       if (kind === 1) {
+        if (pine) { needleGroup(idx); continue; }
         const o = idx * 6, cols = LF_COL[idx], px = LF_PX[idx];
         ctx.setTransform(D * LF[o], D * LF[o + 1], D * LF[o + 2], D * LF[o + 3], D * LF[o + 4], D * LF[o + 5]);
         if (LF_GH[idx]) { ctx.globalAlpha = 0.22; ctx.fillStyle = cols[0]; ctx.fill(LEAF); ctx.globalAlpha = 1; continue; }
@@ -2157,11 +2789,13 @@ const Sim = (() => {
         if (Q >= 2 && px >= 8) { ctx.strokeStyle = cols[2]; ctx.lineWidth = 0.75 / px; ctx.stroke(LEAF_VEINS); }
         continue;
       }
+      if (nbOpen && (kind !== 0 || N[idx].r >= 1.5)) flushNeedles();
       ctx.setTransform(D, 0, 0, D, 0, 0);
       if (kind === 0) drawWood(N, idx, dayInt, snowy, ls);
       else if (kind === 2) drawRoot(T.roots[idx], r0, dayInt);
       else drawBase(r0, dayInt);
     }
+    flushNeedles();
     ctx.setTransform(D, 0, 0, D, 0, 0);
   }
 
@@ -2171,9 +2805,12 @@ const Sim = (() => {
   function drawWood(N, i, dayInt, snowy, ls) {
     const n = N[i], p = N[n.pi], s = cam.s;
     const isMain = p._main === i;
-    const kN = 0.5 + 0.5 * n.gf;
-    const rEnd = Math.max(0.35, (n.ch.length ? n.r : n.r * 0.62) * s * kN);
-    const rStart = Math.max(0.38, (isMain ? p.r * (0.5 + 0.5 * p.gf) : Math.min(p.r, n.r * 1.3) * kN) * s);
+    const kN = 0.5 + 0.5 * n.gf, pine = T.sp === 'pine';
+    // a young pine candle is a stout, pale shoot, much thicker than the twig it will become
+    const ck = pine && n.nd === 1 ? 1 + (n.f2 ? 0.35 : 0.9) * clamp((75 - (dispDay - n.born)) / 45, 0, 1) : 1;
+    const rEnd = Math.max(0.35, (n.ch.length ? n.r : n.r * 0.62) * s * kN * ck);
+    let rStart = Math.max(0.38, (isMain ? p.r * (0.5 + 0.5 * p.gf) : Math.min(p.r, n.r * 1.3) * kN) * s);
+    if (ck > 1) rStart = Math.max(rStart, rEnd * 1.05);
     const Bx = PX[n.pi], By = PY[n.pi], Cx = PX[i], Cy = PY[i];
     const L = Math.hypot(Cx - Bx, Cy - By);
     const lvl = fogLevel((PD[i] + PD[n.pi]) / 2);
@@ -2244,7 +2881,8 @@ const Sim = (() => {
       if (wireSel === w) coil(steps, pitch, ww + 2.4, 'rgba(255,255,255,0.75)', null, 1.06);
       coil(steps, pitch, ww, css(col), 'rgba(255,224,186,0.55)', 1.06);
     }
-    if (ls.open < 0.35 || ls.fall > 0.7) drawBuds(n, Bx, By, Cx, Cy, L, ls);
+    if (pine) { if (!n.ch.length) drawPineTip(n, Bx, By, Cx, Cy, L, ls.doy, lvl); }
+    else if (ls.open < 0.35 || ls.fall > 0.7) drawBuds(n, Bx, By, Cx, Cy, L, ls);
     if (snowy && n.r > 1.1 && n.dl > 1 && Math.abs(Math.sin(n.el)) < 0.9) {
       ctx.strokeStyle = 'rgba(244,247,250,0.92)'; ctx.lineCap = 'round';
       ctx.lineWidth = Math.max(1, rEnd * 0.7);
@@ -2295,7 +2933,8 @@ const Sim = (() => {
     sx /= sl; sz /= sl;
     const ux = -sz * dy, uy = sz * dx - sx * dz, uz = sx * dy;
     const Vx = -syw * cpt, Vy = spt, Vz = cyw * cpt, s = cam.s;
-    const old = n.r > 2.5, fade = 1 - lvl * 0.2;
+    const old = n.r > 2.5, fade = 1 - lvl * 0.2, pine = T.sp === 'pine';
+    if (pine && n.nd === 1) return; // this year's shoot is still smooth
     const limit = old ? 10 + Math.min(34, Math.round(Lw * n.r / 4.5)) : Math.min(10, Math.round(Lw / 2.2));
     ctx.lineCap = 'round';
     const mk = barkMarks(n);
@@ -2303,6 +2942,7 @@ const Sim = (() => {
       const m = mk[k];
       if (m.kind === 2 && n.r < 4.5) continue;
       if (!old && age < 40) continue;
+      if (pine && m.kind === 3) continue; // pines have no maple-style lenticels
       const cph = Math.cos(m.phi), sph = Math.sin(m.phi);
       const mx = sx * cph + ux * sph, my = uy * sph, mz = sz * cph + uz * sph;
       const vis = mx * Vx + my * Vy + mz * Vz;
@@ -2325,7 +2965,11 @@ const Sim = (() => {
       const t1 = Math.min(1, t0 + (m.kind === 1 ? m.len * 0.45 : m.len)), R1 = (rsW + (reW - rsW) * t1) * 0.95;
       const ph2 = m.phi + m.tw, c2 = Math.cos(ph2), s2 = Math.sin(ph2);
       proj(p.x + dx * Lw * t1 + (sx * c2 + ux * s2) * R1, p.y + dy * Lw * t1 + uy * s2 * R1, p.z + dz * Lw * t1 + (sz * c2 + uz * s2) * R1);
-      if (m.kind === 0) {
+      if (pine) {
+        // black pine bark: dark plates split by fissures that show reddish-brown inner bark
+        if (m.kind === 0) { ctx.strokeStyle = `rgba(20,17,16,${(vis * fade * 0.62).toFixed(3)})`; ctx.lineWidth = Math.max(0.8, m.w * R0 * s * 0.13); }
+        else { ctx.strokeStyle = `rgba(${m.w > 1.1 ? '142,84,56' : '112,92,80'},${(vis * fade * 0.55).toFixed(3)})`; ctx.lineWidth = Math.max(1.3, m.w * R0 * s * 0.28); }
+      } else if (m.kind === 0) {
         ctx.strokeStyle = `rgba(40,30,24,${(vis * fade * 0.55).toFixed(3)})`; ctx.lineWidth = Math.max(0.6, m.w * 0.8);
       } else {
         ctx.strokeStyle = `rgba(${m.w > 1.1 ? '194,154,112' : '170,160,146'},${(vis * fade * 0.42).toFixed(3)})`;
@@ -2350,6 +2994,31 @@ const Sim = (() => {
     };
     if (!n.ch.length) put(0, 1.8);
     else if (n.bud > 0.3) put(n.side * 0.85, 1.25);
+    ctx.setTransform(D, 0, 0, D, 0, 0);
+  }
+
+  // Pine tips: a cluster of silvery buds from late summer to spring, a pale pointed tip on a candle that is still extending.
+  function drawPineTip(n, Bx, By, Cx, Cy, L, doy, lvl) {
+    if (L < 0.6) return;
+    const s = cam.s, D = DPR, ux = (Cx - Bx) / L, uy = (Cy - By) / L;
+    const put = (ang, size, col, wk) => {
+      const px = size * s; if (px < 1.4) return;
+      const c = Math.cos(ang), si = Math.sin(ang), dx = ux * c - uy * si, dy = ux * si + uy * c;
+      ctx.setTransform(D * -dy * px * wk, D * dx * px * wk, D * -dx * px, D * -dy * px, D * Cx, D * Cy);
+      ctx.fillStyle = col; ctx.fill(BUD);
+    };
+    if (n.bc > 0) {
+      // buds form small and brown in late summer, then fill out and turn silvery-white by winter
+      const ripe = doy >= 232 ? clamp((doy - 232) / 70, 0, 1) : 1;
+      const swell = (0.55 + 0.45 * ripe) * (doy >= 40 && doy < Sim.PINE_START + 6 ? 1 + 0.45 * clamp((doy - 40) / 45, 0, 1) : 1);
+      const base = mixA(C.pineTwig, C.pineBud, 0.35 + 0.65 * ripe);
+      const col = css(mixA(base, C.fog, lvl * FOG_STEP)), side = css(mixA(mixA(base, C.pineTwig, 0.25), C.fog, lvl * FOG_STEP));
+      const k = Math.min(n.bc, 5);
+      for (let q = 1; q < k; q++) put((q % 2 ? 1 : -1) * (0.5 + 0.2 * Math.floor((q - 1) / 2)), 1.8 * swell, side, 0.5);
+      put(0, 2.8 * swell, col, 0.46);
+    } else if (n.nd === 1 && !n.pin && !n.f2 && dispDay - n.born < 45) {
+      put(0, 2.6, css(mixA(mixA(C.candle, C.pineTwig, 0.3), C.fog, lvl * FOG_STEP)), 0.6);
+    }
     ctx.setTransform(D, 0, 0, D, 0, 0);
   }
 
@@ -2404,6 +3073,16 @@ const Sim = (() => {
   // Only a leaf that is still on the tree, and about to let go, can fall. A bare or defoliated tree drops nothing.
   function spawnFaller(ls) {
     if (!LF_COUNT) return;
+    if (T.sp === 'pine') {
+      // the oldest needles let go one at a time in late autumn
+      for (let tries = 0; tries < 24; tries++) {
+        const k = Math.floor(Math.random() * LF_COUNT), n = T.nodes[LF_N[k]];
+        if (!n || n.nd !== 3 || (n.pk & (1 << LF_K[k]))) continue;
+        fallers.push({ x: n.x, y: n.y, z: n.z, ph: Math.random() * 6.28, vx: (Math.random() - 0.5) * 4, vz: (Math.random() - 0.5) * 4, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 4, size: needleLen(n), col: LF_COL[k][0], life: 0, landed: -1, bench: false, needle: true });
+        return;
+      }
+      return;
+    }
     for (let tries = 0; tries < 24; tries++) {
       const k = Math.floor(Math.random() * LF_COUNT), n = T.nodes[LF_N[k]];
       if (!n || (n.pk & (1 << LF_K[k]))) continue;
@@ -2415,7 +3094,8 @@ const Sim = (() => {
   }
   function drawParticles(dt, tSec, ls, wet, winter) {
     const s = cam.s;
-    if (!reduceMotion && ls.fall > 0.01 && ls.fall < 0.99 && !catchup) {
+    const needleDrop = T.sp === 'pine' && ls.doy >= 296 && ls.doy < 322;
+    if (!reduceMotion && !catchup && (needleDrop || (T.sp !== 'pine' && ls.fall > 0.01 && ls.fall < 0.99))) {
       fallerClock += dt * (0.25 + Math.min(3, speedOf().perDay / 4000)) * Math.min(1, LF_COUNT / 120);
       while (fallerClock > 1) { fallerClock -= 1; if (fallers.length < 30) spawnFaller(ls); }
     }
@@ -2431,6 +3111,12 @@ const Sim = (() => {
       const alpha = f.landed < 0 ? 1 : clamp(1 - (f.life - f.landed) / 2.5, 0, 1);
       if (alpha <= 0 || f.life > 20) { fallers.splice(i, 1); continue; }
       if (f.bench) projFixed(f.x * cyw + f.z * syw, f.y, f.z * cyw - f.x * syw); else proj(f.x, f.y, f.z);
+      if (f.needle) {
+        const hx = Math.cos(f.rot) * f.size * s * 0.5, hy = Math.sin(f.rot) * f.size * s * 0.5 * (f.landed < 0 ? 1 : Math.max(0.3, spt));
+        ctx.globalAlpha = alpha; ctx.strokeStyle = f.col; ctx.lineWidth = Math.max(0.55, 0.3 * s); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(_x - hx, _y - hy); ctx.lineTo(_x + hx, _y + hy); ctx.stroke(); ctx.globalAlpha = 1;
+        continue;
+      }
       ctx.save(); ctx.translate(_x, _y); ctx.rotate(f.rot); ctx.scale(f.size * s, f.size * s * (0.55 + 0.45 * Math.abs(Math.sin(tSec * 3 + f.ph))));
       ctx.globalAlpha = alpha; ctx.fillStyle = f.col; ctx.fill(LEAF); ctx.restore(); ctx.globalAlpha = 1;
     }
@@ -2499,17 +3185,21 @@ const Sim = (() => {
   function drawOverlays(tSec) {
     if (mode === 'wire') drawWireGuides();
     if (pluckStroke && pluckStroke.moved) {
-      ctx.beginPath(); ctx.arc(pluckStroke.last.x, pluckStroke.last.y, BRUSH, 0, TAU);
+      ctx.beginPath(); ctx.arc(pluckStroke.last.x, pluckStroke.last.y, brush(), 0, TAU);
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.stroke();
       ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.stroke();
     }
     if (mode === 'pinch') {
       const N = T.nodes, pulse = reduceMotion ? 0 : Math.sin(tSec * 4) * 0.8;
+      const pine = T.sp === 'pine', ph = pine ? pinePhase(Sim.doyOf(dispDay)) : '';
+      // a pine can have a hundred candles; smaller markers keep the tree visible under them
+      let many = 0; if (pine) for (const n of N) if (candleTarget(n, ph) && ++many > 50) break;
+      const big = many > 50 ? 3.4 : 5, small = many > 50 ? 2.6 : 3.6;
       for (let i = 0; i < N.length; i++) {
         const n = N[i];
-        if (!n.tip || n.pin || n.pi < 0 || n.gf < 0.5) continue;
+        if (pine ? !candleTarget(n, ph) : !n.tip || n.pin || n.pi < 0 || n.gf < 0.5) continue;
         const back = PD[i] < -cam.R * 0.35;
-        ctx.beginPath(); ctx.arc(PX[i], PY[i], (back ? 3.6 : 5) + pulse, 0, TAU);
+        ctx.beginPath(); ctx.arc(PX[i], PY[i], (back ? small : big) + pulse * (big / 5), 0, TAU);
         ctx.fillStyle = back ? 'rgba(255,248,214,0.5)' : 'rgba(255,248,214,0.92)'; ctx.fill();
         ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(30,42,36,0.7)'; ctx.stroke();
       }
@@ -2618,6 +3308,15 @@ const Sim = (() => {
       proj(p.x, p.y, p.z); const x0 = _x, y0 = _y;
       proj(n.x, n.y, n.z); const x1 = _x, y1 = _y;
       segs.push([x0, y0, x1, y1, 2 * n.r * s, css(n._bc || C.twig)]);
+      if (T.sp === 'pine') {
+        // a cut pine shoot falls with its needles
+        const NLw = needleLen(n) * needleGrowth(n) * s;
+        if (n.nd > 0 && NLw > 1.5 && (n.pk & 7) !== 7) {
+          const col = needleColor(n, dayInt, 0)[0];
+          for (let q = 0; q < 7; q++) { const a = Sim.h01(n.id, 60 + q) * TAU, l = NLw * (0.7 + 0.3 * Sim.h01(n.id, 70 + q)); segs.push([x1, y1, x1 + Math.cos(a) * l, y1 + Math.sin(a) * l, Math.max(0.55, 0.3 * s), col]); }
+        }
+        continue;
+      }
       if (Sim.isLeafy(n) && ls.open > 0.05 && ls.fall < 1) {
         const base = Math.min(ls.open, clamp((dispDay - n.born - 0.4) / 4, 0, 1));
         if (base > 0.05) for (const sp of leafSpecs(n)) {
@@ -2679,6 +3378,7 @@ const Sim = (() => {
   }
 
   function pinchAt(px, py) {
+    if (T.sp === 'pine') { pinchPine(px, py); return; }
     const doy = Sim.doyOf(dispDay);
     if (Sim.growthFactor(doy) <= 0) { toast('Nothing is growing right now. Pinching works on soft shoots in spring and summer. Use Prune instead.'); return; }
     let best = -1, bd = 30;
@@ -2865,7 +3565,7 @@ const Sim = (() => {
       : res.set > 0.4 ? 'Wire off early. The branch sprang partway back.'
       : 'Wire off. The branch hadn’t set yet, so it sprang most of the way back.', 4500);
   }
-  const readyWires = () => T.wires.filter(w => w.gd >= Sim.SET_DAYS || w.bite > 0.05);
+  const readyWires = () => T.wires.filter(w => w.gd >= Sim.setDays(T) || w.bite > 0.05);
   function removeSetWires() {
     const ready = readyWires(); if (!ready.length) return;
     pushUndo();
@@ -2876,7 +3576,7 @@ const Sim = (() => {
   }
   function setBendKind(k) { bendKind = k; prefs.bendKind = k; Store.savePrefs(); updateUI(); }
   function wireStatus(w) {
-    const days = Math.max(0, Math.round(dispDay - w.day)), set = Math.min(100, Math.round(w.gd / Sim.SET_DAYS * 100));
+    const days = Math.max(0, Math.round(dispDay - w.day)), set = Math.min(100, Math.round(w.gd / Sim.setDays(T) * 100));
     let s = `Wire on for ${days} ${dayWord(days)}, ${set}% set.`;
     if (w.bite > 0.05) s += ' It’s biting into the bark, so take it off.';
     else if (set >= 100) s += ' It has set, so the wire can come off.';
@@ -2933,19 +3633,26 @@ const Sim = (() => {
   // ---------- defoliation ----------
   let pluckStroke = null, pluckHints = 0;
   const BRUSH = 13;
+  const brush = () => T.sp === 'pine' ? 8 : BRUSH; // needles sit close together, so the pine brush is finer
   // leaves under a point, keeping only the front layer so a swipe doesn't reach through the canopy
   function leavesAt(x, y, rad) {
     const hits = []; let maxD = -Infinity;
     for (let k = 0; k < LF_COUNT; k++) {
       const o = k * 6, cx = LF[o + 4] - 0.5 * LF[o + 2], cy = LF[o + 5] - 0.5 * LF[o + 3];
       const d = Math.hypot(cx - x, cy - y);
-      if (d <= rad + LF_PX[k] * 0.3) { hits.push([k, d]); if (LF_DD[k] > maxD) maxD = LF_DD[k]; }
+      if (d <= rad + LF_PX[k] * (T.sp === 'pine' ? 0.12 : 0.3)) { hits.push([k, d]); if (LF_DD[k] > maxD) maxD = LF_DD[k]; }
     }
     return hits.filter(h => LF_DD[h[0]] >= maxD - 25);
   }
   function dropLeaf(k) {
     if (debris.length >= 40) return;
     const o = k * 6;
+    if (T.sp === 'pine') {
+      const x0 = PET[k * 4], y0 = PET[k * 4 + 1], l = LF_PX[k] * 0.85, a0 = Math.random() * TAU, segs = [];
+      for (let q = 0; q < 5; q++) { const a = a0 + (q - 2) * 0.22; segs.push([x0, y0, x0 + Math.cos(a) * l, y0 + Math.sin(a) * l, Math.max(0.55, 0.3 * cam.s), LF_COL[k][0]]); }
+      debris.push({ segs, leaves: [], px: x0, py: y0, dx: 0, dy: 0, vx: (Math.random() - 0.5) * 40, vy: -10, rot: 0, vr: (Math.random() - 0.5) * 4, life: 0 });
+      return;
+    }
     debris.push({ segs: [], leaves: [[LF[o], LF[o + 1], LF[o + 2], LF[o + 3], LF[o + 4], LF[o + 5], LF_COL[k][0]]],
       px: LF[o + 4] - 0.5 * LF[o + 2], py: LF[o + 5] - 0.5 * LF[o + 3], dx: 0, dy: 0, vx: (Math.random() - 0.5) * 50, vy: -15, rot: 0, vr: (Math.random() - 0.5) * 5, life: 0 });
   }
@@ -2962,7 +3669,7 @@ const Sim = (() => {
     let got = 0;
     for (let j = 1; j <= steps; j++) {
       const x = a.x + (b.x - a.x) * j / steps, y = a.y + (b.y - a.y) * j / steps;
-      for (const [k] of leavesAt(x, y, BRUSH)) if (pluckLeaf(k, st)) got++;
+      for (const [k] of leavesAt(x, y, brush())) if (pluckLeaf(k, st)) got++;
     }
     if (got) { sndPluck(); buzz(4); }
   }
@@ -2970,7 +3677,7 @@ const Sim = (() => {
     const hits = leavesAt(x, y, 14);
     if (!hits.length) {
       const ls = Sim.leafState(dispDay);
-      toast(ls.open < 0.3 || ls.fall >= 1 ? 'There are no leaves to remove right now.' : 'Tap a leaf to pluck it, or drag across leaves to pluck several.');
+      toast(T.sp === 'pine' ? 'Tap needles to pull them, or drag across several.' : ls.open < 0.3 || ls.fall >= 1 ? 'There are no leaves to remove right now.' : 'Tap a leaf to pluck it, or drag across leaves to pluck several.');
       return;
     }
     hits.sort((a, b) => a[1] - b[1]);
@@ -2989,7 +3696,11 @@ const Sim = (() => {
     if (!st.n) { if (st.snapped) undoStack.pop(); return; }
     Sim.logAction(T, dispDay, 'pluck', st.n);
     acted(); updateUI();
-    if (pluckHints < 1) { pluckHints++; toast(`Plucked ${st.n} lea${st.n === 1 ? 'f' : 'ves'}. ` + defolMessage(Sim.defolWindow(Sim.doyOf(dispDay)), st.n), 6500); }
+    if (pluckHints < 1) {
+      pluckHints++;
+      if (T.sp === 'pine') toast(`Pulled ${st.n} cluster${st.n === 1 ? '' : 's'} of needles. Pine needles don’t grow back, and fewer needles mean less strength in that shoot next year. Thin strong areas, leave weak ones.`, 7000);
+      else toast(`Plucked ${st.n} lea${st.n === 1 ? 'f' : 'ves'}. ` + defolMessage(Sim.defolWindow(Sim.doyOf(dispDay)), st.n), 6500);
+    }
   }
   // Whole-tree defoliation takes the strongest areas first: high, outer, well-lit growth and the biggest leaves.
   function defoliate(pct) {
@@ -3028,6 +3739,119 @@ const Sim = (() => {
     if (win === 'ideal') return `${how} Early summer is the right time. The tree answers with a new flush of smaller leaves.`;
     if (win === 'late') return `${how} It’s late in the season, so removed leaves won’t grow back until spring.`;
     return 'The leaves are turning and will drop on their own.';
+  }
+
+  // ---------- pine: candles and needles ----------
+  // The Candles tool follows the pine's year: pinch extending candles in spring, cut them in early summer, choose buds from late summer.
+  function pinePhase(doy) {
+    if (doy >= Sim.PINE_START && doy < Sim.DECANDLE_FROM) return 'pinch';
+    if (doy >= Sim.DECANDLE_FROM && doy < Sim.DECANDLE_TO) return 'decandle';
+    if (doy >= 232 || doy < Sim.PINE_START) return 'buds';
+    return 'rest';
+  }
+  // which tips glow in the Candles tool
+  function candleTarget(n, phase) {
+    if (!n.tip || n.pi < 0) return false;
+    if (phase === 'pinch') return !n.pin && !n.f2 && n.gf >= 0.3;
+    if (phase === 'decandle') return n.nd === 1 && !n.f2 && !n.dc && n.born >= Sim.pineYearStart(dispDay);
+    if (phase === 'buds') return n.bc > 2;
+    return false;
+  }
+  let candleHints = 0;
+  function pinchPine(px, py) {
+    const doy = Sim.doyOf(dispDay), ph = pinePhase(doy), N = T.nodes;
+    if (ph === 'rest') { toast('The candles are done for this year. Buds for next spring set in late August, and then you can choose which to keep.', 5000); return; }
+    let best = -1, bd = 30;
+    for (let i = 0; i < N.length; i++) {
+      if (!candleTarget(N[i], ph)) continue;
+      const d = Math.hypot(PX[i] - px, PY[i] - py) - PD[i] * 0.05;
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best < 0) {
+      const any = N.some(n => candleTarget(n, ph));
+      toast(ph === 'buds' ? (any ? 'Tap a glowing tip to reduce its buds to two.' : 'Every tip has two buds or fewer. Candles start to move in spring.')
+        : ph === 'decandle' ? (any ? 'Tap one of the glowing shoots to cut its candle.' : 'There are no candles left to cut this year.')
+        : any ? 'Tap one of the glowing candles to pinch it.' : 'Every candle has been pinched or has stopped.');
+      return;
+    }
+    const tip = N[best];
+    pushUndo();
+    let hint = '';
+    if (ph === 'pinch') {
+      const par = N[tip.pi], cutPt = { x: par.x, y: par.y, z: par.z };
+      const res = Sim.pinch(T, tip.id, dispDay);
+      if (!res) { undoStack.pop(); return; }
+      if (res.removed.length) makeDebris(res.removed, cutPt);
+      Sim.logAction(T, dispDay, 'pinch', 1);
+      hint = 'Pinched. That candle stops extending, so the weaker candles get a bigger share of the strength.';
+    } else if (ph === 'decandle') {
+      const b = Sim.candleBase(T, best, dispDay), par = b >= 0 ? N[N[b].pi] : null;
+      const cutPt = par ? { x: par.x, y: par.y, z: par.z } : { x: tip.x, y: tip.y, z: tip.z };
+      const res = Sim.decandle(T, best, dispDay);
+      if (!res) { undoStack.pop(); toast('That shoot can’t be decandled.'); return; }
+      makeDebris(res.removed, cutPt);
+      Sim.logAction(T, dispDay, 'decandle', 1);
+      const p2 = T.nodes[T._idx.get(res.parentId)];
+      hint = p2 && p2.dc ? 'Cut. A shorter second flush should push from here in three to five weeks, with shorter needles.' : 'Cut. The tree is too weak, or it’s too late, for a second flush here this year.';
+    } else {
+      tip.bc = 2;
+      Sim.logAction(T, dispDay, 'buds', 1);
+      hint = 'Rubbed off the extra buds. Two even candles will grow here next spring.';
+    }
+    sndPinch(); buzz(6); acted(); updateUI();
+    if (candleHints < 2) { candleHints++; toast(hint, 5000); }
+  }
+  // remember what is on screen so the parts a whole-tree action removes can be seen falling
+  function screenNeedles() { const ids = new Int32Array(LF_COUNT), pk = new Uint8Array(LF_COUNT); for (let k = 0; k < LF_COUNT; k++) { const n = T.nodes[LF_N[k]]; ids[k] = n ? n.id : -1; pk[k] = n ? n.pk : 0; } return { ids, pk, n: LF_COUNT }; }
+  function dropChanged(before) {
+    const gone = [];
+    for (let k = 0; k < before.n; k++) {
+      const i = T._idx.get(before.ids[k]), n = i === undefined ? null : T.nodes[i];
+      if (!n || ((n.pk & (1 << LF_K[k])) && !(before.pk[k] & (1 << LF_K[k])))) gone.push(k);
+    }
+    for (let q = 0; q < Math.min(32, gone.length); q++) dropLeaf(gone[Math.floor(Math.random() * gone.length)]);
+  }
+  function decandleBar(strong) {
+    if (pinePhase(Sim.doyOf(dispDay)) !== 'decandle') return;
+    const before = screenNeedles();
+    pushUndo();
+    const c = Sim.decandleMany(T, dispDay, strong);
+    if (!c) { undoStack.pop(); toast('There are no candles left to cut this year.'); return; }
+    dropChanged(before);
+    sndRustle(); buzz(20); acted(); updateUI();
+    toast(`Cut ${c} candle${c === 1 ? '' : 's'}${strong ? ' in the strongest areas' : ''}. ` + (T.vigor >= 40 ? 'A shorter second flush should push in three to five weeks.' : 'Vigor is low now, so the second flush will be weak.') + (strong ? ' Cut the weaker areas in a week or two, so the whole tree comes back even.' : ''), 7000);
+  }
+  function twoBuds() {
+    pushUndo();
+    const c = Sim.keepTwoBuds(T);
+    if (!c) { undoStack.pop(); toast('Every tip already has two buds or fewer.'); return; }
+    Sim.logE(T, dispDay, `Reduced the buds to two at ${c} tip${c === 1 ? '' : 's'}.`);
+    sndPluck(); buzz(10); acted(); updateUI();
+    toast(`Reduced ${c} tip${c === 1 ? '' : 's'} to two buds. Each will push two even candles next spring, which keeps the branch from swelling where many meet.`, 6500);
+  }
+  function needleBar(kind) {
+    const before = screenNeedles();
+    pushUndo();
+    const c = kind === 'old' ? Sim.pullOldNeedles(T) : Sim.thinStrong(T);
+    if (!c) { undoStack.pop(); toast(kind === 'old' ? 'There are no old needles left to pull.' : 'The strong areas are already thinned.'); return; }
+    dropChanged(before);
+    Sim.logE(T, dispDay, kind === 'old' ? `Pulled old needles from ${c} shoot${c === 1 ? '' : 's'}.` : `Thinned this year’s needles on ${c} strong shoot${c === 1 ? '' : 's'}.`);
+    sndRustle(); buzz(16); acted(); updateUI();
+    const doy = Sim.doyOf(dispDay), autumn = doy >= 260 || doy < 60;
+    toast((kind === 'old' ? `Pulled old needles from ${c} shoot${c === 1 ? '' : 's'}. Light now reaches the inner buds, so they stay alive and strong.` : `Thinned the needles on ${c} strong shoot${c === 1 ? '' : 's'}. Fewer needles means less strength there next spring, so the weaker areas catch up.`) + (autumn ? '' : ' Needle work is usually done in autumn.'), 7000);
+  }
+  function candlesNote() {
+    const doy = Sim.doyOf(dispDay), ph = pinePhase(doy);
+    if (ph === 'pinch') return 'Tap a glowing candle to pinch it. Pinch the strongest candles first so the weaker ones catch up.';
+    if (ph === 'decandle') return T.vigor < 40 ? 'Vigor is low. Leave the candles on a weak pine this year.' : 'Tap a glowing shoot to cut this year’s candle, or use the buttons below. A strong pine answers with a shorter second flush.';
+    if (ph === 'buds') return T.nodes.some(n => candleTarget(n, 'buds')) ? 'Tap a glowing tip to reduce its buds to two, or use Keep two buds. Two buds give a fork and even candles next spring.' : 'Every tip has two buds or fewer. Candles start to move in spring.';
+    return 'The candles are done for this year. Buds for next spring set in late August.';
+  }
+  function needlesNote() {
+    const doy = Sim.doyOf(dispDay), how = 'Tap or drag across needles to pull them, or use the buttons below.';
+    if (doy >= Sim.PINE_START && doy < 150) return `${how} The new needles are still soft, so needle work is best left for autumn.`;
+    if (doy >= 150 && doy < 260) return `${how} Light thinning in strong areas is fine now. The main needle work comes in autumn.`;
+    return `${how} Autumn and winter are the time to pull old needles and thin strong areas, so light and strength reach the inner shoots.`;
   }
 
   // ---------- pointer input ----------
@@ -3158,8 +3982,9 @@ const Sim = (() => {
     if (catchup) return 'Catching up on the time you were away.';
     if (T.moisture < 12) return 'The soil is dry. Growth has stopped until you water.';
     if (mode === 'prune') return 'Swipe across a branch to cut it. Turn the tree with the dial or two fingers.';
-    if (mode === 'pinch') return 'Tap a glowing shoot tip to pinch it.';
-    if (mode === 'leaves') return leavesNote();
+    const pine = T.sp === 'pine';
+    if (mode === 'pinch') return pine ? candlesNote() : 'Tap a glowing shoot tip to pinch it.';
+    if (mode === 'leaves') return pine ? needlesNote() : leavesNote();
     if (mode === 'wire') {
       if (bend) return bendNote(bend);
       if (wireSel) return wireStatus(wireSel);
@@ -3168,7 +3993,14 @@ const Sim = (() => {
     if (T.wires.some(w => w.bite > 0.05)) return 'A wire is biting into the bark. Choose Wire, tap it, and take it off.';
     if (!prefs.rotated) return 'Drag across the tree to turn it. Drag down to look from above.';
     if (precipToday() && !Sim.isWinter(doy) && T.moisture > 40) return 'Rain today. No need to water.';
-    if (T.vigor < 40 && Sim.growthFactor(doy) > 0) return 'Vigor is low. Let it grow out before cutting more.';
+    if (T.vigor < 40 && Sim.growthOf(T, doy) > 0) return pine ? 'Vigor is low. Leave the candles and needles alone this year so the pine can recover.' : 'Vigor is low. Let it grow out before cutting more.';
+    if (pine) {
+      if (isReal() && (doy >= 300 || doy < 72)) {
+        const weeks = Math.round(((Sim.PINE_START - doy + 365) % 365) / 7);
+        if (weeks >= 2) return `${Sim.phaseNotePine(doy)} Candles start to move in about ${weeks} weeks.`;
+      }
+      return Sim.phaseNotePine(doy);
+    }
     if (isReal() && (doy >= 262 || doy < 70)) {
       const weeks = Math.round(((82 - doy + 365) % 365) / 7);
       if (weeks >= 2) return `${Sim.phaseNote(doy)} Buds should open again in about ${weeks} weeks.`;
@@ -3197,7 +4029,12 @@ const Sim = (() => {
     $('#toolUndo').disabled = !canUndo;
     $('#fitBtn').hidden = cam.auto;
     setText($('#fitBtn'), focusOn ? 'Fit branch' : 'Fit tree');
-    $('#leafBar').hidden = mode !== 'leaves';
+    const pine = T.sp === 'pine', ph = pine ? pinePhase(doy) : '';
+    $('#leafBar').hidden = mode !== 'leaves' || pine;
+    $('#needleBar').hidden = mode !== 'leaves' || !pine;
+    $('#candleBar').hidden = mode !== 'pinch' || !pine || !(ph === 'decandle' || (ph === 'buds' && T.nodes.some(n => n.bc > 2)));
+    $('#decandleStrongBtn').hidden = ph !== 'decandle'; $('#decandleAllBtn').hidden = ph !== 'decandle';
+    $('#twoBudsBtn').hidden = ph !== 'buds';
     $('#focusBtn').setAttribute('aria-pressed', String(!!prefs.focus));
     $('#focusLegend').hidden = !(mode === 'wire' && prefs.focus && wireSel);
     const deg = Math.round(wrapAng(cam.tyaw - (T.front || 0)) * 180 / Math.PI);
@@ -3250,20 +4087,30 @@ const Sim = (() => {
     setText($('#ramOrders'), orders ? `Twigs by branch order: ${orders}.` : '');
     const hcm = Math.round((Sim.treeHeight(T) + POT_H + 5) / 5);
     let spread = 0; for (const n of T.nodes) spread = Math.max(spread, Math.hypot(n.x, n.z));
-    const ls = Sim.leafState(dispDay);
-    let leafCount = 0;
-    if (ls.open > 0 && ls.fall < 1) for (const n of T.nodes) if (Sim.isLeafy(n)) leafSpecs(n).forEach((sp, k) => { if (ls.fall <= sp.fallT && !(n.pk & (1 << k))) leafCount++; });
+    const ls = Sim.leafState(dispDay), pine = T.sp === 'pine';
+    let leafCount = 0, needled = 0;
+    if (pine) { for (const n of T.nodes) if (n.nd > 0 && (n.pk & 7) !== 7) needled++; }
+    else if (ls.open > 0 && ls.fall < 1) for (const n of T.nodes) if (Sim.isLeafy(n)) leafSpecs(n).forEach((sp, k) => { if (ls.fall <= sp.fallT && !(n.pk & (1 << k))) leafCount++; });
     const rows = [
       ['In your care', careLength(isReal() ? Math.max(0, Math.floor((Date.now() - (T.created || Date.now())) / 864e5)) : Math.max(0, Math.floor(dispDay) - T.startDay))],
       ['Height with pot', `${hcm} cm · ${sizeClass(hcm)}`],
       ['Crown width', `${Math.round(spread * 2 / 5)} cm`],
       ['Surface roots', String(T.roots.length)],
       ['Shoot tips', String(Sim.countTips(T))],
-      ['Leaves', leafCount ? String(Math.round(leafCount * ls.open)) : 'Bare'],
-      ['Cuts made', String(T.stats.cuts)],
-      ['Shoots pinched', String(T.stats.pinches)],
-      ['Wires on', String(T.wires.length)],
-      ['Leaves plucked', String(T.stats.plucked || 0)],
+      ...(pine ? [
+        ['Shoots with needles', String(needled)],
+        ['Cuts made', String(T.stats.cuts)],
+        ['Candles pinched', String(T.stats.pinches)],
+        ['Candles cut', String(T.stats.decandled || 0)],
+        ['Wires on', String(T.wires.length)],
+        ['Needle clusters pulled', String(T.stats.plucked || 0)],
+      ] : [
+        ['Leaves', leafCount ? String(Math.round(leafCount * ls.open)) : 'Bare'],
+        ['Cuts made', String(T.stats.cuts)],
+        ['Shoots pinched', String(T.stats.pinches)],
+        ['Wires on', String(T.wires.length)],
+        ['Leaves plucked', String(T.stats.plucked || 0)],
+      ]),
       ['Ramification', `${ram.level.toFixed(1)} · ~${Math.round(ram.per)} twigs per branch`],
       ['Finest twigs', Sim.ORD_NAMES[ram.max] ? Sim.ORD_NAMES[ram.max][0].toUpperCase() + Sim.ORD_NAMES[ram.max].slice(1) : 'Trunk'],
       ['Last watered', relTime(T.lastWateredReal)],
@@ -3275,11 +4122,14 @@ const Sim = (() => {
   }
   function journalText(e) {
     if (e.k === 'prune') return e.c > 1 ? `Pruned ${e.c} branches.` : 'Pruned a branch.';
-    if (e.k === 'pinch') return e.c > 1 ? `Pinched ${e.c} shoots.` : 'Pinched a shoot.';
+    const pine = T.sp === 'pine';
+    if (e.k === 'pinch') return pine ? (e.c > 1 ? `Pinched ${e.c} candles.` : 'Pinched a candle.') : e.c > 1 ? `Pinched ${e.c} shoots.` : 'Pinched a shoot.';
+    if (e.k === 'decandle') return e.c > 1 ? `Decandled ${e.c} shoots.` : 'Decandled a shoot.';
+    if (e.k === 'buds') return e.c > 1 ? `Reduced ${e.c} tips to two buds.` : 'Reduced a tip to two buds.';
     if (e.k === 'wire') return e.c > 1 ? `Wired ${e.c} branches.` : 'Wired a branch.';
     if (e.k === 'bend') return e.c > 1 ? `Shaped wired branches with ${e.c} bends.` : 'Shaped a wired branch.';
     if (e.k === 'unwire') return e.c > 1 ? `Took ${e.c} wires off.` : 'Took a wire off.';
-    if (e.k === 'pluck') return e.c > 1 ? `Plucked ${e.c} leaves.` : 'Plucked a leaf.';
+    if (e.k === 'pluck') return pine ? (e.c > 1 ? `Pulled ${e.c} clusters of needles.` : 'Pulled a cluster of needles.') : e.c > 1 ? `Plucked ${e.c} leaves.` : 'Plucked a leaf.';
     return e.t;
   }
   function renderJournal() {
@@ -3292,31 +4142,35 @@ const Sim = (() => {
       li.append(tm, sp); ol.append(li);
     }
   }
+  // One card per tree on the bench: its name, its clock and how long it has been in your care.
   function renderTrees() {
     const box = $('#treeRadios'); box.textContent = '';
-    const opts = [
-      ['real', 'Real-time tree', 'Follows today\u2019s date and your local time. Buds, growth and setting wire take as long as on a real tree. No shortcuts.'],
-      ['practice', 'Practice tree', 'A separate tree for learning and experimenting. Its clock can run faster.'],
-    ];
-    for (const [k, label, desc] of opts) {
+    const now = Date.now();
+    for (const e of Bench.list) {
+      const k = e.id, o = k === Store.slot && T ? null : Store.loadLocal(k), t = k === Store.slot && T ? T : o;
+      const days = t && t.created ? Math.max(0, Math.floor((now - t.created) / 864e5)) : 0;
+      const clock = e.clock === 'real' ? 'Real time' : `Practice clock \u00b7 ${(SPEEDS[t && t.speed] || SPEEDS.quick).label}`;
+      const desc = `${Sim.SPECIES[e.sp].latin} \u00b7 ${clock}` + (t && !t.fresh ? ` \u00b7 ${careLength(days)} in your care` : '');
       const lab = document.createElement('label'); lab.className = 'radio'; lab.htmlFor = 'slot-' + k;
       lab.innerHTML = `<input type="radio" name="slot" id="slot-${k}" value="${k}"><span><b></b><small></small></span>`;
-      lab.querySelector('b').textContent = label; lab.querySelector('small').textContent = desc;
+      lab.querySelector('b').textContent = Bench.label(e); lab.querySelector('small').textContent = desc;
       const inp = lab.querySelector('input'); inp.checked = Store.slot === k;
       inp.addEventListener('change', () => {
         if (!inp.checked || Store.slot === k) return;
         const fresh = openSlot(k);
         closeSheet(); setMode('view');
-        toast(k === 'real' ? 'Back to your real-time tree.' : fresh ? 'A practice tree is in the pot. Pick its clock speed in the menu.' : 'Switched to your practice tree.');
+        toast(fresh ? `${cap(aTree(e))} is in the pot.` : `Switched to ${yourTree(e)}.`);
       });
       box.append(lab);
     }
+    const full = Bench.list.length >= MAX_TREES;
+    $('#addTreeRow').hidden = full || !$('#addTree').hidden; $('#benchFull').hidden = !full;
   }
   function renderSpeeds() {
     const box = $('#speedRadios'); box.textContent = '';
     $('#clockHint').textContent = isReal()
-      ? 'This tree follows the real calendar and your local time, so it can\u2019t be sped up. Buds take days or weeks to open, and spring arrives when it does outside. It keeps growing while the app is closed.'
-      : 'The practice tree keeps growing while the app is closed, at the speed you pick here. Seasons follow its own garden calendar.';
+      ? `This tree follows the real calendar and your local time, so it can\u2019t be sped up. ${T.sp === 'pine' ? 'Candles take weeks to extend' : 'Buds take days or weeks to open'}, and spring arrives when it does outside. It keeps growing while the app is closed.`
+      : 'This practice tree keeps growing while the app is closed, at the speed you pick here. Seasons follow its own garden calendar.';
     box.hidden = isReal();
     if (isReal()) return;
     for (const [k, s] of Object.entries(SPEEDS)) {
@@ -3334,11 +4188,17 @@ const Sim = (() => {
     }
   }
   function openSheet() {
-    $('#sheetWrap').hidden = false; $('#newTreeConfirm').hidden = true;
+    $('#sheetWrap').hidden = false; $('#newTreeConfirm').hidden = true; $('#removeTreeConfirm').hidden = true; $('#addTree').hidden = true;
     renderSheetStats(); renderJournal(); renderTrees(); renderSpeeds(); renderSync();
     $('#joinConfirm').hidden = true; $('#importConfirm').hidden = true;
-    setText($('#sheetTitle'), isReal() ? 'Your trident maple' : 'Practice trident maple');
-    setText($('#newTreeLabel'), isReal() ? 'Start over with a new real-time tree' : 'Start over with a new practice tree');
+    const e = curEntry(), sp = Sim.SPECIES[T.sp];
+    setText($('#sheetTitle'), Bench.label(e));
+    setText($('.sheet .latin'), sp.latin);
+    setText($('#ramHint'), T.sp === 'pine'
+      ? 'Ramification counts how many times each primary branch has divided into fine twigs: 3 means about 8 twigs per branch, 5 about 32. A pine builds it slowly, a flush a year. Decandle a strong tree in early summer for more, shorter shoots, keep two buds at each tip in autumn, and pull old needles so light reaches inside.'
+      : 'Ramification counts how many times each primary branch has divided into fine twigs: 3 means about 8 twigs per branch, 5 about 32. It rises as buds break along existing twigs. Pinch long shoots, cut back to a bud, defoliate a strong tree in early summer, and wire branches out flat so light reaches inside.');
+    setText($('#newTreeLabel'), `Start over with a new ${e.clock === 'practice' ? 'practice ' : ''}${SP_LC[e.sp]}`);
+    $('#removeTreeRow').hidden = Bench.list.length < 2;
     $('#soundToggle').checked = prefs.sound;
     $('#closeSheet').focus();
   }
@@ -3351,6 +4211,11 @@ const Sim = (() => {
     $('#toolLeaves').addEventListener('click', () => setMode('leaves'));
     $('#focusBtn').addEventListener('click', () => { prefs.focus = !prefs.focus; Store.savePrefs(); updateUI(); });
     for (const b of document.querySelectorAll('#leafBar [data-pct]')) b.addEventListener('click', () => { audio(); defoliate(+b.dataset.pct); });
+    $('#decandleStrongBtn').addEventListener('click', () => { audio(); decandleBar(true); });
+    $('#decandleAllBtn').addEventListener('click', () => { audio(); decandleBar(false); });
+    $('#twoBudsBtn').addEventListener('click', () => { audio(); twoBuds(); });
+    $('#pullOldBtn').addEventListener('click', () => { audio(); needleBar('old'); });
+    $('#thinStrongBtn').addEventListener('click', () => { audio(); needleBar('thin'); });
     $('#removeWireBtn').addEventListener('click', removeSelectedWire);
     $('#removeSetBtn').addEventListener('click', removeSetWires);
     $('#bendV').addEventListener('click', () => setBendKind(0));
@@ -3421,14 +4286,27 @@ const Sim = (() => {
     $('#newTreeBtn').addEventListener('click', () => { $('#newTreeConfirm').hidden = false; $('#newTreeNo').focus(); });
     $('#newTreeNo').addEventListener('click', () => { $('#newTreeConfirm').hidden = true; });
     $('#newTreeYes').addEventListener('click', () => {
-      const t = makeTree(Store.slot, Date.now());
+      const e = curEntry(), t = makeTree(e, Date.now());
       t.fresh = false; t.actedAt = Date.now();
       setTree(t); saveNow(); closeSheet(); setMode('view');
-      toast('A new trident maple is in the pot.');
+      toast(`A new ${SP_LC[e.sp]} is in the pot.`);
+    });
+    $('#removeTreeBtn').addEventListener('click', () => { $('#removeTreeConfirm').hidden = false; $('#removeTreeNo').focus(); });
+    $('#removeTreeNo').addEventListener('click', () => { $('#removeTreeConfirm').hidden = true; });
+    $('#removeTreeYes').addEventListener('click', removeTree);
+    $('#addTreeBtn').addEventListener('click', () => {
+      $('#addTree').hidden = false; $('#addTreeRow').hidden = true;
+      $('#addTree').scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    $('#addNo').addEventListener('click', () => { $('#addTree').hidden = true; renderTrees(); });
+    $('#addYes').addEventListener('click', () => {
+      const sp = $('#add-pine').checked ? 'pine' : 'maple', clock = $('#add-practice').checked ? 'practice' : 'real';
+      $('#addTree').hidden = true;
+      addTree(sp, clock);
     });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) saveNow();
-      else { lastTs = 0; Store.refresh(adoptRemote); }
+      else { lastTs = 0; Bench.pull().then(ch => { if (ch) benchChanged(); Store.refresh(adoptRemote); }); }
     });
     addEventListener('pagehide', saveNow);
     $('#version').textContent = `Living Bonsai · version ${VERSION}`;
@@ -3459,17 +4337,18 @@ const Sim = (() => {
   }
 
   function start(data) {
-    Store.loadPrefs();
+    Store.loadPrefs(); Bench.load();
     bendKind = prefs.bendKind === 1 ? 1 : 0;
-    const slot = data && (data.slot === 'practice' || data.slot === 'real') ? data.slot : prefs.slot === 'practice' ? 'practice' : 'real';
+    const want = data && Bench.get(data.slot) ? data.slot : prefs.slot;
+    const slot = Bench.get(want) ? want : Bench.list[0].id;
     resize();
     bindUI();
-    const firstRun = openSlot(slot, { initial: true, tree: data && data.tree });
+    const firstRun = openSlot(slot, { initial: true, tree: data && data.slot === slot ? data.tree : null });
     setMode('view');
     requestAnimationFrame(frame);
     if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ tree: T ? Sim.serialize(T) : null, slot: Store.slot }));
-    Store.initRemote(adoptRemote);
-    if (firstRun && slot === 'real') setTimeout(() => { if (T.fresh) toast('This tree follows the real calendar and grows at a real tree\u2019s pace, even while the app is closed. Drag to turn it and look at it from every side.', 8000); }, 900);
+    Store.initRemote(adoptRemote, benchChanged);
+    if (firstRun && curEntry().clock === 'real') setTimeout(() => { if (T.fresh) toast('This tree follows the real calendar and grows at a real tree\u2019s pace, even while the app is closed. Drag to turn it and look at it from every side. Add more trees to your bench in the menu.', 8000); }, 900);
   }
 
   const hot = window.claude && window.claude.hot;
