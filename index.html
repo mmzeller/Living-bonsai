@@ -1,0 +1,3466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Living Bonsai</title>
+<meta name="description" content="A bonsai that lives on the real calendar. Wire, prune, pinch and defoliate a trident maple toward fine ramification.">
+<meta name="theme-color" content="#F6F8F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17201B" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bonsai">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* page frame (the Claude viewer supplies this for the copy that runs there) */
+:root { color-scheme: light; box-sizing: border-box; height: 100%; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+img { max-width: 100%; }
+button { touch-action: manipulation; }
+[hidden] { display: none !important; }
+</style>
+<style>
+/* Layout: one-screen app. Header (tree name, garden date, soil + vigor) / living 3D scene with turntable bar / tool bar. */
+:root {
+  --bg: #E8ECE6;
+  --surface: #F6F8F4;
+  --ink: #1C2420;
+  --muted: #59665F;
+  --line: #D2D9D0;
+  --accent: #3B6A5E;
+  --accent-ink: #F2F7F4;
+  --water: #3A6E9C;
+  --warn: #AF4F2B;
+  --scrim: rgba(18, 26, 22, 0.45);
+  --ram: #8A5A3B;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1512; --surface: #17201B; --ink: #E1E8E3; --muted: #93A29A; --line: #29342E;
+    --accent: #86BBAB; --accent-ink: #0C1411; --water: #86B5E0; --warn: #E48D66; --scrim: rgba(0, 0, 0, 0.58); --ram: #D7A47C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1512; --surface: #17201B; --ink: #E1E8E3; --muted: #93A29A; --line: #29342E;
+  --accent: #86BBAB; --accent-ink: #0C1411; --water: #86B5E0; --warn: #E48D66; --scrim: rgba(0, 0, 0, 0.58); --ram: #D7A47C;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui);
+  overflow: hidden; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+}
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+
+.top { background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; display: grid; gap: 10px; }
+.top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.name { min-width: 0; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line-height: 1.1; margin: 0; letter-spacing: 0.01em; text-wrap: balance; }
+.chip {
+  display: inline-block; vertical-align: 0.2em; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+  font: 700 0.6875rem/1.4 var(--font-ui); letter-spacing: 0.04em; color: var(--accent); border: 1px solid var(--accent); white-space: nowrap;
+}
+.chip.practice { color: var(--ram); border-color: var(--ram); }
+.date { margin: 4px 0 0; color: var(--muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.icon-btn {
+  width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; padding: 0;
+}
+.icon-btn svg { width: 22px; height: 22px; }
+.gauges { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 1.3fr); gap: 12px; }
+.gauge { display: grid; gap: 5px; min-width: 0; }
+.gauge-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 0.75rem; color: var(--muted); }
+.gauge-head span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gauge-head b { color: var(--ink); font-weight: 700; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 50%; border-radius: inherit; background: var(--accent); transition: width 0.6s ease, background-color 0.3s; }
+#soilFill { background: var(--water); }
+#ramFill { background: var(--ram); }
+.bar > i.low { background: var(--warn); }
+
+.stage { position: relative; min-height: 0; overflow: hidden; background: var(--bg); }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.note {
+  position: absolute; left: 16px; top: 12px; max-width: min(36ch, calc(100% - 112px));
+  padding: 7px 11px; border-radius: 10px; font-size: 0.8125rem; line-height: 1.4;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink);
+  pointer-events: none; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); transition: opacity 0.2s;
+}
+.stage.toasting .note { opacity: 0; }
+.fit {
+  position: absolute; right: 16px; top: 12px; height: 34px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 500 0.8125rem var(--font-ui); cursor: pointer;
+}
+.toast {
+  position: absolute; left: 50%; top: 12px; transform: translate(-50%, -8px); opacity: 0; z-index: 2;
+  width: max-content; max-width: calc(100% - 32px); box-sizing: border-box;
+  padding: 10px 14px; border-radius: 12px; background: var(--ink); color: var(--surface);
+  font-size: 0.875rem; line-height: 1.45; transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.viewbar {
+  position: absolute; bottom: 10px; left: max(16px, calc(50% - 280px)); right: max(16px, calc(50% - 280px));
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 6px; border-radius: 14px; background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+}
+.vbtn {
+  height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink); font: 500 0.8125rem var(--font-ui); cursor: pointer; white-space: nowrap;
+}
+.vbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.dial { display: grid; gap: 1px; min-width: 0; }
+.dial span { font-size: 0.6875rem; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.dial input { width: 100%; margin: 0; height: 22px; accent-color: var(--accent); cursor: ew-resize; }
+.setfront {
+  position: absolute; right: max(16px, calc(50% - 280px)); bottom: 66px; height: 34px; padding: 0 14px;
+  border-radius: 17px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+  font: 700 0.8125rem var(--font-ui); cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.wirebar {
+  position: absolute; left: max(16px, calc(50% - 280px)); right: max(16px, calc(50% - 280px)); bottom: 66px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; pointer-events: none;
+}
+.wire-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.wire-row > *, .legend { pointer-events: auto; }
+.legend {
+  align-self: flex-start; display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 6px 10px; border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+  font-size: 0.75rem; color: var(--ink); pointer-events: none;
+}
+.legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+/* these four match the branch colors painted on the tree, so they stay the same in both themes */
+.dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28); }
+.dot.o1 { background: #E2A93B; } .dot.o2 { background: #3FB3A0; } .dot.o3 { background: #8E8CF0; } .dot.o4 { background: #E6E2D6; }
+.pill-toggle {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 17px;
+  border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+  font: 700 0.8125rem var(--font-ui); cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14); white-space: nowrap;
+}
+.pill-toggle svg { width: 16px; height: 16px; }
+.pill-toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg-label { align-self: center; padding: 0 6px 0 8px; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 94%, transparent); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16); }
+.seg-btn {
+  display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 10px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--ink); font: 500 0.8125rem var(--font-ui); cursor: pointer; white-space: nowrap;
+}
+.seg-btn svg { width: 16px; height: 16px; flex: none; }
+.seg-btn[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
+.pill {
+  height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid var(--warn); background: var(--surface); color: var(--warn);
+  font: 700 0.8125rem var(--font-ui); cursor: pointer; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14); white-space: nowrap;
+}
+.ram-hint { margin: 14px 0 0; }
+.tools { background: var(--surface); border-top: 1px solid var(--line); padding: 8px 10px 10px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
+.tool {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px 7px;
+  border: 1px solid transparent; border-radius: 14px; background: transparent; color: var(--ink);
+  font: 500 0.75rem/1.2 var(--font-ui); cursor: pointer;
+}
+.tool svg { width: 24px; height: 24px; }
+.tool[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.tool:disabled { opacity: 0.38; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.sheet-wrap { position: fixed; inset: 0; z-index: 10; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  width: min(560px, 100%); max-height: 86%; overflow-y: auto; box-sizing: border-box;
+  background: var(--surface); color: var(--ink); border-radius: 20px 20px 0 0;
+  padding: 18px 16px calc(22px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 24px; -webkit-user-select: text; user-select: text;
+}
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sheet h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.375rem; margin: 0; line-height: 1.15; }
+.sheet .latin { margin: 3px 0 0; color: var(--muted); font-style: italic; font-size: 0.875rem; }
+.sheet h3 { margin: 0 0 8px; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin: 0; }
+.stats div { min-width: 0; }
+.stats dt { font-size: 0.75rem; color: var(--muted); }
+.stats dd { margin: 2px 0 0; font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.journal { list-style: none; margin: 0; padding: 0; display: grid; max-height: 220px; overflow-y: auto; border-top: 1px solid var(--line); }
+.journal li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 0.875rem; line-height: 1.4; }
+.journal time { color: var(--muted); font-size: 0.75rem; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.hint { margin: 0 0 10px; color: var(--muted); font-size: 0.8125rem; line-height: 1.45; max-width: 60ch; }
+.radios { display: grid; gap: 6px; }
+.radio { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.radio input { margin: 3px 0 0; accent-color: var(--accent); width: 16px; height: 16px; }
+.radio b { display: block; font-weight: 500; font-size: 0.9375rem; }
+.radio small { display: block; color: var(--muted); font-size: 0.8125rem; margin-top: 1px; }
+.radio:has(input:checked) { border-color: var(--accent); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 0.9375rem; }
+.row input { accent-color: var(--accent); width: 20px; height: 20px; }
+.btn { height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); font: 500 0.875rem var(--font-ui); cursor: pointer; }
+.btn.danger { border-color: var(--warn); color: var(--warn); }
+.btn.solid { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+.confirm { display: grid; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--warn); font-size: 0.875rem; line-height: 1.45; }
+.confirm .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.field-label { display: block; margin: 16px 0 6px; font-size: 0.8125rem; color: var(--muted); }
+.join-row { display: flex; gap: 8px; }
+.input {
+  flex: 1; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); font: 500 0.9375rem ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0.02em;
+}
+.code-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); margin: 4px 0 10px; }
+.code-box code { min-width: 0; overflow-wrap: anywhere; font: 600 0.9375rem/1.4 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0.02em; color: var(--ink); }
+.warn-text { color: var(--warn); }
+.file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.sheet .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.version { margin: 0; color: var(--muted); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+@media (min-width: 720px) {
+  .top { padding: 14px 24px; }
+  .gauges { max-width: 640px; }
+  .tools { padding-inline: max(16px, calc(50% - 260px)); }
+}
+</style>
+<script src="firebase-config.js"></script>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <div class="name">
+        <h1 id="treeName">Trident maple <span class="chip" id="clockChip">Real time</span></h1>
+        <p class="date" id="gardenDate">Year 1 · Early spring · April 6</p>
+      </div>
+      <button class="icon-btn" id="openSheet" aria-label="Tree details and settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>
+      </button>
+    </div>
+    <div class="gauges">
+      <div class="gauge">
+        <div class="gauge-head"><span>Soil</span><b id="soilVal">0%</b></div>
+        <div class="bar"><i id="soilFill"></i></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-head"><span>Vigor</span><b id="vigorVal">0%</b></div>
+        <div class="bar"><i id="vigorFill"></i></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-head"><span>Ramification</span><b id="ramVal">0.0</b></div>
+        <div class="bar"><i id="ramFill"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <canvas id="scene" aria-label="Your bonsai tree. Drag to turn it, drag down to look from above."></canvas>
+    <p class="note" id="note">Leaves are opening and new shoots are pushing.</p>
+    <button class="fit" id="fitBtn" hidden>Fit tree</button>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <button class="setfront" id="setFrontBtn" hidden>Make this the front</button>
+    <div class="wirebar" id="wireBar" hidden>
+      <div class="legend" id="focusLegend" hidden>
+        <span><i class="dot o1"></i>Primary</span><span><i class="dot o2"></i>Secondary</span><span><i class="dot o3"></i>Tertiary</span><span><i class="dot o4"></i>Finer</span>
+      </div>
+      <div class="wire-row">
+        <button class="pill-toggle" id="focusBtn" aria-pressed="true" title="Fade the rest of the tree and show this branch's structure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+          Focus
+        </button>
+        <button class="pill" id="removeWireBtn" hidden>Remove wire</button>
+        <button class="pill" id="removeSetBtn" hidden>Remove set wires</button>
+      </div>
+      <div class="wire-row">
+      <div class="seg" role="radiogroup" aria-label="Bend direction">
+        <button class="seg-btn" id="bendV" role="radio" aria-checked="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>
+          Up / down
+        </button>
+        <button class="seg-btn" id="bendH" role="radio" aria-checked="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>
+          Side to side
+        </button>
+      </div>
+      </div>
+    </div>
+    <div class="wirebar" id="leafBar" hidden>
+      <div class="wire-row">
+        <div class="seg" role="group" aria-label="Defoliate the whole tree">
+          <span class="seg-label">Whole tree</span>
+          <button class="seg-btn" data-pct="25">25%</button>
+          <button class="seg-btn" data-pct="50">50%</button>
+          <button class="seg-btn" data-pct="75">75%</button>
+          <button class="seg-btn" data-pct="100">All</button>
+        </div>
+      </div>
+    </div>
+    <div class="viewbar" role="group" aria-label="View">
+      <button class="vbtn" id="frontBtn">Front</button>
+      <label class="dial" for="yawRange">
+        <span id="angleLabel">Front view</span>
+        <input type="range" id="yawRange" min="-180" max="180" step="1" value="0" list="yawTicks" aria-label="Turn the tree">
+        <datalist id="yawTicks"><option value="-90"></option><option value="0"></option><option value="90"></option></datalist>
+      </label>
+      <button class="vbtn" id="topBtn" aria-pressed="false">Top</button>
+    </div>
+  </main>
+
+  <nav class="tools" aria-label="Tools">
+    <button class="tool" id="toolPrune" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17.5" r="2.8"/><circle cx="17.5" cy="17.5" r="2.8"/><path d="M8 15.4 18.5 4M15.5 15.4 5 4"/></svg>
+      Prune
+    </button>
+    <button class="tool" id="toolPinch" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"/><path d="M12 15c-3.6.3-5.8-1.6-6.2-5 3.4-.2 5.6 1.4 6.2 5Z"/><path d="M12 12.5c3-.1 4.9-1.8 5.2-4.6-2.9-.1-4.8 1.3-5.2 4.6Z"/><path d="M9.5 4.5 12 7l2.5-2.5"/></svg>
+      Pinch
+    </button>
+    <button class="tool" id="toolWire" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 19.5 4.5"/><path d="M6.6 13.4c1.8-.9 4 1.3 3.1 3.1M9.6 10.4c1.8-.9 4 1.3 3.1 3.1M12.6 7.4c1.8-.9 4 1.3 3.1 3.1"/></svg>
+      Wire
+    </button>
+    <button class="tool" id="toolLeaves" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20v-6"/><path d="M10 14c-3.2 0-5.4-1.6-6-4.6 1.3-.5 2.4-.4 3.3.1-.3-1.6 0-3 1-4.2 1 .8 1.6 1.8 1.7 3 .3-1.2 1.1-2.2 2.4-2.8.6 1.3.6 2.6 0 3.9 1-.3 2-.2 3 .3-.9 2.7-3 4.3-5.4 4.3Z"/><path d="M16.5 15.5h5"/></svg>
+      Leaves
+    </button>
+    <button class="tool" id="toolWater">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10h10v7.5a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2Z"/><path d="M14.5 12.5 20 8.5"/><path d="M7 10V8.2a2.5 2.5 0 0 1 5 0V10"/><path d="M20.5 12v.5M18.5 14.5v.5M21 16v.5"/></svg>
+      Water
+    </button>
+    <button class="tool" id="toolUndo" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4.5 11 9 15"/><path d="M5 11h9a5 5 0 0 1 0 10h-3"/></svg>
+      Undo
+    </button>
+  </nav>
+</div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <div>
+        <h2 id="sheetTitle">Your trident maple</h2>
+        <p class="latin">Acer buergerianum</p>
+      </div>
+      <button class="icon-btn" id="closeSheet" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <section>
+      <dl class="stats" id="stats"></dl>
+      <p class="hint ram-hint" id="ramOrders"></p>
+      <p class="hint ram-hint">Ramification counts how many times each primary branch has divided into fine twigs: 3 means about 8 twigs per branch, 5 about 32. It rises as buds break along existing twigs. Pinch long shoots, cut back to a bud, defoliate a strong tree in early summer, and wire branches out flat so light reaches inside.</p>
+    </section>
+
+    <section>
+      <h3>Journal</h3>
+      <ol class="journal" id="journal"></ol>
+    </section>
+
+    <section>
+      <h3>Your trees</h3>
+      <div class="radios" id="treeRadios"></div>
+    </section>
+
+    <section>
+      <h3>Clock</h3>
+      <p class="hint" id="clockHint"></p>
+      <div class="radios" id="speedRadios"></div>
+    </section>
+
+    <section id="syncSection" hidden>
+      <h3>Sync between devices</h3>
+      <div id="syncOff">
+        <p class="hint">Keep your trees in step on your phone and computer. There’s no account: a private code links your devices, and your trees are encrypted on this device before they’re sent.</p>
+        <div class="btns"><button class="btn" id="syncOnBtn">Turn on sync</button></div>
+        <label class="field-label" for="joinCode">Already syncing on another device? Enter its code.</label>
+        <div class="join-row">
+          <input class="input" id="joinCode" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="abcd-efgh-jkmn-pqrs-tuvw-xyz2-34">
+          <button class="btn" id="joinBtn">Join</button>
+        </div>
+        <div class="confirm" id="joinConfirm" hidden>
+          <span>Joining replaces the trees on this device with the synced ones. Export first if you want to keep a copy of these.</span>
+          <div class="btns">
+            <button class="btn solid" id="joinYes">Join and replace</button>
+            <button class="btn" id="joinNo">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div id="syncOn" hidden>
+        <p class="hint" id="syncStatus">On</p>
+        <div class="code-box"><code id="syncCode"></code><button class="btn" id="copyCodeBtn">Copy code</button></div>
+        <p class="hint">Enter this code in Living Bonsai on your other devices. Keep it private: anyone who has it can see and change your trees.</p>
+        <div class="btns"><button class="btn" id="syncOffBtn">Turn off on this device</button></div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Back up and move</h3>
+      <p class="hint">Save both trees to a file, then open it in Living Bonsai on another device or browser to carry them over.</p>
+      <div class="btns">
+        <button class="btn" id="exportBtn">Export trees</button>
+        <button class="btn" id="importBtn">Import a backup</button>
+        <input type="file" id="importFile" class="file-input" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+      </div>
+      <div class="confirm" id="importConfirm" hidden>
+        <span id="importMsg"></span>
+        <div class="btns">
+          <button class="btn solid" id="importYes">Replace</button>
+          <button class="btn" id="importNo">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Settings</h3>
+      <label class="row" for="soundToggle"><span>Sound effects</span><input type="checkbox" id="soundToggle"></label>
+      <div class="row">
+        <span id="newTreeLabel">Start over with a new tree</span>
+        <button class="btn danger" id="newTreeBtn">New tree</button>
+      </div>
+      <div class="confirm" id="newTreeConfirm" hidden>
+        <span>This replaces this tree and its journal. Your other tree stays as it is. You can't get this one back.</span>
+        <div class="btns">
+          <button class="btn solid" id="newTreeYes">Replace my tree</button>
+          <button class="btn" id="newTreeNo">Keep my tree</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="version" id="version">Living Bonsai · version 0.7</p>
+  </div>
+</div>
+
+<script>
+/*SIM-START*/
+const Sim = (() => {
+  'use strict';
+  const YEAR = 365, START_DOY = 96, MAX_NODES = 1400, TIP_R = 0.72, HALF_PI = Math.PI / 2, SET_DAYS = 55;
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function hash2(a, b) {
+    let h = (a >>> 0) ^ Math.imul(b | 0, 0x9E3779B1);
+    h = Math.imul(h ^ (h >>> 16), 0x85EBCA6B);
+    h = Math.imul(h ^ (h >>> 13), 0xC2B2AE35);
+    return (h ^ (h >>> 16)) >>> 0;
+  }
+  const h01 = (a, b) => hash2(a, b) / 4294967296;
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const angDiff = (a, b) => { let x = a - b; while (x > Math.PI) x -= 2 * Math.PI; while (x < -Math.PI) x += 2 * Math.PI; return x; };
+  const r3 = v => Math.round(v * 1000) / 1000;
+  function ramp(x, pts) {
+    if (x <= pts[0][0]) return pts[0][1];
+    for (let i = 1; i < pts.length; i++) {
+      if (x <= pts[i][0]) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); }
+    }
+    return pts[pts.length - 1][1];
+  }
+  const doyOf = d => ((Math.floor(d) % YEAR) + YEAR) % YEAR;
+  const yearOf = d => Math.floor(d / YEAR) + 1;
+
+  // Garden calendar curves (day of year, non-leap)
+  const growthFactor = doy => ramp(doy, [[78, 0], [100, 0.7], [112, 1], [166, 1], [182, 0.55], [240, 0.45], [258, 0.2], [274, 0], [365, 0]]);
+  const evapRate = doy => ramp(doy, [[0, 2.5], [59, 3], [100, 7], [172, 10], [240, 9.5], [290, 5], [335, 3], [365, 2.5]]);
+  const rainChance = doy => ramp(doy, [[0, 0.1], [80, 0.2], [150, 0.18], [200, 0.12], [260, 0.16], [330, 0.12], [365, 0.1]]);
+  function leafState(dayF) {
+    const doy = dayF - Math.floor(dayF / YEAR) * YEAR;
+    return {
+      open: ramp(doy, [[80, 0], [112, 1]]),
+      autumn: ramp(doy, [[262, 0], [300, 1]]),
+      fall: ramp(doy, [[288, 0], [325, 1]]),
+      doy,
+    };
+  }
+  const isWinter = doy => doy >= 345 || doy < 62;
+
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  function dateParts(doy) { let m = 0, d = doy; while (m < 11 && d >= MDAYS[m]) { d -= MDAYS[m]; m++; } return [m, d + 1]; }
+  const dateLabel = doy => { const [m, d] = dateParts(doy); return MONTHS[m] + ' ' + d; };
+  const shortDate = doy => { const [m, d] = dateParts(doy); return MONTHS[m].slice(0, 3) + ' ' + d; };
+  function seasonName(doy) {
+    if (doy >= 79 && doy < 121) return 'Early spring';
+    if (doy >= 121 && doy < 172) return 'Late spring';
+    if (doy >= 172 && doy < 265) return 'Summer';
+    if (doy >= 265 && doy < 305) return 'Early autumn';
+    if (doy >= 305 && doy < 354) return 'Late autumn';
+    return 'Winter';
+  }
+  function phaseNote(doy) {
+    if (doy < 70 || doy >= 330) return 'Dormant. With the leaves gone you can see the structure, so this is the time for bigger cuts.';
+    if (doy < 82) return 'Buds are swelling. Growth starts any day now.';
+    if (doy < 112) return 'Leaves are opening and new shoots are pushing.';
+    if (doy < 172) return 'Strong growth. Pinch long shoots to keep the tree compact.';
+    if (doy < 262) return 'Growth is slowing as the leaves harden. Light trimming only.';
+    if (doy < 290) return 'The leaves are turning.';
+    return 'The leaves are dropping.';
+  }
+
+  // ---------- structure ----------
+  // Each node stores its direction relative to its parent: daz turns around the vertical axis, del raises or lowers.
+  function index(T) {
+    const N = T.nodes;
+    T._idx = new Map();
+    for (let i = 0; i < N.length; i++) { N[i].ch = []; T._idx.set(N[i].id, i); }
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i];
+      n.pi = n.p === -1 ? -1 : T._idx.get(n.p);
+      if (n.pi === undefined) n.pi = -1;
+      if (n.pi >= 0) N[n.pi].ch.push(i);
+    }
+  }
+  function blank(id, p, daz, del, len, born) {
+    return { id, p, daz, del, len, born, r: TIP_R, tip: false, grow: 0, bud: 0, rel: 0, side: 1, ord: 0, sl: 0, pin: false, scar: 0, crack: 0,
+      pk: 0, rg: 0, rgd: 0, sm: 1, // plucked leaves (bitmask), day new leaves open, day they opened, leaf size
+      pi: -1, ch: [], az: 0, el: HALF_PI, x: 0, y: 0, z: 0, dl: 0, gf: 1, light: 0.6, depth: 0 };
+  }
+  function place(n, par, L) {
+    const ce = Math.cos(n.el);
+    n.x = par.x + ce * Math.cos(n.az) * L; n.y = par.y + Math.sin(n.el) * L; n.z = par.z + ce * Math.sin(n.az) * L;
+  }
+  function makeNode(T, par, daz, del, len, born) {
+    const n = blank(T.nextId++, par.id, daz, del, len, born);
+    n.ord = par.ord; n.pi = T._idx.get(par.id);
+    n.az = par.az + daz; n.el = par.el + del; n.x = par.x; n.y = par.y; n.z = par.z; n.light = par.light;
+    const i = T.nodes.length;
+    T.nodes.push(n); T._idx.set(n.id, i); T.nodes[n.pi].ch.push(i);
+    return n;
+  }
+  function removeSubtree(T, rootIds) {
+    const N = T.nodes, dead = new Uint8Array(N.length), removed = [], keep = [];
+    for (let i = 0; i < N.length; i++) { const n = N[i]; if (rootIds.has(n.id) || (n.pi >= 0 && dead[n.pi])) dead[i] = 1; }
+    for (let i = 0; i < N.length; i++) (dead[i] ? removed : keep).push(N[i]);
+    T.nodes = keep; index(T);
+    return removed;
+  }
+
+  function growFrac(age) { if (age >= 2.5) return 1; if (age <= 0) return 0; const t = age / 2.5; return t * t * (3 - 2 * t); }
+  function layout(T, dayF, sway, swayT) {
+    const N = T.nodes;
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i];
+      if (n.pi < 0) { n.az = 0; n.el = HALF_PI; n.x = 0; n.y = 0; n.z = 0; n.dl = 0; n.gf = 1; continue; }
+      const par = N[n.pi];
+      const gf = growFrac(dayF - n.born), k = 0.35 + 0.65 * gf;
+      let el = par.el + n.del * k, az = par.az + n.daz * k;
+      if (sway) {
+        const f = sway / (1 + n.r * n.r * 1.3);
+        el += f * Math.sin(swayT * 1.15 + n.id * 1.7);
+        az += f * 0.8 * Math.sin(swayT * 0.9 + n.id * 2.3);
+      }
+      n.gf = gf; n.az = az; n.el = el; n.dl = n.len * gf;
+      place(n, par, n.dl);
+    }
+  }
+  function computeRadius(T) {
+    const N = T.nodes;
+    for (let i = N.length - 1; i >= 0; i--) {
+      const n = N[i];
+      if (!n.ch.length) { if (n.r < TIP_R) n.r = TIP_R; continue; }
+      let s = 0; for (const c of n.ch) s += N[c].r * N[c].r;
+      const rp = Math.sqrt(s);
+      if (rp > n.r) n.r = rp;
+    }
+  }
+  function computeDepth(T) {
+    const N = T.nodes;
+    for (let i = N.length - 1; i >= 0; i--) {
+      const n = N[i];
+      if (!n.ch.length) { n.depth = 0; continue; }
+      let m = 99; for (const c of n.ch) if (N[c].depth < m) m = N[c].depth;
+      n.depth = m + 1;
+    }
+  }
+  const isLeafy = n => n.pi >= 0 && n.r < 2.4 && n.depth <= 4;
+  // ---------- leaves and defoliation ----------
+  const leafCount = n => n.ch.length ? (h01(n.id, 1) < 0.55 ? 2 : 3) : 4;
+  function pluckedFrac(n) {
+    if (!n.pk) return 0;
+    const c = leafCount(n); let b = n.pk & ((1 << c) - 1), k = 0;
+    while (b) { k += b & 1; b >>= 1; }
+    return k / c;
+  }
+  // Defoliating once the spring leaves have hardened, and before late July, brings a new flush of smaller leaves two to four weeks later.
+  function defolWindow(doy) {
+    if (doy < 79 || doy >= 325) return 'bare';
+    if (doy >= 262) return 'autumn';
+    if (doy > 205) return 'late';
+    if (doy < 140) return 'soft';
+    return 'ideal';
+  }
+  function pluck(T, i, k, d) {
+    const n = T.nodes[i]; if (!n || !isLeafy(n) || k >= leafCount(n)) return false;
+    const bit = 1 << k; if (n.pk & bit) return false;
+    n.pk |= bit;
+    const win = defolWindow(doyOf(d));
+    if (!n.rg && (win === 'ideal' || win === 'soft')) n.rg = r3(d + 16 + h01(n.id, Math.floor(d)) * 12 + (win === 'soft' ? 7 : 0) + (T.vigor < 45 ? 12 : 0));
+    T.stats.plucked = (T.stats.plucked || 0) + 1;
+    return true;
+  }
+  const CW = 16;
+  const cellKey = (ix, iz) => (ix + 2048) * 4096 + (iz + 2048);
+  function computeLight(T) {
+    const N = T.nodes, cells = new Map();
+    for (const n of N) if (isLeafy(n) && pluckedFrac(n) < 0.5) {
+      const k = cellKey(Math.floor(n.x / CW), Math.floor(n.z / CW));
+      let arr = cells.get(k); if (!arr) cells.set(k, (arr = [])); arr.push(n.y);
+    }
+    for (const arr of cells.values()) arr.sort((a, b) => b - a);
+    const above = (ix, iz, y) => {
+      const arr = cells.get(cellKey(ix, iz)); if (!arr) return 0;
+      let lo = 0, hi = arr.length;
+      while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] > y + 2) lo = m + 1; else hi = m; }
+      return lo;
+    };
+    for (const n of N) {
+      const ix = Math.floor(n.x / CW), iz = Math.floor(n.z / CW);
+      const k = above(ix, iz, n.y) + 0.3 * (above(ix - 1, iz, n.y) + above(ix + 1, iz, n.y) + above(ix, iz - 1, n.y) + above(ix, iz + 1, n.y));
+      n.light = Math.exp(-0.13 * k);
+    }
+  }
+  const countTips = T => { let c = 0; for (const n of T.nodes) if (n.tip || (n.pi >= 0 && !n.ch.length)) c++; return c; };
+  function treeHeight(T) { let m = 0; for (const n of T.nodes) if (n.y > m) m = n.y; return m; }
+
+  function logE(T, d, t, k) { T.log.push({ d: +d.toFixed(2), t, k: k || '' }); if (T.log.length > 80) T.log.splice(0, T.log.length - 80); }
+  function logAction(T, d, k, add) {
+    const last = T.log[T.log.length - 1];
+    if (last && last.k === k && Math.floor(last.d) === Math.floor(d)) { last.c = (last.c || 1) + add; return; }
+    T.log.push({ d: +d.toFixed(2), t: '', k, c: add });
+    if (T.log.length > 80) T.log.splice(0, T.log.length - 80);
+  }
+
+  // Surface roots (nebari): angle around the trunk, length and width in trunk-base radii, and a gentle curve.
+  function makeRoots(seed) {
+    const rng = mulberry32((seed ^ 0x5BD1E995) >>> 0);
+    const n = 6 + Math.floor(rng() * 3), a0 = rng() * Math.PI * 2, roots = [];
+    for (let k = 0; k < n; k++) {
+      roots.push([r3(a0 + (k / n) * Math.PI * 2 + (rng() - 0.5) * 0.7), r3(1.5 + rng() * 2), r3(0.36 + rng() * 0.34), r3((rng() - 0.5) * 0.7)]);
+    }
+    return roots;
+  }
+
+  // ---------- new tree (nursery stock, informal upright) ----------
+  function dirOf(lx, lz) { return [Math.hypot(lx, lz) < 1e-6 ? 0 : Math.atan2(lz, lx), Math.atan2(1, Math.hypot(lx, lz))]; }
+  function newTree(seed, now) {
+    const rng = mulberry32(seed);
+    const T = {
+      v: 2, seed, species: 'Trident maple', created: now, speed: 'quick', clock: 'practice', realOffset: 0,
+      anchorReal: now, anchorGarden: START_DOY + 0.35, day: START_DOY, startDay: START_DOY,
+      moisture: 74, vigor: 86, leafCap: 0, scorch: 0, dryDays: 0, leafy: 0,
+      nextId: 1, nodes: [], log: [], stats: { cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0 },
+      lastRain: -99, lastBackbudLog: -99, lastWateredReal: 0, savedAt: now, actedAt: now, fresh: true,
+      front: 0, roots: makeRoots(seed), wires: [], ramHi: 0, ramHi2: 0,
+    };
+    T._idx = new Map();
+    const born = START_DOY - 760;
+    const add = (par, az, el, len, ord) => {
+      const n = blank(T.nextId++, par ? par.id : -1, 0, 0, len, born);
+      if (par) { n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el; place(n, par, len); }
+      n.ord = ord; n.side = rng() < 0.5 ? 1 : -1; n.r = 0;
+      T._idx.set(n.id, T.nodes.length); T.nodes.push(n);
+      return n;
+    };
+    const root = add(null, 0, HALF_PI, 0, 0);
+    const mx = rng() < 0.5 ? 1 : -1;
+    // S-curve seen from the front, apex leaning slightly toward the viewer
+    const LX = [0.12, 0.36, 0.05, -0.3, -0.08, 0.26, 0.1, -0.1];
+    const LZ = [0.02, 0.04, 0.1, 0.06, -0.04, 0.08, 0.16, 0.24];
+    const lens = [25, 23, 21, 19, 17, 14, 11, 9];
+    const trunk = [];
+    let prev = root;
+    for (let i = 0; i < LX.length; i++) {
+      const [az, el] = dirOf(mx * LX[i] + (rng() - 0.5) * 0.06, LZ[i] + (rng() - 0.5) * 0.06);
+      const n = add(prev, az, el, lens[i] * (0.9 + rng() * 0.2), 0);
+      trunk.push(n); prev = n;
+    }
+    prev.tip = true;
+    // first branch to one side, second to the other, third to the back, then filling in
+    const AZ = [Math.PI + 0.3, -0.25, -HALF_PI + 0.2, Math.PI - 0.8, 0.55, -HALF_PI - 0.9];
+    const primaries = [];
+    for (let i = 1; i < trunk.length - 1; i++) {
+      const tn = trunk[i], hf = i / (trunk.length - 1);
+      let az = AZ[i - 1] + (rng() - 0.5) * 0.35;
+      if (mx < 0) az = Math.PI - az;
+      let el = lerp(-0.06, 0.42, hf) + (rng() - 0.5) * 0.12;
+      const segs = Math.max(2, Math.round(lerp(4, 2, hf)));
+      const blen = lerp(17, 10, hf);
+      let bp = tn; const prim = [];
+      for (let s = 0; s < segs; s++) {
+        const n = add(bp, az, el, blen * (0.85 + rng() * 0.3), 1);
+        prim.push(n); bp = n;
+        az += (rng() - 0.5) * 0.3; el += 0.08 + (rng() - 0.5) * 0.12;
+      }
+      bp.tip = true;
+      primaries.push({ nodes: prim, hf });
+      prim.forEach((pn, k) => {
+        if (k === prim.length - 1) return;
+        const s2 = k % 2 === 0 ? 1 : -1;
+        let sp = pn, a2 = pn.az + s2 * (0.65 + rng() * 0.4), e2 = pn.el + (rng() - 0.5) * 0.2;
+        const n2 = 1 + (rng() < 0.5 ? 1 : 0);
+        for (let q = 0; q < n2; q++) { sp = add(sp, a2, e2, 8 + rng() * 4, 2); a2 += (rng() - 0.5) * 0.3; e2 += (rng() - 0.4) * 0.15; }
+        sp.tip = true;
+        if (rng() < 0.6) { const t3 = add(sp, sp.az - s2 * (0.6 + rng() * 0.35), sp.el + (rng() - 0.5) * 0.2, 6 + rng() * 3, 3); t3.tip = true; }
+      });
+    }
+    for (const n of T.nodes) if (!n.tip && n.p !== -1) n.bud = 0.35 + rng() * 0.5;
+    index(T);
+    computeRadius(T);
+    // nursery-grown trunk and branch thickness
+    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(10.5, 2.4, i / (trunk.length - 1))); });
+    for (const p of primaries) p.nodes.forEach((n, s) => { n.r = Math.max(n.r, lerp(3.3, 1.1, s / p.nodes.length) * (1 - p.hf * 0.35)); });
+    computeRadius(T);
+    root.r = trunk[0].r;
+    layout(T, T.day); computeDepth(T); computeLight(T);
+    logE(T, T.day, 'Your trident maple arrived from the nursery.');
+    return T;
+  }
+
+  // ---------- daily simulation ----------
+  function maxShoot(t, vig) {
+    const base = t.ord === 0 ? 3 : 2, extra = t.ord <= 1 ? 4 : 3;
+    return Math.round(base + extra * vig);
+  }
+  function extend(T, t, born, rng, rel, vig) {
+    const L = clamp((3.5 + 6 * clamp(rel, 0.2, 1.8) / 1.8) * (0.55 + 0.5 * vig), 2.8, 12);
+    const up = Math.cos(t.el) >= 0;
+    const elEff = up ? t.el : Math.PI - t.el, azEff = up ? t.az : t.az + Math.PI;
+    let dEl = angDiff(HALF_PI, t.el) * (t.ord === 0 ? 0.2 : 0.07), dAz = 0;
+    if (t.ord > 0) {
+      const hd = Math.hypot(t.x, t.z);
+      if (hd > 6) dAz += angDiff(Math.atan2(t.z, t.x), azEff) * 0.08;
+      const e = (0.35 - elEff) * 0.06; dEl += up ? e : -e;
+    }
+    dEl += (rng() - 0.5) * 0.36;
+    dAz += (rng() - 0.5) * 0.4 + t.side * 0.06;
+    const c = makeNode(T, t, dAz, dEl, L, born);
+    c.tip = true; c.grow = t.grow; c.sl = t.sl + 1; c.ord = t.ord;
+    place(c, t, L); c.light = t.light;
+    t.tip = false; t.grow = 0; t.bud = 0.45 + rng() * 0.55; t.side = -t.side; c.side = -t.side;
+    return c;
+  }
+  function grow(T, d, rng, g, ev) {
+    const N = T.nodes, vig = T.vigor / 100;
+    let maxY = 20; for (const n of N) if (n.y > maxY) maxY = n.y;
+    const tips = [], ws = []; let sumW = 0, totalTips = 0;
+    for (const n of N) {
+      if (n.tip) totalTips++;
+      if (!n.tip || n.pin || n.pi < 0 || n.sl >= maxShoot(n, vig)) continue;
+      if (n.pk && pluckedFrac(n) >= 0.75) continue;
+      const h = Math.max(0, n.y) / maxY;
+      const of = clamp(0.62 + 0.45 * Math.sin(n.el), 0.18, 1.07); // upright shoots run, flat and hanging ones slow down
+      const w = (0.2 + n.light) * (0.5 + h * h) * of * (n.ord === 0 ? 1.7 : 1 / (1 + 0.3 * (n.ord - 1)));
+      tips.push(n); ws.push(w); sumW += w;
+    }
+    let pinned = 0; for (const n of N) if (n.tip && n.pin) pinned++;
+    T._surplus = totalTips ? pinned / totalTips : 0;
+    if (!tips.length) return;
+    const crowd = N.length > MAX_NODES * 0.8 ? Math.max(0, (MAX_NODES - N.length) / (MAX_NODES * 0.2)) : 1;
+    const budget = 0.6 * Math.sqrt(totalTips) * g * (0.3 + 0.7 * vig) * crowd;
+    const wMean = sumW / tips.length;
+    for (let i = 0; i < tips.length; i++) {
+      let t = tips[i];
+      t.grow += Math.min(budget * ws[i] / sumW, 0.7);
+      let guard = 0;
+      while (t.grow >= 1 && t.sl < maxShoot(t, vig) && T.nodes.length < MAX_NODES && guard++ < 3) {
+        t.grow -= 1;
+        t = extend(T, t, d + rng() * 0.9, rng, ws[i] / wMean, vig);
+        T.stats.internodes++; if (ev) ev.internodes++;
+      }
+    }
+  }
+  function sprout(T, n, born, rng) {
+    const side = n.side; n.side = -n.side;
+    const stub = !n.tip && !n.ch.length;
+    const up = Math.cos(n.el) >= 0, elEff = up ? n.el : Math.PI - n.el;
+    let daz, del;
+    if (stub) { daz = (rng() - 0.5) * 0.6; del = (rng() - 0.5) * 0.4; }
+    else if (elEff > 0.8) {
+      // a bud on upright wood pushes a shoot outward, in any direction around it
+      daz = (rng() * 2 - 1) * Math.PI;
+      const e = (0.25 + rng() * 0.4) - elEff; del = up ? e : -e;
+    } else { daz = side * (0.55 + rng() * 0.45); del = (rng() - 0.5) * 0.35 - 0.04; }
+    const c = makeNode(T, n, daz, del, 3 + rng() * 2.5, born);
+    c.tip = true; c.ord = stub ? n.ord : Math.min(6, n.ord + 1); c.sl = 0; c.side = rng() < 0.5 ? 1 : -1;
+    n.bud *= 0.25; n.rel *= 0.5;
+    T.stats.shoots++;
+    return c;
+  }
+  function budBreaks(T, d, rng, g, ev) {
+    const N = T.nodes, doy = doyOf(d), L = N.length;
+    const flush = doy >= 82 && doy <= 125;
+    let back = 0;
+    for (let i = 0; i < L; i++) {
+      const n = N[i];
+      if (n.pi < 0 || n.bud <= 0.05) continue;
+      if (T.nodes.length >= MAX_NODES) break;
+      let rel = n.rel;
+      if (flush && n.depth <= 2 && n.r < 2.2) rel = Math.max(rel, 0.07 + 0.04 * (2 - n.depth));
+      if (n.depth <= 3 && n.r < 2.2 && T._surplus > 0) rel = Math.max(rel, 0.3 * T._surplus);
+      if (!n.tip && !n.ch.length) rel = Math.max(rel, 0.5);
+      if (rel <= 0) continue;
+      const lightOK = clamp((n.light - 0.08) / 0.4, 0, 1);
+      const se = Math.sin(n.el), flat = n.ord > 0 ? 1 + 0.75 * (1 - Math.abs(se)) - (se > 0.8 ? 0.25 : 0) : 1;
+      const p = 0.12 * n.bud * rel * g * lightOK * flat * (0.4 + 0.6 * T.vigor / 100);
+      if (rng() < p) {
+        const wasRel = n.rel;
+        sprout(T, n, d + rng() * 0.9, rng);
+        if (ev) ev.shoots++;
+        if (wasRel > 0.35) back++;
+      }
+    }
+    if (back && d - T.lastBackbudLog > 6) { logE(T, d, back > 1 ? 'New buds broke near your cuts.' : 'A new bud broke near a cut.'); T.lastBackbudLog = d; }
+    if (ev) ev.backbuds += back;
+  }
+  function thicken(T, g) {
+    const v = 0.4 + 0.6 * T.vigor / 100;
+    for (const n of T.nodes) if (n.ch.length && n.r > 1.2) n.r += 0.0022 * g * v * (n.ord === 0 ? 1.5 : 1);
+  }
+  function selfPrune(T, d) {
+    const kill = [];
+    for (const n of T.nodes) if (n.pi >= 0 && !n.ch.length && n.ord >= 2 && n.light < 0.09 && n.r < 1.6) kill.push(n.id);
+    if (!kill.length) return;
+    removeSubtree(T, new Set(kill));
+    logE(T, d, kill.length === 1 ? 'A shaded inner twig died back.' : kill.length + ' shaded inner twigs died back.');
+  }
+  function updateVigor(T, ls) {
+    let leafy = 0, pend = 0;
+    for (const n of T.nodes) if (isLeafy(n)) { const f = n.pk ? pluckedFrac(n) : 0; leafy += 1 - f; if (n.rg) pend += f; }
+    T.leafy = leafy;
+    if (ls.open > 0.6 && ls.fall < 0.3) {
+      T.leafCap = Math.max(leafy, T.leafCap * 0.975 + leafy * 0.025);
+      const frac = T.leafCap > 0 ? (leafy + 0.5 * pend) / T.leafCap : 1;
+      let target = 100 * clamp(0.1 + frac, 0.2, 1);
+      if (T.moisture < 12) target = Math.min(target, 30);
+      target *= 1 - 0.5 * T.scorch;
+      T.vigor += (target - T.vigor) * 0.07;
+    } else {
+      T.vigor += T.moisture > 8 ? (82 - T.vigor) * 0.012 : -0.25;
+    }
+    T.vigor = clamp(T.vigor, 8, 100);
+  }
+
+  function stepDay(T, ev) {
+    const d = T.day + 1, doy = doyOf(d);
+    const rng = mulberry32(hash2(T.seed, d));
+    if (doy === 0) logE(T, d, 'A new year begins in the garden.');
+    if (doy === 78) for (const n of T.nodes) { n.sl = 0; n.pin = false; n.pk = 0; n.rg = 0; n.sm = 1; }
+    if (doy === 60) for (const n of T.nodes) if (n.r > 3) n.bud *= 0.85;
+    const ls = leafState(d);
+    if (rng() < rainChance(doy)) {
+      T.moisture = Math.min(100, T.moisture + 40 + rng() * 35); T.lastRain = d;
+      if (ev) ev.rain++;
+    }
+    T.moisture = Math.max(0, T.moisture - evapRate(doy) * (0.55 + 0.45 * ls.open * (1 - ls.fall)) * (0.85 + rng() * 0.3));
+    if (T.moisture < 12) { T.dryDays++; if (T.dryDays === 1 && d - (T._dryLog || -99) > 10) { logE(T, d, 'The soil dried out.'); T._dryLog = d; } } else T.dryDays = 0;
+    const inLeaf = ls.open > 0.3 && ls.fall < 0.9;
+    if (T.dryDays > 3 && inLeaf) T.scorch = Math.min(1, T.scorch + 0.06);
+    else T.scorch = Math.max(0, T.scorch - (inLeaf ? 0.03 : 0.2));
+    const g = growthFactor(doy) * (T.moisture < 12 ? 0 : T.moisture < 28 ? 0.5 : 1);
+    layout(T, d); computeDepth(T); computeLight(T);
+    updateVigor(T, ls);
+    if (g > 0) {
+      grow(T, d, rng, g, ev);
+      budBreaks(T, d, rng, g, ev);
+      thicken(T, g);
+      for (const n of T.nodes) if (n.rel > 0) n.rel *= 0.965;
+    }
+    if (doy === 300) selfPrune(T, d);
+    // a new flush where leaves were removed: smaller leaves, and the buds behind them wake up
+    let regrown = 0;
+    for (let i = 0; i < T.nodes.length; i++) {
+      const n = T.nodes[i];
+      if (n.rg && d >= n.rg) {
+        n.pk = 0; n.rg = 0; n.rgd = d; n.sm = 0.72; regrown++;
+        // the buds that wake are the ones at the base of the removed leaves, out on the fine twigs
+        n.rel = Math.max(n.rel, 0.5); n.bud = Math.max(n.bud, 0.45);
+        const p = n.pi >= 0 ? T.nodes[n.pi] : null;
+        if (p && p.pi >= 0 && p.r < 2.4) { p.rel = Math.max(p.rel, 0.3); p.bud = Math.max(p.bud, 0.4); }
+      }
+    }
+    if (regrown && d - (T._rgLog || -99) > 5) { logE(T, d, 'A new flush of smaller leaves is opening where you defoliated.'); T._rgLog = d; }
+    updateWires(T, d, growthFactor(doy));
+    if (g > 0 && d % 7 === 0) checkRamification(T, d);
+    for (const n of T.nodes) {
+      if (n.crack > 0) n.crack = Math.max(0, n.crack - 0.012 * g - 0.002);
+      if (n.scar > 0) n.scar = Math.max(0, n.scar - 0.0003);
+    }
+    computeRadius(T); computeDepth(T);
+    if (doy === 82) logE(T, d, 'Buds broke. Spring growth has started.');
+    if (doy === 112) logE(T, d, 'The leaves are fully open.');
+    if (doy === 262) logE(T, d, 'The first leaves are turning.');
+    if (doy === 325) logE(T, d, 'The last leaves have dropped. The tree is dormant.');
+    T.day = d;
+  }
+
+  // ---------- player actions ----------
+  function release(T, i, s) {
+    let k = 0;
+    while (i >= 0 && k < 5) {
+      const n = T.nodes[i]; if (n.pi < 0) break;
+      n.rel = Math.max(n.rel, s);
+      if (n.bud < 0.35 && n.r < 4) n.bud = 0.35;
+      s *= 0.62; i = n.pi; k++;
+    }
+  }
+  function cut(T, nodeId) {
+    const i = T._idx.get(nodeId); if (i === undefined) return null;
+    const n = T.nodes[i]; if (n.pi < 0) return null;
+    const par = T.nodes[n.pi]; if (par.pi < 0) return { blocked: true };
+    const removed = removeSubtree(T, new Set([nodeId]));
+    const pi = T._idx.get(par.id), p2 = T.nodes[pi];
+    if (!p2.ch.length && !p2.tip) p2.bud = Math.max(p2.bud, 0.85);
+    release(T, pi, 1);
+    T.wires = T.wires.filter(w => T._idx.has(w.id));
+    T.stats.cuts++;
+    computeDepth(T);
+    return { removed, parentId: par.id };
+  }
+  function pinch(T, nodeId, dayF) {
+    const i = T._idx.get(nodeId); if (i === undefined) return null;
+    let n = T.nodes[i]; if (!n.tip || n.pi < 0) return null;
+    let removed = [];
+    const par = T.nodes[n.pi];
+    if (dayF - n.born < 21 && par.pi >= 0 && !n.ch.length) {
+      removed = removeSubtree(T, new Set([n.id]));
+      const p2 = T.nodes[T._idx.get(par.id)];
+      p2.tip = true; p2.pin = true; p2.sl = Math.max(p2.sl, n.sl); p2.grow = 0;
+      n = p2;
+    } else { n.pin = true; n.grow = 0; }
+    release(T, T._idx.get(n.id), 0.75);
+    T.stats.pinches++;
+    computeDepth(T);
+    return { removed, nodeId: n.id };
+  }
+
+  // ---------- wiring ----------
+  // A wire follows one branch: from where it leaves its parent, along the continuing shoot of the same order, out to the tip.
+  function chainFrom(T, i, len) {
+    const N = T.nodes, out = [];
+    let k = i;
+    while (k >= 0 && out.length < len) {
+      out.push(k);
+      const n = N[k]; let best = -1;
+      for (const c of n.ch) if (N[c].ord === n.ord && (best < 0 || N[c].r > N[best].r)) best = c;
+      k = best;
+    }
+    return out;
+  }
+  // Where the branch containing node i begins. The trunk has no single start, so it is wired from the tapped point up.
+  function branchStart(T, i) {
+    const N = T.nodes; let k = i;
+    if (N[k].ord === 0) return k;
+    while (N[k].pi >= 0) { const p = N[N[k].pi]; if (p.pi < 0 || p.ord !== N[k].ord) break; k = N[k].pi; }
+    return k;
+  }
+  function addWire(T, nodeId, dayF, len) {
+    const i = T._idx.get(nodeId); if (i === undefined) return null;
+    const n = T.nodes[i]; if (n.pi < 0) return null;
+    const w = { id: nodeId, day: +dayF.toFixed(2), r0: r3(n.r), gd: 0, bite: 0, len: len || chainFrom(T, i, 30).length, orig: [], sl: 0, bl: 0, ops: [] };
+    T.wires.push(w);
+    return w;
+  }
+
+  // Bending: turn everything beyond a joint as one rigid piece.
+  // kind 0 raises or lowers it around a level axis across the branch; kind 1 swings it around the vertical.
+  const dirVec = (az, el) => { const ce = Math.cos(el); return [ce * Math.cos(az), Math.sin(el), ce * Math.sin(az)]; };
+  function rotAxis(v, k, th) {
+    const c = Math.cos(th), s = Math.sin(th), d = k[0] * v[0] + k[1] * v[1] + k[2] * v[2];
+    return [
+      v[0] * c + (k[1] * v[2] - k[2] * v[1]) * s + k[0] * d * (1 - c),
+      v[1] * c + (k[2] * v[0] - k[0] * v[2]) * s + k[1] * d * (1 - c),
+      v[2] * c + (k[0] * v[1] - k[1] * v[0]) * s + k[2] * d * (1 - c),
+    ];
+  }
+  const bendAxis = (n, kind) => kind ? [0, 1, 0] : [-Math.sin(n.az), 0, Math.cos(n.az)];
+  function subtreeOf(T, i) {
+    const N = T.nodes, inS = new Uint8Array(N.length), out = [i]; inS[i] = 1;
+    for (let k = i + 1; k < N.length; k++) if (N[k].pi >= 0 && inS[N[k].pi]) { inS[k] = 1; out.push(k); }
+    return out;
+  }
+  // Capture the piece beyond a joint (call with a current, breeze-free layout).
+  function captureBend(T, i, kind) {
+    const N = T.nodes, S = subtreeOf(T, i);
+    return { i, id: N[i].id, kind, k: bendAxis(N[i], kind), S, base: S.map(j => [N[j].az, N[j].el]) };
+  }
+  function bendTo(T, b, th) {
+    const N = T.nodes;
+    for (let m = 0; m < b.S.length; m++) {
+      const n = N[b.S[m]], az0 = b.base[m][0], el0 = b.base[m][1];
+      const v = rotAxis(dirVec(az0, el0), b.k, th);
+      let el = Math.asin(clamp(v[1], -1, 1)), az = Math.hypot(v[0], v[2]) < 1e-5 ? az0 : Math.atan2(v[2], v[0]);
+      // the same direction can be written two ways; keep whichever is closest to where it was
+      const az2 = az + Math.PI, el2 = Math.PI - el;
+      if (Math.abs(angDiff(az2, az0)) + Math.abs(el2 - el0) < Math.abs(angDiff(az, az0)) + Math.abs(el - el0)) { az = az2; el = el2; }
+      if (el - el0 > Math.PI) el -= 2 * Math.PI; else if (el0 - el > Math.PI) el += 2 * Math.PI;
+      n.az = az0 + angDiff(az, az0); n.el = el;
+    }
+    for (let m = 0; m < b.S.length; m++) {
+      const n = N[b.S[m]], p = N[n.pi], kf = 0.35 + 0.65 * n.gf;
+      n.daz = (n.az - p.az) / kf; n.del = (n.el - p.el) / kf;
+    }
+  }
+  // how far wood of a given radius bends before it cracks (radians)
+  const maxBend = r => clamp(1.9 / (1 + 0.5 * r), 0.15, 1.5);
+  function wireSums(w, id) {
+    let v = 0, h = 0;
+    for (const o of w.ops || []) if (o[0] === id) { if (o[1]) h += o[2]; else v += o[2]; }
+    return [v, h];
+  }
+  function addWireOp(w, id, kind, th) {
+    if (Math.abs(th) < 0.003) return;
+    const last = w.ops[w.ops.length - 1];
+    if (last && last[0] === id && last[1] === kind) last[2] = r3(last[2] + th);
+    else w.ops.push([id, kind, r3(th)]);
+    if (w.ops.length > 60) w.ops.splice(0, w.ops.length - 60);
+  }
+  // Taking a wire off before the branch has set lets it spring partway back: undo its bends in reverse, in part.
+  function removeWire(T, w, dayF) {
+    const set = Math.min(1, w.gd / SET_DAYS), back = (1 - set) * 0.7;
+    if (back > 0.005) {
+      if (w.ops && w.ops.length) {
+        for (let q = w.ops.length - 1; q >= 0; q--) {
+          const [id, kind, th] = w.ops[q], i = T._idx.get(id); if (i === undefined) continue;
+          layout(T, dayF);
+          bendTo(T, captureBend(T, i, kind), -th * back);
+        }
+      } else for (const [id, daz, del] of w.orig || []) {
+        const k = T._idx.get(id); if (k === undefined) continue;
+        const n = T.nodes[k]; n.daz += angDiff(daz, n.daz) * back; n.del += (del - n.del) * back;
+      }
+    }
+    const i = T._idx.get(w.id);
+    if (w.bite > 0.05 && i !== undefined) for (const k of chainFrom(T, i, w.len)) T.nodes[k].scar = Math.max(T.nodes[k].scar, w.bite * 0.8);
+    T.wires = T.wires.filter(x => x !== w);
+    return { set, back };
+  }
+  function updateWires(T, d, g) {
+    for (const w of T.wires) {
+      const i = T._idx.get(w.id); if (i === undefined) { w.dead = 1; continue; }
+      w.gd += 0.12 + g;
+      if (w.gd >= SET_DAYS && !w.sl) { w.sl = 1; logE(T, d, 'A wired branch has set. Its wire can come off now.'); }
+      if (w.gd > SET_DAYS + 20 && g > 0) {
+        w.bite = Math.min(1, w.bite + 0.018 * g * (0.5 + T.vigor / 100));
+        if (w.bite > 0.05 && !w.bl) { w.bl = 1; logE(T, d, 'A wire is starting to bite into the bark. Take it off soon.'); }
+        if (w.bite > 0.35) for (const k of chainFrom(T, i, w.len)) T.nodes[k].scar = Math.max(T.nodes[k].scar, Math.min(1, (w.bite - 0.35) * 1.4));
+      }
+    }
+    T.wires = T.wires.filter(w => !w.dead);
+  }
+
+  // ---------- ramification ----------
+  // Ramification = how many times, on average, each primary branch has divided into fine twigs.
+  // A branch that has split cleanly k times ends in 2^k twigs, so the level is log2(twigs per primary branch).
+  // Twigs from back-budding count too, so pinching, cutting back and defoliating all raise it; hard pruning lowers it.
+  function ramification(T) {
+    const c = [0, 0, 0, 0, 0, 0, 0], N = T.nodes;
+    let tips = 0, max = 0, prim = 0;
+    for (const n of N) {
+      if (n.pi < 0) continue;
+      if (n.ord === 1 && N[n.pi].ord === 0 && n.r >= 1.6) prim++; // a young shoot off the trunk counts once it has thickened into a branch
+      if (!n.ch.length) { tips++; c[Math.min(6, n.ord)]++; if (n.ord > max) max = n.ord; }
+    }
+    const per = tips / Math.max(1, prim);
+    return { tips, prim, per, level: Math.log2(Math.max(1, per)), max, counts: c };
+  }
+  const ORD_NAMES = ['trunk', 'primary', 'secondary', 'tertiary', 'quaternary', 'fifth-order', 'sixth-order'];
+  function checkRamification(T, d) {
+    const lv = Math.floor(ramification(T).level);
+    if (lv >= 2 && lv > (T.ramHi2 || 0)) {
+      T.ramHi2 = lv;
+      logE(T, d, `Ramification reached ${lv}. Each primary branch has divided about ${lv} times, into around ${2 ** lv} fine twigs.`, 'ram');
+    }
+  }
+
+  // Jump the calendar forward to a later date without growing through the gap (used when a tree moves onto the real calendar).
+  function relabel(T, Dg) {
+    const gap = Dg - T.day; if (gap <= 0) return;
+    for (let d = T.day + 1; d <= Dg; d++) if (doyOf(d) === 78) { for (const n of T.nodes) { n.sl = 0; n.pin = false; } break; }
+    T.day = Dg; T.startDay += gap;
+    for (const w of T.wires) w.day += gap;
+    if (T.lastRain > -90) T.lastRain += gap;
+    T.lastBackbudLog += gap;
+  }
+
+  // ---------- save format ----------
+  const META = ['v', 'seed', 'species', 'created', 'speed', 'anchorReal', 'anchorGarden', 'day', 'startDay', 'moisture', 'vigor', 'leafCap', 'scorch', 'dryDays', 'leafy', 'nextId', 'log', 'stats', 'lastRain', 'lastBackbudLog', 'lastWateredReal', 'savedAt', 'actedAt', 'fresh', 'front', 'roots', 'wires', 'ramHi', 'ramHi2', 'clock', 'realOffset'];
+  function serialize(T) {
+    const o = {};
+    for (const k of META) o[k] = T[k];
+    o.v = 4;
+    o.nodes = T.nodes.map(n => [n.id, n.p, r3(n.daz), r3(n.del), r3(n.len), r3(n.born), r3(n.r), n.tip ? 1 : 0, r3(n.grow), r3(n.bud), r3(n.rel), n.side, n.ord, n.sl, n.pin ? 1 : 0, r3(n.scar), r3(n.crack), n.pk | 0, r3(n.rg), r3(n.rgd), r3(n.sm)]);
+    o.wires = (T.wires || []).map(w => [w.id, w.day, w.r0, r3(w.gd), r3(w.bite), w.len, w.orig || [], w.sl, w.bl, w.ops || []]);
+    return o;
+  }
+  // Version 1 trees grew in a flat plane: rebuild their directions in 3D and fan the branches around the trunk.
+  function migrateFlat(T) {
+    const N = T.nodes, a2 = new Float64Array(N.length);
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i];
+      if (n.pi < 0) { a2[i] = HALF_PI; n.az = 0; n.el = HALF_PI; continue; }
+      const par = N[n.pi];
+      a2[i] = a2[n.pi] + n._ra;
+      const ca = Math.cos(a2[i]), sa = Math.sin(a2[i]);
+      const az = ca >= 0 ? 0 : Math.PI, el = Math.atan2(sa, Math.abs(ca));
+      n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el;
+      delete n._ra;
+    }
+    for (const n of N) {
+      if (n.pi < 0) continue;
+      const par = N[n.pi];
+      if (par.pi >= 0 && n.ord !== par.ord) n.daz += (h01(T.seed, n.id) - 0.5) * (n.ord === 1 ? 2.4 : 1.4);
+    }
+    T.v = 2; T.front = 0; T.roots = makeRoots(T.seed); T._migrated = true;
+  }
+  function deserialize(o) {
+    if (!o || !Array.isArray(o.nodes) || !o.nodes.length || typeof o.day !== 'number') return null;
+    const legacy = (o.v || 1) < 2;
+    const T = {};
+    for (const k of META) T[k] = o[k];
+    T.log = Array.isArray(o.log) ? o.log.slice(-80) : [];
+    T.stats = Object.assign({ cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0 }, o.stats || {});
+    T.speed = !T.speed || T.speed === 'living' ? 'steady' : T.speed;
+    T.realOffset = T.realOffset || 0;
+    T.scorch = T.scorch || 0; T.dryDays = T.dryDays || 0; T.leafCap = T.leafCap || 0;
+    T.lastBackbudLog = T.lastBackbudLog ?? -99; T.actedAt = T.actedAt || T.savedAt || 0;
+    T.front = typeof o.front === 'number' ? o.front : 0;
+    T.roots = Array.isArray(o.roots) && o.roots.length ? o.roots : makeRoots(o.seed | 0);
+    T.nodes = o.nodes.map(a => {
+      let n;
+      if (legacy) {
+        n = blank(a[0], a[1], 0, 0, a[3], a[4]); n._ra = a[2];
+        n.r = a[5]; n.tip = !!a[6]; n.grow = a[7]; n.bud = a[8]; n.rel = a[9]; n.side = a[10] || 1; n.ord = a[11] | 0; n.sl = a[12] | 0; n.pin = !!a[13];
+      } else {
+        n = blank(a[0], a[1], a[2], a[3], a[4], a[5]);
+        n.r = a[6]; n.tip = !!a[7]; n.grow = a[8]; n.bud = a[9]; n.rel = a[10]; n.side = a[11] || 1; n.ord = a[12] | 0; n.sl = a[13] | 0; n.pin = !!a[14];
+        n.scar = a[15] || 0; n.crack = a[16] || 0;
+        n.pk = a[17] | 0; n.rg = a[18] || 0; n.rgd = a[19] || 0; n.sm = a[20] || 1;
+      }
+      return n;
+    });
+    index(T);
+    if (legacy) migrateFlat(T);
+    T.wires = Array.isArray(o.wires) ? o.wires.filter(a => Array.isArray(a) && T._idx.has(a[0])).map(a => ({ id: a[0], day: a[1], r0: a[2], gd: a[3], bite: a[4], len: a[5], orig: a[6] || [], sl: a[7] || 0, bl: a[8] || 0, ops: Array.isArray(a[9]) ? a[9] : [] })) : [];
+    T.ramHi = T.ramHi || 0;
+    if (typeof T.ramHi2 !== 'number') T.ramHi2 = Math.floor(ramification(T).level); // no milestone toasts for levels already reached
+    T.v = 4;
+    layout(T, T.day); computeDepth(T); computeLight(T);
+    return T;
+  }
+
+  return {
+    YEAR, START_DOY, newTree, stepDay, layout, cut, pinch, serialize, deserialize, isLeafy, leafState, growthFactor,
+    doyOf, yearOf, seasonName, dateLabel, shortDate, phaseNote, isWinter, h01, countTips, treeHeight, logAction, logE, computeDepth, angDiff,
+    relabel, subtreeOf, leafCount, pluckedFrac, defolWindow, pluck, chainFrom, branchStart, addWire, removeWire, SET_DAYS, captureBend, bendTo, maxBend, wireSums, addWireOp, ramification, ORD_NAMES, checkRamification,
+  };
+})();
+/*SIM-END*/
+
+(() => {
+  'use strict';
+  const VERSION = '0.7';
+  const WEB_BUILD = /*WEB_BUILD*/true; // true in the GitHub Pages copy
+  const $ = s => document.querySelector(s);
+  const canvas = $('#scene'), mainCtx = canvas.getContext('2d');
+  let ctx = mainCtx; // drawing helpers paint into whichever layer is current
+  // Faded parts of the tree in the focus view are drawn solid on their own layer, then laid down at low opacity in one go, so overlaps don't stack up.
+  let ghostCanvas = null, ghostCtx = null;
+  function ghostLayer() {
+    if (!ghostCanvas) { ghostCanvas = document.createElement('canvas'); ghostCtx = ghostCanvas.getContext('2d'); }
+    if (ghostCanvas.width !== canvas.width || ghostCanvas.height !== canvas.height) { ghostCanvas.width = canvas.width; ghostCanvas.height = canvas.height; }
+    ghostCtx.setTransform(1, 0, 0, 1, 0, 0); ghostCtx.clearRect(0, 0, ghostCanvas.width, ghostCanvas.height);
+    ghostCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    return ghostCtx;
+  }
+  const stage = $('#stage');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const angDiff = Sim.angDiff;
+  const TAU = Math.PI * 2;
+  const wrapAng = a => angDiff(a, 0);
+
+  // Clocks for the practice tree. The real-time tree has none of these: it follows the calendar.
+  const SPEEDS = {
+    steady: { label: 'Steady', desc: 'A garden week passes each real day. A full year takes about seven weeks.', perDay: 7 },
+    quick: { label: 'Quick', desc: 'A garden week passes each hour.', perDay: 168 },
+    lapse: { label: 'Time-lapse', desc: 'A garden week passes every 20 seconds. Handy for watching it grow.', perDay: 30240 },
+  };
+  const REAL = { label: 'Real time', perDay: 1 };
+  // Today's day of the year in local time, with the hour as a fraction. February 29 holds still so the 365-day garden calendar stays in step.
+  const CUM_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  function realDoy(d) {
+    const m = d.getMonth(), dt = d.getDate();
+    if (m === 1 && dt === 29) return 58.999;
+    return CUM_DAYS[m] + dt - 1 + (d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600) / 24;
+  }
+  const realStamp = d => d.getFullYear() * 365 + realDoy(d);
+  // Move a tree onto the real calendar: its date jumps forward to today without growing through the gap, and from then on one day is one day.
+  function toRealClock(t, now) {
+    const d = new Date(now), doyI = Math.floor(realDoy(d));
+    let Dg = t.day - Sim.doyOf(t.day) + doyI;
+    if (Dg < t.day) Dg += 365;
+    const moved = Dg > t.day;
+    Sim.relabel(t, Dg);
+    t.realOffset = d.getFullYear() * 365 + doyI - Dg;
+    t.clock = 'real';
+    return moved;
+  }
+  function makeTree(slot, now) {
+    const t = Sim.newTree(randomSeed(), now);
+    if (slot === 'real') { toRealClock(t, now); t.log.length = 0; Sim.logE(t, t.day, 'Your trident maple arrived from the nursery.'); }
+    return t;
+  }
+  // Make sure a loaded tree runs on the clock its slot calls for.
+  function fitToSlot(t, slot, now) {
+    if (slot === 'real' && t.clock !== 'real') {
+      const was = Sim.doyOf(t.day);
+      toRealClock(t, now);
+      Sim.logE(t, t.day, 'Moved onto the real calendar. From here on the tree grows at a real tree\u2019s pace.');
+      t._toReal = was !== Sim.doyOf(t.day) ? 'moved' : 'same';
+    } else if (slot === 'practice' && t.clock !== 'practice') {
+      t.clock = 'practice';
+      if (!SPEEDS[t.speed]) t.speed = 'quick';
+      t.anchorGarden = t.day + 0.4; t.anchorReal = now;
+    }
+    return t;
+  }
+  const POT_W = 132, POT_D = 92, POT_H = 26, BENCH_Y = -POT_H - 5;
+  const BENCH_BACK = -130, BENCH_FRONT = 92;
+  const DEFAULT_PITCH = 0.17, TOP_PITCH = 1.45, MAX_PITCH = 1.5;
+
+  let T = null, dispDay = 0, catchup = null, mode = 'view';
+  let W = 0, H = 0, DPR = 1;
+  const cam = { s: 2, cx: 0, cy: 60, auto: true, fit: null, fitAt: 0, fitPitch: -1, R: 100, yaw: 0, tyaw: 0, pitch: DEFAULT_PITCH, tpitch: DEFAULT_PITCH };
+  let debris = [], fallers = [], drops = [], splashes = [], trail = [], rain = [], snow = [];
+  let undoStack = [];
+  const prefs = { sound: true, rotated: false, bendKind: 0, slot: 'real', focus: true };
+  let dispMoist = 60, lastTs = 0, lastFrame = 0, lastSave = 0, lastUi = 0, fallerClock = 0;
+  let toastTimer = 0, pinchHints = 0, blockedHint = 0, rangeActive = false, ramSeen = 0;
+
+  // ---------- color helpers ----------
+  const hexCache = new Map();
+  function rgb(hex) {
+    let c = hexCache.get(hex);
+    if (!c) { const v = parseInt(hex.slice(1), 16); c = [(v >> 16) & 255, (v >> 8) & 255, v & 255]; hexCache.set(hex, c); }
+    return c;
+  }
+  const mixA = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const css = (c, al) => al === undefined ? `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})` : `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${al})`;
+
+  // ---------- storage: this browser + account sync ----------
+  // Two trees, each saved in this browser and synced to your account: the real-time tree and the practice tree.
+  const Store = {
+    slot: 'real', prefKey: 'living-bonsai.prefs.v1',
+    keys: { real: 'living-bonsai.tree.v1', practice: 'living-bonsai.practice.v1' }, docs: { real: 'tree', practice: 'practice' },
+    makeRef: null, ref: null, checked: false, writing: false, pending: null, lastJson: '', timer: 0,
+    get key() { return this.keys[this.slot]; },
+    loadLocal(slot) { try { const s = localStorage.getItem(this.keys[slot || this.slot]); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
+    saveLocal(o) { try { localStorage.setItem(this.key, JSON.stringify(o)); } catch (e) { /* storage unavailable */ } },
+    setSlot(slot) {
+      if (this.pending) { clearTimeout(this.timer); this.flush(); }
+      this.slot = slot; this.lastJson = '';
+      this.ref = this.makeRef ? this.makeRef(slot) : null;
+    },
+    async initRemote(onRemote) {
+      try {
+        if (WEB_BUILD) {
+          Sync.load();
+          if (!Sync.available() || !Sync.enabled) { this.checked = true; return; }
+          await Sync.connect();
+          this.makeRef = slot => Sync.ref(slot);
+        } else {
+          if (!window.claude || typeof window.claude.use !== 'function') { this.checked = true; return; }
+          const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+          if (!db || !user) { this.checked = true; return; }
+          const id = await user.id();
+          if (!id) { this.checked = true; return; }
+          this.makeRef = slot => db.doc('data/users/' + id + '/' + this.docs[slot]);
+        }
+        this.ref = this.makeRef(this.slot);
+        await this.refresh(onRemote);
+      } catch (e) { this.ref = null; if (WEB_BUILD) Sync.fail(e); }
+      this.checked = true;
+      if (T && !T.fresh) this.queue(Sim.serialize(T));
+    },
+    async refresh(onRemote) {
+      const ref = this.ref, slot = this.slot;
+      if (!ref) return;
+      try {
+        const snap = await ref.get();
+        if (slot !== this.slot) return; // switched trees while this was loading
+        if (snap.exists) { const data = snap.data(); if (data && typeof data.tree === 'string') onRemote(JSON.parse(data.tree)); }
+      } catch (e) { /* offline or not allowed: keep playing locally */ }
+    },
+    queue(o) {
+      if (!this.ref || !this.checked || !T || T.fresh) return;
+      this.pending = { o, ref: this.ref };
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.flush(), 3500);
+    },
+    async flush() {
+      if (this.writing || !this.pending) return;
+      const { o, ref } = this.pending; this.pending = null;
+      const json = JSON.stringify(o);
+      if (json === this.lastJson && ref === this.ref) return;
+      this.writing = true;
+      try {
+        await ref.set({ v: 2, day: o.day, actedAt: o.actedAt || 0, savedAt: o.savedAt || 0, tree: json });
+        if (ref === this.ref) this.lastJson = json;
+      } catch (e) {
+        const code = e && e.code;
+        if (/^(unavailable|resource[_-]exhausted|deadline-exceeded)$/.test(code || '')) { this.pending = this.pending || { o, ref }; setTimeout(() => this.flush(), 8000 + Math.random() * 4000); }
+        else if (ref === this.ref) this.ref = null;
+      } finally { this.writing = false; if (this.pending) setTimeout(() => this.flush(), 4000); }
+    },
+    loadPrefs() { try { Object.assign(prefs, JSON.parse(localStorage.getItem(this.prefKey) || '{}')); } catch (e) { /* default prefs */ } },
+    savePrefs() { try { localStorage.setItem(this.prefKey, JSON.stringify(prefs)); } catch (e) { /* ignore */ } },
+  };
+
+  // ---------- sync between devices (the web copy) ----------
+  // No accounts. A random sync code decides where the trees live in Firestore (a hash of it)
+  // and encrypts them on this device before upload, so the shared Firebase project only holds scrambled data.
+  const FB_VERSION = '10.14.1';
+  const SYNC_KEY = 'living-bonsai.sync.v1';
+  const CODE_ALPHABET = 'abcdefghijkmnpqrstuvwxyz23456789';
+  const utf8 = s => new TextEncoder().encode(s);
+  function b64(bytes) { let s = ''; const a = new Uint8Array(bytes); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+  function unb64(str) { const s = atob(str); const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  async function sha256hex(s) { const h = await crypto.subtle.digest('SHA-256', utf8(s)); return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+  function loadScript(src) {
+    return new Promise((resolve, reject) => { const s = document.createElement('script'); s.src = src; s.async = true; s.onload = resolve; s.onerror = () => reject(new Error('Couldn’t download the sync library. Check your internet connection.')); document.head.append(s); });
+  }
+  const Sync = {
+    cfg: window.LB_FIREBASE && window.LB_FIREBASE.apiKey && window.LB_FIREBASE.projectId ? window.LB_FIREBASE : null,
+    enabled: false, key: '', space: '', db: null, aes: null, status: 'off', error: '', lastSync: 0,
+    available() { return WEB_BUILD && !!this.cfg && !!(window.crypto && crypto.subtle); },
+    load() {
+      try { const s = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); if (s && s.enabled && s.key) { this.enabled = true; this.key = s.key; this.lastSync = s.lastSync || 0; } } catch (e) { /* ignore */ }
+    },
+    save() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(this.enabled ? { enabled: true, key: this.key, lastSync: this.lastSync } : { enabled: false })); } catch (e) { /* ignore */ } },
+    newKey() { const bytes = crypto.getRandomValues(new Uint8Array(26)); return Array.from(bytes, b => CODE_ALPHABET[b % 32]).join(''); },
+    pretty(key) { return key.replace(/(.{4})(?=.)/g, '$1-'); },
+    parse(code) { const k = String(code || '').toLowerCase().replace(/[^a-z0-9]/g, ''); return k.length === 26 && [...k].every(c => CODE_ALPHABET.includes(c)) ? k : null; },
+    async connect() {
+      this.setStatus('connecting');
+      if (!(window.firebase && window.firebase.firestore)) {
+        const base = `https://www.gstatic.com/firebasejs/${FB_VERSION}`;
+        await loadScript(`${base}/firebase-app-compat.js`);
+        await loadScript(`${base}/firebase-firestore-compat.js`);
+      }
+      const fb = window.firebase;
+      let app = fb.apps && fb.apps.find(a => a.name === 'living-bonsai');
+      if (!app) app = fb.initializeApp(this.cfg, 'living-bonsai');
+      this.db = app.firestore();
+      this.space = (await sha256hex('living-bonsai-space|' + this.key)).slice(0, 40);
+      const material = await crypto.subtle.importKey('raw', utf8(this.key), 'PBKDF2', false, ['deriveKey']);
+      this.aes = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: utf8('living-bonsai-sync-v1|' + this.space), iterations: 150000, hash: 'SHA-256' }, material, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    },
+    // a stand-in for a document, shaped like the one the Claude copy uses, so the save queue works the same way
+    ref(slot) {
+      const doc = this.db.collection('bonsai').doc(this.space).collection('trees').doc(slot);
+      return {
+        get: async () => {
+          try {
+            const snap = await doc.get({ source: 'server' });
+            this.ok();
+            if (!snap.exists) return { exists: false, data: () => undefined };
+            const d = snap.data();
+            const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(d.iv) }, this.aes, unb64(d.c));
+            const json = new TextDecoder().decode(pt);
+            return { exists: true, data: () => ({ tree: json, actedAt: d.a || 0 }) };
+          } catch (e) { this.fail(e); throw e; }
+        },
+        set: async o => {
+          try {
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, this.aes, utf8(o.tree));
+            await doc.set({ c: b64(ct), iv: b64(iv), a: o.actedAt || 0, s: o.savedAt || 0, v: 1 });
+            this.ok();
+          } catch (e) { this.fail(e); throw e; }
+        },
+      };
+    },
+    ok() { this.lastSync = Date.now(); this.save(); this.setStatus('on'); },
+    fail(e) {
+      const code = (e && (e.code || e.name)) || '', msg = (e && e.message) || '';
+      if (/permission/i.test(code)) this.setStatus('error', 'The sync database isn’t accepting Living Bonsai yet. Its Firestore rules need the Living Bonsai block from the README.');
+      else if (/unavailable|deadline|network/i.test(code) || /offline|network|internet/i.test(msg)) this.setStatus('offline');
+      else this.setStatus('error', msg || 'Sync stopped because of an unexpected error.');
+    },
+    setStatus(status, error = '') { this.status = status; this.error = error; if (!$('#sheetWrap').hidden) renderSync(); },
+    statusText() {
+      if (this.status === 'error') return this.error;
+      if (this.status === 'offline') return 'Offline. Your trees are saved here and will sync when you’re back online.';
+      if (this.status === 'connecting') return 'Connecting…';
+      return this.lastSync ? `On · last synced ${relTime(this.lastSync).toLowerCase()}` : 'On';
+    },
+  };
+  // Point the save queue at the synced copy of each tree (or at nothing, when sync is off).
+  async function attachSync() {
+    Store.makeRef = slot => Sync.ref(slot);
+    Store.ref = Store.makeRef(Store.slot); Store.lastJson = ''; Store.checked = true;
+  }
+  // Send both trees as they are on this device.
+  async function pushAllSlots() {
+    for (const slot of ['real', 'practice']) {
+      const o = slot === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(slot);
+      if (!o || o.fresh) continue;
+      await Store.makeRef(slot).set({ v: 2, day: o.day, actedAt: o.actedAt || 0, savedAt: o.savedAt || 0, tree: JSON.stringify(o) });
+    }
+  }
+  async function syncTurnOn() {
+    Sync.key = Sync.newKey(); Sync.enabled = true; Sync.save();
+    try { await Sync.connect(); await attachSync(); saveNow(); await pushAllSlots(); toast('Sync is on. Enter the code on your other devices to bring your trees there.', 6000); }
+    catch (e) { Sync.fail(e); }
+    renderSync();
+  }
+  async function syncJoin(key) {
+    saveNow();
+    Sync.key = key; Sync.enabled = true; Sync.save();
+    try {
+      await Sync.connect(); await attachSync();
+      let got = 0;
+      for (const slot of ['real', 'practice']) {
+        const r = await Sync.ref(slot).get();
+        if (r.exists) { try { localStorage.setItem(Store.keys[slot], r.data().tree); got++; } catch (e) { /* storage full */ } }
+      }
+      if (!got) { await pushAllSlots(); toast('Joined. There were no trees under that code yet, so this device’s trees were sent.', 6000); }
+      else { T = null; openSlot(Store.slot, { initial: true }); await pushAllSlots(); toast('Joined. Your synced trees are on this device now.', 5000); }
+    } catch (e) { Sync.fail(e); }
+    renderSync();
+  }
+  function syncTurnOff() {
+    Sync.enabled = false; Sync.key = ''; Sync.save(); Sync.setStatus('off');
+    Store.makeRef = null; Store.ref = null; Store.pending = null;
+    renderSync();
+    toast('Sync is off on this device. Your trees stay here, and the synced copy is untouched.', 5000);
+  }
+  function renderSync() {
+    const sec = $('#syncSection'); if (!sec) return;
+    sec.hidden = !Sync.available();
+    if (sec.hidden) return;
+    $('#syncOff').hidden = Sync.enabled; $('#syncOn').hidden = !Sync.enabled;
+    if (Sync.enabled) { setText($('#syncCode'), Sync.pretty(Sync.key)); setText($('#syncStatus'), Sync.statusText()); $('#syncStatus').classList.toggle('warn-text', Sync.status === 'error'); }
+  }
+
+  // ---------- back up and move: export and import ----------
+  function exportPayload() {
+    saveNow();
+    const trees = {};
+    for (const slot of ['real', 'practice']) { const o = slot === Store.slot && T ? Sim.serialize(T) : Store.loadLocal(slot); if (o) trees[slot] = o; }
+    return { app: 'living-bonsai', format: 1, exported: new Date().toISOString(), trees };
+  }
+  async function exportTrees() {
+    const data = JSON.stringify(exportPayload());
+    const d = new Date(), name = `living-bonsai-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+    if (!WEB_BUILD) {
+      let dl = null;
+      try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+      if (dl) {
+        try { await dl.save({ filename: name, data }); toast('Saved. Open the file in Living Bonsai on any device to bring your trees there.', 5000); }
+        catch (e) { if (!e || e.code !== 'declined') toast('That didn’t save. Try again in a moment.'); }
+        return;
+      }
+      try { await navigator.clipboard.writeText(data); toast('Saving files isn’t available here, so your trees were copied to the clipboard instead.', 6000); }
+      catch (e) { toast('Saving files isn’t available here.'); }
+      return;
+    }
+    const file = new File([data], name, { type: 'application/json' });
+    const touch = matchMedia('(pointer: coarse)').matches;
+    if (touch && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'Living Bonsai trees' }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    const url = URL.createObjectURL(file), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Saved to your downloads. Open the file in Living Bonsai on any device to bring your trees there.', 5000);
+  }
+  let pendingImport = null;
+  function readImport(text) {
+    let obj; try { obj = JSON.parse(text); } catch (e) { return { error: 'That file isn’t a Living Bonsai backup.' }; }
+    let trees = {};
+    if (obj && obj.app === 'living-bonsai' && obj.trees) trees = obj.trees;
+    else if (obj && Array.isArray(obj.nodes)) trees[obj.clock === 'real' ? 'real' : 'practice'] = obj;
+    else return { error: 'That file isn’t a Living Bonsai backup.' };
+    const out = {}, notes = [];
+    for (const slot of ['real', 'practice']) {
+      const t = trees[slot] && Sim.deserialize(trees[slot]); if (!t) continue;
+      // no shortcuts: only a tree that has always lived on the real calendar can become your real-time tree
+      if (slot === 'real' && t.clock !== 'real') { notes.push('The real-time tree in that file wasn’t on the real calendar, so it was left out.'); continue; }
+      out[slot] = t;
+    }
+    if (!Object.keys(out).length) return { error: notes[0] || 'That file has no trees in it.' };
+    return { trees: out, exported: obj.exported, notes };
+  }
+  function askImport(text) {
+    const r = readImport(text);
+    if (r.error) { toast(r.error, 5000); return; }
+    pendingImport = r;
+    const names = Object.keys(r.trees).map(s => s === 'real' ? 'your real-time tree' : 'your practice tree');
+    const when = r.exported ? ` from ${new Date(r.exported).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : '';
+    setText($('#importMsg'), `This replaces ${names.join(' and ')} on this device with the ones in the backup${when}.` + (r.notes.length ? ' ' + r.notes.join(' ') : ''));
+    $('#importConfirm').hidden = false;
+  }
+  async function doImport() {
+    const r = pendingImport; pendingImport = null; $('#importConfirm').hidden = true;
+    if (!r) return;
+    saveNow();
+    const now = Date.now();
+    for (const [slot, t] of Object.entries(r.trees)) {
+      t.fresh = false; t.actedAt = now; t.savedAt = now;
+      const o = Sim.serialize(t);
+      try { localStorage.setItem(Store.keys[slot], JSON.stringify(o)); } catch (e) { toast('There isn’t room to store that here.'); return; }
+      if (Store.makeRef) { try { await Store.makeRef(slot).set({ v: 2, day: o.day, actedAt: o.actedAt, savedAt: o.savedAt, tree: JSON.stringify(o) }); } catch (e) { /* the save queue retries */ } }
+    }
+    T = null; openSlot(Store.slot, { initial: true });
+    closeSheet(); setMode('view');
+    toast('Imported. Any time that passed since the backup will play out now.', 5000);
+  }
+
+  function saveNow() {
+    if (!T) return;
+    lastSave = Date.now(); T.savedAt = lastSave;
+    const o = Sim.serialize(T);
+    Store.saveLocal(o); Store.queue(o);
+  }
+  let saveTimer = 0;
+  function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 700); }
+  function acted() { T.fresh = false; T.actedAt = Date.now(); saveSoon(); }
+
+  function adoptRemote(obj) {
+    const r = Sim.deserialize(obj);
+    if (!r || !T) return;
+    fitToSlot(r, Store.slot, Date.now());
+    if (T.fresh || (r.actedAt || 0) > (T.actedAt || 0) + 1000) {
+      const wasFresh = T.fresh;
+      setTree(r);
+      Store.saveLocal(Sim.serialize(T));
+      if (wasFresh) toast('Loaded your tree from your account.');
+    }
+  }
+
+  // ---------- garden clock ----------
+  const isReal = () => T.clock === 'real';
+  const speedOf = () => isReal() ? REAL : SPEEDS[T.speed] || SPEEDS.steady;
+  const gardenNow = (now = Date.now()) => isReal() ? realStamp(new Date(now)) - T.realOffset : T.anchorGarden + (now - T.anchorReal) / 864e5 * speedOf().perDay;
+  const dayWord = n => (isReal() ? 'day' : 'garden day') + (n === 1 ? '' : 's');
+
+  function setTree(t) {
+    T = t; dispDay = T.day; catchup = null; undoStack = []; ramSeen = T.ramHi2 || 0;
+    wireSel = null; bend = null; wirePress = null;
+    debris = []; fallers = []; drops = []; splashes = [];
+    dispMoist = T.moisture; cam.fit = null; cam.auto = true;
+    cam.yaw = cam.tyaw = T.front || 0; cam.pitch = cam.tpitch = DEFAULT_PITCH;
+    Sim.layout(T, dispDay);
+    if (T._migrated) { delete T._migrated; saveNow(); setTimeout(() => toast('Your tree came along. Its branches now spread out in 3D, so drag to turn it and look from every side.', 7500), 700); }
+    if (T._toReal) {
+      const how = T._toReal; delete T._toReal; saveNow();
+      const d = new Date();
+      setTimeout(() => toast(`Your tree now follows the real calendar. It\u2019s ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, so it grows at a real tree\u2019s pace from here${how === 'moved' ? ', starting from today\u2019s season' : ''}. Faster clocks are on the practice tree in the menu.`, 9000), 700);
+    }
+    updateUI(true);
+  }
+
+  const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function openSlot(slot, opts = {}) {
+    const now = Date.now();
+    if (T && !opts.initial) saveNow();
+    Store.setSlot(slot); prefs.slot = slot; Store.savePrefs();
+    let t = opts.tree ? Sim.deserialize(opts.tree) : null;
+    if (!t) t = Sim.deserialize(Store.loadLocal(slot));
+    let fresh = false;
+    if (!t) { t = makeTree(slot, now); fresh = true; }
+    fitToSlot(t, slot, now);
+    setTree(t);
+    if (fresh) saveNow();
+    if (!opts.initial) Store.refresh(adoptRemote);
+    return fresh;
+  }
+  function beginCatchup(target) {
+    let days = target - T.day;
+    if (days > 1095) {
+      if (isReal()) Sim.relabel(T, Math.floor(target) - 1095);
+      else { T.anchorGarden = T.day + 1095; T.anchorReal = Date.now(); target = gardenNow(); }
+      days = target - T.day;
+    }
+    catchup = {
+      from: T.day, to: target, t0: performance.now(), days,
+      dur: reduceMotion ? 1 : clamp(days * 60, 900, 4500),
+      ev: { rain: 0, shoots: 0, internodes: 0, backbuds: 0 },
+    };
+  }
+  function finishCatchup() {
+    const c = catchup; catchup = null;
+    dispDay = Math.min(gardenNow(), T.day + 0.999);
+    saveNow();
+    if (c.days >= 1.5) toast(summaryText(c), 7000);
+  }
+  function summaryText(c) {
+    const d = Math.round(c.days);
+    const g = isReal() ? '' : 'garden ';
+    let s = d >= 60 ? `About ${Math.round(d / 30)} ${g}months passed while you were away.`
+      : d >= 14 ? `${Math.round(d / 7)} ${g}weeks passed while you were away.`
+      : `${d} ${dayWord(d)} passed while you were away.`;
+    if (c.ev.shoots) s += ` ${c.ev.shoots} new shoot${c.ev.shoots > 1 ? 's' : ''} appeared.`;
+    else if (c.ev.internodes) s += ' The shoots grew longer.';
+    if (c.ev.rain) s += c.ev.rain === 1 ? ' It rained once.' : ` It rained ${c.ev.rain} times.`;
+    if (T.moisture < 25) s += ' The soil is dry now.';
+    return s;
+  }
+
+  function stepTime(now) {
+    if (bend) return; // hold the garden still while a branch is in your hands
+    const target = gardenNow(now);
+    if (catchup) {
+      const p = Math.min(1, (performance.now() - catchup.t0) / catchup.dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      const want = catchup.from + (catchup.to - catchup.from) * e;
+      let steps = 0;
+      while (T.day < Math.floor(want) && steps < 10) { Sim.stepDay(T, catchup.ev); steps++; }
+      dispDay = Math.min(want, T.day + 0.999);
+      if (p >= 1 && T.day >= Math.floor(catchup.to)) finishCatchup();
+      return;
+    }
+    if (Math.floor(target) - T.day > 2) { beginCatchup(target); return; }
+    let advanced = false;
+    while (T.day < Math.floor(target)) { Sim.stepDay(T, null); advanced = true; }
+    dispDay = target;
+    if (advanced && Date.now() - lastSave > 8000) saveNow();
+  }
+
+  // ---------- canvas sizing, camera and 3D projection ----------
+  function resize() {
+    const r = stage.getBoundingClientRect();
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.max(1, r.width); H = Math.max(1, r.height);
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    cam.fit = null;
+  }
+  new ResizeObserver(resize).observe(stage);
+
+  // Turntable (yaw) turns the tree and pot; the camera tilt (pitch) looks down from above. Orthographic.
+  let cyw = 1, syw = 0, cpt = 1, spt = 0, _x = 0, _y = 0, _d = 0;
+  function setView() { cyw = Math.cos(cam.yaw); syw = Math.sin(cam.yaw); cpt = Math.cos(cam.pitch); spt = Math.sin(cam.pitch); }
+  function proj(x, y, z) {
+    const xr = x * cyw + z * syw, zr = z * cyw - x * syw, v = y * cpt - zr * spt;
+    _x = W / 2 + (xr - cam.cx) * cam.s; _y = H / 2 - (v - cam.cy) * cam.s; _d = zr * cpt + y * spt;
+  }
+  function projFixed(x, y, z) {
+    const v = y * cpt - z * spt;
+    _x = W / 2 + (x - cam.cx) * cam.s; _y = H / 2 - (v - cam.cy) * cam.s; _d = z * cpt + y * spt;
+  }
+  function projDir(x, y, z) { // screen direction of a world vector (px per unit, y down)
+    const xr = x * cyw + z * syw, zr = z * cyw - x * syw;
+    _x = xr; _y = -(y * cpt - zr * spt);
+  }
+
+  function computeFit() {
+    const potR = Math.hypot(POT_W / 2 + 3, POT_D / 2 + 3);
+    let R = potR, maxY = 60;
+    for (const n of T.nodes) { const h = Math.hypot(n.x, n.z) + 6; if (h > R) R = h; if (n.y > maxY) maxY = n.y; }
+    maxY += 8;
+    const vMax = maxY * cpt + R * spt;
+    const vMin = Math.min((BENCH_Y - 6) * cpt - (potR + 6) * spt, -R * spt);
+    const bw = 2 * R + 12, bh = vMax - vMin + 12;
+    const s = Math.min(W * 0.92 / bw, (H - 120) / bh, 7);
+    cam.R = R;
+    cam.fit = { s, cx: 0, cy: (vMax + vMin) / 2 };
+    cam.fitPitch = cam.pitch;
+    if (focusOn) {
+      const N = T.nodes;
+      let x0 = Infinity, x1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+      for (let i = 0; i < N.length; i++) {
+        if (!focusSet[i]) continue;
+        for (const n of [N[i], N[N[i].pi]]) {
+          const xr = n.x * cyw + n.z * syw, zr = n.z * cyw - n.x * syw, v = n.y * cpt - zr * spt;
+          if (xr < x0) x0 = xr; if (xr > x1) x1 = xr; if (v < v0) v0 = v; if (v > v1) v1 = v;
+        }
+      }
+      if (x1 > x0) {
+        const fs = Math.min(W * 0.84 / (x1 - x0 + 16), Math.max(80, H - 270) / (v1 - v0 + 16), 6);
+        cam.fit = { s: fs, cx: (x0 + x1) / 2, cy: (v0 + v1) / 2 - 62 / fs };
+      }
+    }
+  }
+  function updateCamera(dt) {
+    if (bend) { setView(); return; }
+    const k = 1 - Math.pow(0.0008, dt);
+    cam.yaw += angDiff(cam.tyaw, cam.yaw) * k;
+    cam.pitch += (cam.tpitch - cam.pitch) * k;
+    setView();
+    const nowP = performance.now();
+    if (!cam.fit || nowP - cam.fitAt > 400 || Math.abs(cam.pitch - cam.fitPitch) > 0.02) {
+      const first = !cam.fit; computeFit(); cam.fitAt = nowP;
+      if (first && cam.auto) Object.assign(cam, { s: cam.fit.s, cx: cam.fit.cx, cy: cam.fit.cy });
+    }
+    if (!cam.auto) return;
+    const k2 = 1 - Math.pow(0.02, dt);
+    cam.s += (cam.fit.s - cam.s) * k2; cam.cx += (cam.fit.cx - cam.cx) * k2; cam.cy += (cam.fit.cy - cam.cy) * k2;
+  }
+  const cameraMoving = () => Math.abs(angDiff(cam.tyaw, cam.yaw)) > 0.002 || Math.abs(cam.tpitch - cam.pitch) > 0.002;
+
+  // ---------- sky by the real local clock ----------
+  const SKY = [
+    [0, '#1B2A57', '#3A4D80'], [4.5, '#1F2E5C', '#46507E'], [6, '#56699E', '#E3A688'], [7.5, '#84ACD8', '#E3EBEA'],
+    [12, '#76AADB', '#DFEAEE'], [17, '#7EA2CD', '#EAD7B6'], [19, '#4D5E95', '#E58F68'], [20.5, '#24335F', '#4A5180'], [24, '#1B2A57', '#3A4D80'],
+  ];
+  function skyAt(h) {
+    for (let i = 1; i < SKY.length; i++) {
+      if (h <= SKY[i][0]) {
+        const a = SKY[i - 1], b = SKY[i], t = (h - a[0]) / (b[0] - a[0]);
+        return [mixA(rgb(a[1]), rgb(b[1]), t), mixA(rgb(a[2]), rgb(b[2]), t)];
+      }
+    }
+    return [rgb(SKY[0][1]), rgb(SKY[0][2])];
+  }
+  const nightness = h => h < 5 ? 1 : h < 7 ? 1 - (h - 5) / 2 : h < 18.5 ? 0 : h < 20.5 ? (h - 18.5) / 2 : 1;
+  const STARS = Array.from({ length: 46 }, (_, i) => [Sim.h01(7, i), Sim.h01(8, i) * 0.62, 0.5 + Sim.h01(9, i), Sim.h01(10, i) * 6.28]);
+
+  // ---------- scene palette (a world of its own, not themed) ----------
+  const C = {
+    young: rgb('#7E9246'), twig: rgb('#6E4B3B'), old: rgb('#796D63'), fog: rgb('#33423F'),
+    leafA: rgb('#4A7835'), leafB: rgb('#6C9542'), leafShade: rgb('#2F4A27'), leafYoung: rgb('#A8C35B'), leafBronze: rgb('#B67D4E'),
+    aut: [rgb('#D8772B'), rgb('#BC3B2A'), rgb('#D7A538')], scorch: rgb('#9B7A4D'),
+    soilDry: rgb('#8F7B5E'), soilWet: rgb('#3D3026'), moss: rgb('#5E7B3C'), mossWinter: rgb('#6F6A47'),
+    benchTop: rgb('#9C846C'), benchFront: rgb('#6E5A49'), benchDeep: rgb('#4A3D33'), ground: rgb('#7E7B6C'),
+    potLight: rgb('#7493A0'), potMid: rgb('#567480'), potDark: rgb('#364B53'), potRim: rgb('#62818C'),
+    hills: rgb('#5B7266'), overcast: rgb('#8E989E'),
+    barkWarm: rgb('#86604A'), barkCool: rgb('#6C6C68'), bud: rgb('#6A4533'), budSwell: rgb('#93803F'),
+    copper: rgb('#BE7A3E'), copperOld: rgb('#7E5537'), strainWarn: rgb('#E3A43A'), strainBad: rgb('#D9443A'),
+  };
+
+  // Trident maple leaf: three forward lobes, unit length, pointing up from the origin
+  const LEAF = new Path2D();
+  LEAF.moveTo(0, 0);
+  LEAF.bezierCurveTo(-0.3, -0.06, -0.52, -0.26, -0.54, -0.54);
+  LEAF.bezierCurveTo(-0.4, -0.5, -0.25, -0.52, -0.16, -0.6);
+  LEAF.bezierCurveTo(-0.14, -0.82, -0.06, -0.96, 0, -1.03);
+  LEAF.bezierCurveTo(0.06, -0.96, 0.14, -0.82, 0.16, -0.6);
+  LEAF.bezierCurveTo(0.25, -0.52, 0.4, -0.5, 0.54, -0.54);
+  LEAF.bezierCurveTo(0.52, -0.26, 0.3, -0.06, 0, 0);
+  LEAF.closePath();
+  // the leaf folds slightly along its midrib, so one half catches less light
+  const LEAF_HALF = new Path2D();
+  LEAF_HALF.moveTo(0, 0);
+  LEAF_HALF.bezierCurveTo(-0.3, -0.06, -0.52, -0.26, -0.54, -0.54);
+  LEAF_HALF.bezierCurveTo(-0.4, -0.5, -0.25, -0.52, -0.16, -0.6);
+  LEAF_HALF.bezierCurveTo(-0.14, -0.82, -0.06, -0.96, 0, -1.03);
+  LEAF_HALF.closePath();
+  // three main veins run from the stem into the three lobes
+  const LEAF_VEINS = new Path2D();
+  LEAF_VEINS.moveTo(0, -0.02); LEAF_VEINS.lineTo(0, -0.92);
+  LEAF_VEINS.moveTo(0, -0.12); LEAF_VEINS.quadraticCurveTo(-0.2, -0.3, -0.45, -0.5);
+  LEAF_VEINS.moveTo(0, -0.12); LEAF_VEINS.quadraticCurveTo(0.2, -0.3, 0.45, -0.5);
+  LEAF_VEINS.moveTo(0, -0.44); LEAF_VEINS.lineTo(-0.11, -0.62);
+  LEAF_VEINS.moveTo(0, -0.44); LEAF_VEINS.lineTo(0.11, -0.62);
+  LEAF_VEINS.moveTo(-0.22, -0.32); LEAF_VEINS.lineTo(-0.3, -0.24);
+  LEAF_VEINS.moveTo(0.22, -0.32); LEAF_VEINS.lineTo(0.3, -0.24);
+  // a pointed winter bud
+  const BUD = new Path2D();
+  BUD.moveTo(0, 0); BUD.quadraticCurveTo(-0.44, -0.34, 0, -1); BUD.quadraticCurveTo(0.44, -0.34, 0, 0); BUD.closePath();
+
+  // Opposite leaves fan out flat on each side of the twig; tips carry a few more pointing forward.
+  function leafSpecs(n) {
+    const kind = n.ch.length ? 1 : 0;
+    if (n._ls && n._lsK === kind) return n._ls;
+    const id = n.id, out = [];
+    const cnt = Sim.leafCount(n);
+    for (let k = 0; k < cnt; k++) {
+      const r = j => Sim.h01(id * 31 + k, j);
+      const pair = k < 2;
+      out.push({
+        roll: pair ? (k ? Math.PI : 0) + (r(1) - 0.5) * 0.7 : r(1) * TAU,
+        spread: pair ? 0.95 + r(2) * 0.5 : 0.2 + r(2) * 0.45,
+        dist: 1.6 + r(3) * 2.4, size: 5.6 + r(4) * 2.2, tint: r(5), fallT: 0.03 + r(6) * 0.95, pick: r(7),
+        key: -1, rgb: null, cols: [],
+      });
+    }
+    n._ls = out; n._lsK = kind;
+    return out;
+  }
+  function springStart(dayF) { return Math.floor(dayF / Sim.YEAR) * Sim.YEAR + 80; }
+  const FOG_STEP = 0.11;
+  // [leaf, shaded half, veins] for one leaf at one depth level
+  function leafColor(n, sp, ls, dayInt, lvl) {
+    const key = dayInt * 100 + Math.round(T.scorch * 10) * 7 + Math.round(n.light * 5);
+    if (sp.key !== key) {
+      let c = mixA(C.leafA, C.leafB, sp.tint);
+      c = mixA(c, C.leafShade, (1 - n.light) * 0.3);
+      const young = clamp(1 - (dispDay - Math.max(n.born, n.rgd || 0, springStart(dispDay))) / 24, 0, 1);
+      if (young > 0) c = mixA(c, sp.tint < 0.3 ? C.leafBronze : C.leafYoung, young * 0.8);
+      const aut = clamp(ls.autumn * 1.35 - sp.pick * 0.35, 0, 1);
+      if (aut > 0) c = mixA(c, C.aut[sp.pick < 0.45 ? 0 : sp.pick < 0.8 ? 1 : 2], aut);
+      if (T.scorch > 0) c = mixA(c, C.scorch, T.scorch * (0.5 + 0.5 * sp.tint));
+      sp.key = key; sp.rgb = c; sp.cols = [];
+    }
+    let out = sp.cols[lvl];
+    if (!out) {
+      const base = mixA(sp.rgb, C.fog, lvl * FOG_STEP);
+      out = sp.cols[lvl] = [css(base), css(mixA(base, C.leafShade, 0.22)), css(mixA(base, [236, 240, 200], 0.32), 0.7)];
+    }
+    return out;
+  }
+  function barkRGB(n, dayInt) {
+    if (n._bcD === dayInt) return n._bc;
+    const age = dispDay - n.born;
+    const k = clamp((n.r - 1.0) / 2.8, 0, 1);
+    let c = mixA(C.twig, C.old, k);
+    if (age < 45) c = mixA(C.young, c, clamp(age / 45, 0, 1));
+    // small per-branch variation so the wood isn't one flat color
+    const j = Sim.h01(n.id, 77);
+    c = mixA(c, j < 0.5 ? C.barkWarm : C.barkCool, Math.abs(j - 0.5) * 0.4);
+    n._bc = c; n._bcD = dayInt; n._bcs = [];
+    return c;
+  }
+  // Focus view: the selected primary branch keeps its shape, tinted by branch order; everything else fades back.
+  const GHOST = 0.2;
+  const ORDER_RGB = [rgb('#C9B8A6'), rgb('#E2A93B'), rgb('#3FB3A0'), rgb('#8E8CF0'), rgb('#E6E2D6')];
+  let focusOn = false, focusSet = new Uint8Array(0), focusRoot = -1;
+  function orderColor(n, dayInt) {
+    if (n._ocD === dayInt) return n._oc;
+    n._oc = css(mixA(barkRGB(n, dayInt), ORDER_RGB[Math.min(4, n.ord)], 0.72)); n._ocD = dayInt;
+    return n._oc;
+  }
+  function updateFocus() {
+    const N = T.nodes;
+    let root = -1;
+    if (mode === 'wire' && prefs.focus && wireSel) {
+      const s0 = T._idx.get(wireSel.id);
+      if (s0 !== undefined) {
+        let k = s0;
+        while (N[k].ord > 1 && N[k].pi >= 0) k = N[k].pi;
+        root = N[k].ord === 1 ? Sim.branchStart(T, k) : s0;
+      }
+    }
+    focusOn = root >= 0;
+    if (!focusOn) { if (focusRoot !== -1) { focusRoot = -1; cam.auto = true; cam.fitAt = 0; } return; }
+    if (focusSet.length < N.length) focusSet = new Uint8Array(N.length * 2);
+    focusSet.fill(0);
+    for (const k of Sim.subtreeOf(T, root)) focusSet[k] = 1;
+    const rid = N[root].id;
+    if (rid !== focusRoot) { focusRoot = rid; cam.auto = true; cam.fitAt = 0; }
+  }
+  function barkColor(n, dayInt, lvl) {
+    const c = barkRGB(n, dayInt);
+    return n._bcs[lvl] || (n._bcs[lvl] = css(mixA(c, C.fog, lvl * FOG_STEP)));
+  }
+  const fogLevel = d => d >= 0 ? 0 : Math.min(3, Math.round(-d / cam.R * 3));
+
+  const snowyNow = () => Sim.isWinter(Sim.doyOf(dispDay)) && Sim.h01(T.seed + 99, Math.floor(dispDay / 5)) < 0.5;
+  const precipToday = () => T.lastRain === Math.floor(dispDay);
+
+  // ---------- draw ----------
+  let PX = new Float32Array(2048), PY = new Float32Array(2048), PD = new Float32Array(2048);
+  let IT_D = new Float32Array(8192), IT_K = new Uint8Array(8192), IT_I = new Int32Array(8192);
+  let LF = new Float32Array(8192 * 6), LF_PX = new Float32Array(8192), PET = new Float32Array(8192 * 4); const LF_COL = [];
+  let LF_N = new Int32Array(8192), LF_K = new Uint8Array(8192), LF_DD = new Float32Array(8192), LF_GH = new Uint8Array(8192), LF_COUNT = 0;
+  let Q = 2, drawAvg = 10, qFrames = 0; // detail level adapts to how fast this device draws
+  const order = [];
+  function ensureCap(nNodes, nItems) {
+    if (PX.length < nNodes) { const c = nNodes * 2; PX = new Float32Array(c); PY = new Float32Array(c); PD = new Float32Array(c); }
+    if (IT_D.length < nItems) { const c = nItems * 2; IT_D = new Float32Array(c); IT_K = new Uint8Array(c); IT_I = new Int32Array(c); LF = new Float32Array(c * 6); LF_PX = new Float32Array(c); PET = new Float32Array(c * 4); LF_N = new Int32Array(c); LF_K = new Uint8Array(c); LF_DD = new Float32Array(c); LF_GH = new Uint8Array(c); }
+  }
+
+  function draw(dt, tSec) {
+    const dayInt = Math.floor(dispDay);
+    const ls = Sim.leafState(dispDay);
+    const sway = reduceMotion || bend ? 0 : 0.016 + 0.01 * Math.sin(tSec * 0.31) + 0.006 * Math.sin(tSec * 0.83);
+    Sim.layout(T, dispDay, sway, tSec);
+    updateFocus();
+    updateCamera(dt);
+    dispMoist += (T.moisture - dispMoist) * Math.min(1, dt * 2.5);
+
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const d = new Date(), hour = d.getHours() + d.getMinutes() / 60;
+    const night = nightness(hour);
+    const wet = precipToday();
+    const winter = Sim.isWinter(ls.doy | 0);
+    const snowy = snowyNow();
+
+    drawBackdrop(hour, night, wet, snowy, tSec);
+    drawPot(snowy, ls);
+    drawTree(ls, dayInt, snowy);
+    drawParticles(dt, tSec, ls, wet, winter);
+
+    if (night > 0.01) {
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = css([255 - 112 * night, 255 - 100 * night, 255 - 58 * night]);
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    drawOverlays(tSec);
+  }
+
+  function drawBackdrop(hour, night, wet, snowy, tSec) {
+    let [skyTop, skyBot] = skyAt(hour);
+    if (wet) { const oc = night > 0.5 ? rgb('#1E2530') : C.overcast; skyTop = mixA(skyTop, oc, 0.5); skyBot = mixA(skyBot, oc, 0.45); }
+    // looking down, the far background becomes garden ground instead of sky
+    const groundK = clamp((cam.pitch - 0.55) / 0.6, 0, 1);
+    if (groundK > 0) { skyTop = mixA(skyTop, C.ground, groundK); skyBot = mixA(skyBot, C.ground, groundK * 0.9); }
+    projFixed(0, BENCH_Y, BENCH_BACK); const yBack = _y;
+    projFixed(0, BENCH_Y, BENCH_FRONT); const yFront = _y;
+    projFixed(0, BENCH_Y - 260, BENCH_FRONT); const yFloor = _y;
+    const g = ctx.createLinearGradient(0, 0, 0, Math.max(10, yBack));
+    g.addColorStop(0, css(skyTop)); g.addColorStop(1, css(skyBot));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    if (night > 0.25 && !wet && groundK < 0.5) {
+      for (const s of STARS) {
+        const a = (night - 0.25) * (0.45 + 0.35 * Math.sin(tSec * s[2] + s[3])) * (1 - groundK * 2);
+        ctx.fillStyle = `rgba(235,240,255,${a.toFixed(3)})`;
+        ctx.fillRect(s[0] * W, s[1] * yBack, 1.4, 1.4);
+      }
+      const mx = W * 0.86, my = Math.max(84, yBack * 0.22);
+      if (my < yBack - 20) {
+        ctx.fillStyle = `rgba(240,236,220,${(night * 0.9).toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(mx, my, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = css(skyTop);
+        ctx.beginPath(); ctx.arc(mx + 6, my - 4, 12, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // misty hills along the horizon, fading as the view tilts down
+    const hillA = clamp(1 - cam.pitch / 0.7, 0, 1);
+    if (hillA > 0) {
+      for (let layer = 0; layer < 2; layer++) {
+        const base = yBack - (layer ? 0.04 : 0.1) * H;
+        ctx.fillStyle = css(mixA(skyBot, C.hills, layer ? 0.38 : 0.2), hillA);
+        ctx.beginPath(); ctx.moveTo(0, yBack + 1);
+        for (let x = 0; x <= W + 20; x += 20) {
+          const y = base - (Math.sin(x * 0.006 + layer * 2.1) * 0.5 + Math.sin(x * 0.017 + layer) * 0.25 + 0.6) * H * (layer ? 0.05 : 0.08);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(W, yBack + 1); ctx.closePath(); ctx.fill();
+      }
+    }
+    // display bench: top surface and front face (the bench stays put while the turntable spins)
+    ctx.fillStyle = snowy ? '#E9EEF2' : css(C.benchTop);
+    ctx.fillRect(0, yBack, W, Math.max(0, yFront - yBack));
+    if (!snowy && yFront - yBack > 6) {
+      ctx.strokeStyle = 'rgba(60,42,30,0.14)'; ctx.lineWidth = 1;
+      for (let z = BENCH_BACK + 22; z < BENCH_FRONT; z += 26) { projFixed(0, BENCH_Y, z); ctx.beginPath(); ctx.moveTo(0, _y); ctx.lineTo(W, _y); ctx.stroke(); }
+    }
+    const fg = ctx.createLinearGradient(0, yFront, 0, Math.max(yFront + 1, yFloor));
+    fg.addColorStop(0, css(C.benchFront)); fg.addColorStop(1, css(C.benchDeep));
+    ctx.fillStyle = fg; ctx.fillRect(0, yFront, W, H - yFront);
+    ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(0, yFront - 0.5, W, 1.4);
+  }
+
+  function face(pts, fill) {
+    ctx.fillStyle = fill; ctx.beginPath();
+    for (let i = 0; i < pts.length; i++) { proj(pts[i][0], pts[i][1], pts[i][2]); if (i) ctx.lineTo(_x, _y); else ctx.moveTo(_x, _y); }
+    ctx.closePath(); ctx.fill();
+  }
+  // which way a face points: toward the camera (> 0) and how much it faces the light from the upper left
+  function faceInfo(nx, ny, nz) {
+    const xr = nx * cyw + nz * syw, zr = nz * cyw - nx * syw;
+    return [zr * cpt + ny * spt, xr];
+  }
+  function drawPot(snowy, ls) {
+    const hw = POT_W / 2, hd = POT_D / 2, s = cam.s;
+    // shadow on the bench
+    proj(0, BENCH_Y, 0);
+    const rx = Math.hypot(hw, hd) * 0.8 * s, ry = Math.max(3, Math.hypot(hw, hd) * 0.75 * s * spt) + 2;
+    const sg = ctx.createRadialGradient(_x, _y, 1, _x, _y, rx);
+    sg.addColorStop(0, 'rgba(20,14,10,0.32)'); sg.addColorStop(1, 'rgba(20,14,10,0)');
+    ctx.save(); ctx.translate(_x, _y); ctx.scale(1, ry / rx); ctx.translate(-_x, -_y);
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(_x, _y, rx, 0, TAU); ctx.fill(); ctx.restore();
+    // feet
+    for (const [fx, fz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      const cx = fx * (hw - 16), cz = fz * (hd - 13);
+      const pts = (y) => [[cx - 6, y, cz - 6], [cx + 6, y, cz - 6], [cx + 6, y, cz + 6], [cx - 6, y, cz + 6]];
+      const top = pts(-POT_H), bot = pts(BENCH_Y);
+      for (let i = 0; i < 4; i++) {
+        const a = top[i], b = top[(i + 1) % 4], c = bot[(i + 1) % 4], dd = bot[i];
+        const mx = (a[0] + b[0]) / 2 - cx, mz = (a[2] + b[2]) / 2 - cz;
+        if (faceInfo(mx, 0, mz)[0] > 0) face([a, b, c, dd], css(C.potDark));
+      }
+    }
+    // body: a frustum narrowing toward the base
+    const bodyTop = -5, inset = 4;
+    const sides = [
+      [[hw, bodyTop, -hd], [hw, bodyTop, hd], [hw - inset, -POT_H, hd - inset], [hw - inset, -POT_H, -hd + inset], [1, -0.15, 0]],
+      [[-hw, bodyTop, hd], [-hw, bodyTop, -hd], [-hw + inset, -POT_H, -hd + inset], [-hw + inset, -POT_H, hd - inset], [-1, -0.15, 0]],
+      [[hw, bodyTop, hd], [-hw, bodyTop, hd], [-hw + inset, -POT_H, hd - inset], [hw - inset, -POT_H, hd - inset], [0, -0.15, 1]],
+      [[-hw, bodyTop, -hd], [hw, bodyTop, -hd], [hw - inset, -POT_H, -hd + inset], [-hw + inset, -POT_H, -hd + inset], [0, -0.15, -1]],
+    ];
+    for (const sd of sides) {
+      const [vis, lx] = faceInfo(sd[4][0], sd[4][1], sd[4][2]);
+      if (vis <= 0) continue;
+      face(sd.slice(0, 4), css(mixA(C.potDark, C.potLight, clamp(0.55 - 0.45 * lx, 0, 1))));
+    }
+    // lip
+    const A = hw + 3, B = hd + 3;
+    const lips = [
+      [[A, 0, -B], [A, 0, B], [A, bodyTop, B], [A, bodyTop, -B], [1, 0, 0]],
+      [[-A, 0, B], [-A, 0, -B], [-A, bodyTop, -B], [-A, bodyTop, B], [-1, 0, 0]],
+      [[A, 0, B], [-A, 0, B], [-A, bodyTop, B], [A, bodyTop, B], [0, 0, 1]],
+      [[-A, 0, -B], [A, 0, -B], [A, bodyTop, -B], [-A, bodyTop, -B], [0, 0, -1]],
+    ];
+    for (const sd of lips) {
+      const [vis, lx] = faceInfo(sd[4][0], 0, sd[4][2]);
+      if (vis <= 0) continue;
+      face(sd.slice(0, 4), css(mixA(C.potDark, C.potLight, clamp(0.68 - 0.4 * lx, 0, 1))));
+    }
+    face([[-A, 0, -B], [A, 0, -B], [A, 0, B], [-A, 0, B]], css(C.potRim));
+    // soil, moss, fallen leaves
+    const soil = mixA(C.soilDry, C.soilWet, clamp(dispMoist / 70, 0, 1));
+    face([[-hw + 1, 0.5, -hd + 1], [hw - 1, 0.5, -hd + 1], [hw - 1, 0.5, hd - 1], [-hw + 1, 0.5, hd - 1]], snowy ? '#EEF2F6' : css(soil));
+    const winter = Sim.isWinter(ls.doy | 0);
+    if (!snowy) {
+      // low, irregular cushions of moss: each patch is a few overlapping clumps
+      ctx.fillStyle = css(winter ? C.mossWinter : C.moss, 0.85);
+      for (let i = 0; i < 16; i++) {
+        const fx = (Sim.h01(T.seed, i * 3) - 0.5) * (POT_W - 22), fz = (Sim.h01(T.seed, i * 3 + 2) - 0.5) * (POT_D - 20);
+        if (Math.hypot(fx, fz) < 18) continue;
+        for (let j = 0; j < 3; j++) {
+          const ox = (Sim.h01(T.seed + j, i * 5 + 1) - 0.5) * 9, oz = (Sim.h01(T.seed + j, i * 5 + 2) - 0.5) * 7;
+          const r = (2.4 + Sim.h01(T.seed + j, i * 5 + 3) * 3) * s;
+          proj(fx + ox, 0.9, fz + oz);
+          ctx.beginPath(); ctx.ellipse(_x, _y, r, Math.max(1.1 * s, r * spt), 0, 0, TAU); ctx.fill();
+        }
+      }
+    }
+    if (ls.fall > 0 && ls.doy < 345) {
+      const count = Math.round(ls.fall * Math.min(24, T.leafy / 4));
+      for (let i = 0; i < count; i++) {
+        const onBench = i % 3 === 2;
+        let fx = (Sim.h01(T.seed + 5, i) - 0.5) * (onBench ? POT_W * 2 : POT_W - 24);
+        let fz = (Sim.h01(T.seed + 7, i) - 0.5) * (onBench ? 120 : POT_D - 20);
+        if (onBench && Math.abs(fx) < hw + 6 && Math.abs(fz) < hd + 6) continue;
+        const fy = onBench ? BENCH_Y + 0.5 : 1;
+        if (onBench) projFixed(fx, fy, fz); else proj(fx, fy, fz);
+        ctx.save(); ctx.translate(_x, _y); ctx.rotate(Sim.h01(T.seed + 6, i) * TAU); ctx.scale(5 * s, 5 * s * Math.max(0.35, spt));
+        ctx.fillStyle = css(C.aut[i % 3], 0.9); ctx.fill(LEAF); ctx.restore();
+      }
+    }
+  }
+
+  function pushItem(n, k, idx, depth) { IT_K[n] = k; IT_I[n] = idx; IT_D[n] = depth; }
+
+  function drawTree(ls, dayInt, snowy) {
+    const N = T.nodes, s = cam.s;
+    const leafSeason = ls.doy >= 79 && ls.fall < 1;
+    ensureCap(N.length + 4, N.length * 5 + T.roots.length + 16);
+    for (let i = 0; i < N.length; i++) { const n = N[i]; proj(n.x, n.y, n.z); PX[i] = _x; PY[i] = _y; PD[i] = _d; n._main = -1; }
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i]; if (!n.ch.length) continue;
+      let best = n.ch[0]; for (const c of n.ch) if (N[c].r > N[best].r) best = c;
+      n._main = best;
+    }
+    wireMap.clear();
+    for (const w of T.wires) {
+      const i = T._idx.get(w.id); if (i === undefined) continue;
+      w._chain = Sim.chainFrom(T, i, w.len);
+      for (const k of w._chain) wireMap.set(k, w);
+    }
+    let cnt = 0, lfCount = 0;
+    // wood
+    for (let i = 1; i < N.length; i++) { const n = N[i]; if (n.dl < 0.02) continue; pushItem(cnt++, 0, i, (PD[i] + PD[n.pi]) / 2); }
+    // nebari: surface roots and the flared base
+    const root = N[0], r0 = Math.max(root.r, N[root.ch[0]] ? N[root.ch[0]].r : 3);
+    for (let k = 0; k < T.roots.length; k++) {
+      const rt = T.roots[k], rad = r0 * (0.55 + rt[1] * 0.5), a = rt[0] + rt[3] * 0.5;
+      proj(Math.cos(a) * rad, 0.8, Math.sin(a) * rad);
+      pushItem(cnt++, 2, k, _d);
+    }
+    pushItem(cnt++, 3, 0, PD[0] - 0.01);
+    // leaves
+    if (leafSeason) {
+      const droop = clamp((22 - dispMoist) / 22, 0, 1) * 0.6;
+      for (let i = 1; i < N.length; i++) {
+        const n = N[i];
+        if (!Sim.isLeafy(n)) continue;
+        if (focusOn && !focusSet[i]) continue;
+        const unfold = clamp((dispDay - Math.max(n.born, n.rgd || 0) - 0.4) / 4, 0, 1);
+        const base = Math.min(ls.open, unfold);
+        if (base <= 0.02) continue;
+        const ce = Math.cos(n.el), dx = ce * Math.cos(n.az), dy = Math.sin(n.el), dz = ce * Math.sin(n.az);
+        let sx = -dz, sz = dx, sl = Math.hypot(sx, sz);
+        if (sl < 0.15) { sx = -Math.sin(n.az); sz = Math.cos(n.az); sl = 1; }
+        sx /= sl; sz /= sl;
+        const ux = -sz * dy, uy = sz * dx - sx * dz, uz = sx * dy; // s × d
+        const ordK = (n.sm || 1) / (1 + 0.1 * Math.min(n.ord, 6));
+        const specs = leafSpecs(n);
+        for (let sk = 0; sk < specs.length; sk++) {
+          if (n.pk & (1 << sk)) continue;
+          const sp = specs[sk];
+          if (ls.fall > sp.fallT) continue;
+          const px = sp.size * ordK * base * s;
+          if (px < 0.7) continue;
+          const cr = Math.cos(sp.roll), sr = Math.sin(sp.roll), cs = Math.cos(sp.spread), ss = Math.sin(sp.spread);
+          let lx = dx * cs + (sx * cr + ux * sr) * ss, ly = dy * cs + uy * sr * ss, lz = dz * cs + (sz * cr + uz * sr) * ss;
+          if (droop) { ly -= droop; const L = Math.hypot(lx, ly, lz) || 1; lx /= L; ly /= L; lz /= L; }
+          const dist = sp.dist * base;
+          proj(n.x + lx * dist, n.y + ly * dist, n.z + lz * dist);
+          const ex = _x, ey = _y, ed = _d;
+          projDir(lx, ly, lz);
+          const pl = Math.hypot(_x, _y);
+          const ux2 = pl > 1e-3 ? _x / pl : 0, uy2 = pl > 1e-3 ? _y / pl : -1;
+          const Wd = px, Lh = px * Math.max(0.42, pl);
+          const o = lfCount * 6;
+          LF[o] = -uy2 * Wd; LF[o + 1] = ux2 * Wd; LF[o + 2] = -ux2 * Lh; LF[o + 3] = -uy2 * Lh; LF[o + 4] = ex; LF[o + 5] = ey;
+          LF_PX[lfCount] = px;
+          PET[lfCount * 4] = PX[i]; PET[lfCount * 4 + 1] = PY[i]; PET[lfCount * 4 + 2] = ex; PET[lfCount * 4 + 3] = ey;
+          LF_COL[lfCount] = leafColor(n, sp, ls, dayInt, fogLevel(ed));
+          LF_N[lfCount] = i; LF_K[lfCount] = sk; LF_DD[lfCount] = ed; LF_GH[lfCount] = focusOn ? 1 : 0;
+          pushItem(cnt++, 1, lfCount, ed);
+          lfCount++;
+        }
+      }
+    }
+    LF_COUNT = lfCount;
+    order.length = cnt;
+    for (let i = 0; i < cnt; i++) order[i] = i;
+    order.sort((a, b) => IT_D[a] - IT_D[b]);
+
+    const D = DPR;
+    // leaf stalks, drawn first so each leaf sits over its own stalk
+    if (Q >= 1 && lfCount && !focusOn) {
+      ctx.strokeStyle = ls.autumn > 0.3 ? 'rgba(150,70,40,0.85)' : 'rgba(104,98,52,0.85)';
+      ctx.lineWidth = Math.max(0.45, 0.28 * s); ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let k = 0; k < lfCount; k++) { if (LF_PX[k] < 4) continue; const o = k * 4; ctx.moveTo(PET[o], PET[o + 1]); ctx.lineTo(PET[o + 2], PET[o + 3]); }
+      ctx.stroke();
+    }
+    if (focusOn) {
+      ctx = ghostLayer();
+      for (let oi = 0; oi < cnt; oi++) {
+        const it = order[oi], kind = IT_K[it], idx = IT_I[it];
+        if (kind === 0 && !focusSet[idx]) drawWood(N, idx, dayInt, snowy, ls);
+        else if (kind === 2) drawRoot(T.roots[idx], r0, dayInt);
+        else if (kind === 3) drawBase(r0, dayInt);
+      }
+      ctx = mainCtx;
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = GHOST; ctx.drawImage(ghostCanvas, 0, 0); ctx.restore();
+    }
+    for (let oi = 0; oi < cnt; oi++) {
+      const it = order[oi], kind = IT_K[it], idx = IT_I[it];
+      if (focusOn && (kind === 2 || kind === 3 || (kind === 0 && !focusSet[idx]))) continue;
+      if (kind === 1) {
+        const o = idx * 6, cols = LF_COL[idx], px = LF_PX[idx];
+        ctx.setTransform(D * LF[o], D * LF[o + 1], D * LF[o + 2], D * LF[o + 3], D * LF[o + 4], D * LF[o + 5]);
+        if (LF_GH[idx]) { ctx.globalAlpha = 0.22; ctx.fillStyle = cols[0]; ctx.fill(LEAF); ctx.globalAlpha = 1; continue; }
+        ctx.fillStyle = cols[0]; ctx.fill(LEAF);
+        if (Q >= 1 && px >= 5) { ctx.fillStyle = cols[1]; ctx.fill(LEAF_HALF); }
+        if (Q >= 2 && px >= 8) { ctx.strokeStyle = cols[2]; ctx.lineWidth = 0.75 / px; ctx.stroke(LEAF_VEINS); }
+        continue;
+      }
+      ctx.setTransform(D, 0, 0, D, 0, 0);
+      if (kind === 0) drawWood(N, idx, dayInt, snowy, ls);
+      else if (kind === 2) drawRoot(T.roots[idx], r0, dayInt);
+      else drawBase(r0, dayInt);
+    }
+    ctx.setTransform(D, 0, 0, D, 0, 0);
+  }
+
+  // Each piece of wood is a curved, tapering tube. Shared joints use the same tangent, so a limb reads as one smooth shape.
+  const SPX = new Float32Array(8), SPY = new Float32Array(8), SNX = new Float32Array(8), SNY = new Float32Array(8), SR = new Float32Array(8), SCL = new Float32Array(8);
+  const LIGHT_X = -0.6, LIGHT_Y = -0.8;
+  function drawWood(N, i, dayInt, snowy, ls) {
+    const n = N[i], p = N[n.pi], s = cam.s;
+    const isMain = p._main === i;
+    const kN = 0.5 + 0.5 * n.gf;
+    const rEnd = Math.max(0.35, (n.ch.length ? n.r : n.r * 0.62) * s * kN);
+    const rStart = Math.max(0.38, (isMain ? p.r * (0.5 + 0.5 * p.gf) : Math.min(p.r, n.r * 1.3) * kN) * s);
+    const Bx = PX[n.pi], By = PY[n.pi], Cx = PX[i], Cy = PY[i];
+    const L = Math.hypot(Cx - Bx, Cy - By);
+    const lvl = fogLevel((PD[i] + PD[n.pi]) / 2);
+    const ghost = focusOn && !focusSet[i];
+    ctx.fillStyle = focusOn && !ghost ? orderColor(n, dayInt) : barkColor(n, dayInt, lvl);
+    if (L < 0.6) { ctx.beginPath(); ctx.arc(Cx, Cy, Math.max(rStart, rEnd), 0, TAU); ctx.fill(); return; }
+    const thick = rStart > 1.4;
+    let Ax, Ay, Dx, Dy;
+    if (isMain && p.pi >= 0) { Ax = PX[p.pi]; Ay = PY[p.pi]; } else { Ax = 2 * Bx - Cx; Ay = 2 * By - Cy; }
+    if (n._main >= 0) { Dx = PX[n._main]; Dy = PY[n._main]; } else { Dx = 2 * Cx - Bx; Dy = 2 * Cy - By; }
+    const steps = thick ? clamp(Math.round(L / 7), 1, 6) : 1;
+    let cSum = 0;
+    for (let j = 0; j <= steps; j++) {
+      const t = j / steps;
+      let px, py, tx, ty;
+      if (!thick) { px = Bx + (Cx - Bx) * t; py = By + (Cy - By) * t; tx = Cx - Bx; ty = Cy - By; }
+      else {
+        const t2 = t * t, t3 = t2 * t;
+        px = 0.5 * (2 * Bx + (Cx - Ax) * t + (2 * Ax - 5 * Bx + 4 * Cx - Dx) * t2 + (3 * Bx - Ax - 3 * Cx + Dx) * t3);
+        py = 0.5 * (2 * By + (Cy - Ay) * t + (2 * Ay - 5 * By + 4 * Cy - Dy) * t2 + (3 * By - Ay - 3 * Cy + Dy) * t3);
+        tx = 0.5 * ((Cx - Ax) + 2 * (2 * Ax - 5 * Bx + 4 * Cx - Dx) * t + 3 * (3 * Bx - Ax - 3 * Cx + Dx) * t2);
+        ty = 0.5 * ((Cy - Ay) + 2 * (2 * Ay - 5 * By + 4 * Cy - Dy) * t + 3 * (3 * By - Ay - 3 * Cy + Dy) * t2);
+      }
+      let tl = Math.hypot(tx, ty);
+      if (tl < 1e-4) { tx = Cx - Bx; ty = Cy - By; tl = L; }
+      const nx = -ty / tl, ny = tx / tl;
+      SPX[j] = px; SPY[j] = py; SNX[j] = nx; SNY[j] = ny; SR[j] = rStart + (rEnd - rStart) * t;
+      SCL[j] = j ? SCL[j - 1] + Math.hypot(px - SPX[j - 1], py - SPY[j - 1]) : 0;
+      cSum += nx * LIGHT_X + ny * LIGHT_Y;
+    }
+    ctx.beginPath();
+    for (let j = 0; j <= steps; j++) { const x = SPX[j] + SNX[j] * SR[j], y = SPY[j] + SNY[j] * SR[j]; if (j) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+    for (let j = steps; j >= 0; j--) ctx.lineTo(SPX[j] - SNX[j] * SR[j], SPY[j] - SNY[j] * SR[j]);
+    ctx.closePath(); ctx.fill();
+    if (!isMain && rStart > 0.9) { ctx.beginPath(); ctx.arc(Bx, By, rStart * 0.96, 0, TAU); ctx.fill(); }
+    if (rEnd > 0.5 && (!n.ch.length || rEnd <= 1.4)) { ctx.beginPath(); ctx.arc(Cx, Cy, rEnd, 0, TAU); ctx.fill(); }
+    if (ghost) return;
+
+    if (rStart > 2) {
+      // round the limb: a soft highlight toward the light, shade on the far side, and crisp edges
+      const c = cSum / (steps + 1), ac = Math.abs(c);
+      strip(steps, 0.55 * c - 0.24, 0.55 * c + 0.24, `rgba(240,230,216,${(0.1 + 0.09 * ac).toFixed(3)})`);
+      const sg = c >= 0 ? -1 : 1;
+      strip(steps, sg * 0.5, sg * 1.0, `rgba(26,18,14,${(0.08 + 0.17 * ac).toFixed(3)})`);
+      ctx.strokeStyle = 'rgba(28,20,16,0.26)'; ctx.lineWidth = 0.8;
+      for (const side of [1, -1]) {
+        ctx.beginPath();
+        for (let j = 0; j <= steps; j++) { const x = SPX[j] + side * SNX[j] * SR[j], y = SPY[j] + side * SNY[j] * SR[j]; if (j) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+        ctx.stroke();
+      }
+    }
+    if (Q >= 1 && rStart > 2.6) drawBarkMarks(n, p, rStart / s, rEnd / s, lvl, dispDay - n.born);
+    if (n.scar > 0.04) coil(steps, Math.max(3.2, (rStart + rEnd) * 1.3), Math.max(0.7, (rStart + rEnd) * 0.12), `rgba(42,28,20,${(0.5 * n.scar).toFixed(3)})`, null, 0.92);
+    if (n.crack > 0.05) {
+      ctx.strokeStyle = `rgba(30,18,12,${(0.85 * n.crack).toFixed(3)})`; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+      ctx.beginPath();
+      const end = Math.max(1, Math.round(steps * 0.6));
+      for (let j = 0; j <= end; j++) { const o = (j % 2 ? 0.22 : -0.18) * SR[j]; const x = SPX[j] + SNX[j] * o, y = SPY[j] + SNY[j] * o; if (j) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+      ctx.stroke();
+    }
+    const w = wireMap.get(i);
+    if (w) {
+      let col = mixA(C.copper, C.copperOld, clamp(w.gd / 40, 0, 1));
+      const strain = bend && bend.w === w ? bend.strain : 0;
+      if (strain > 0.6) col = mixA(col, C.strainWarn, clamp((strain - 0.6) / 0.35, 0, 1));
+      if (strain > 0.95) col = mixA(col, C.strainBad, clamp((strain - 0.95) / 0.3, 0, 1));
+      const ww = Math.max(1.3, (rStart + rEnd) * 0.22), pitch = Math.max(3.4, (rStart + rEnd) * 1.35);
+      if (wireSel === w) coil(steps, pitch, ww + 2.4, 'rgba(255,255,255,0.75)', null, 1.06);
+      coil(steps, pitch, ww, css(col), 'rgba(255,224,186,0.55)', 1.06);
+    }
+    if (ls.open < 0.35 || ls.fall > 0.7) drawBuds(n, Bx, By, Cx, Cy, L, ls);
+    if (snowy && n.r > 1.1 && n.dl > 1 && Math.abs(Math.sin(n.el)) < 0.9) {
+      ctx.strokeStyle = 'rgba(244,247,250,0.92)'; ctx.lineCap = 'round';
+      ctx.lineWidth = Math.max(1, rEnd * 0.7);
+      ctx.beginPath(); ctx.moveTo(Bx, By - rStart * 0.75); ctx.lineTo(Cx, Cy - rEnd * 0.75); ctx.stroke();
+    }
+  }
+  function strip(steps, oA, oB, fill) {
+    ctx.fillStyle = fill; ctx.beginPath();
+    for (let j = 0; j <= steps; j++) { const x = SPX[j] + SNX[j] * SR[j] * oA, y = SPY[j] + SNY[j] * SR[j] * oA; if (j) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+    for (let j = steps; j >= 0; j--) ctx.lineTo(SPX[j] + SNX[j] * SR[j] * oB, SPY[j] + SNY[j] * SR[j] * oB);
+    ctx.closePath(); ctx.fill();
+  }
+  // A helix seen from the side: slanted turns across the visible face of the wood.
+  function coil(steps, pitch, width, color, shine, reach) {
+    const total = SCL[steps]; if (total < 1) return;
+    const at = d => {
+      let j = 1; while (j < steps && SCL[j] < d) j++;
+      const a = SCL[j - 1], b = SCL[j], t = b > a ? clamp((d - a) / (b - a), 0, 1) : 0;
+      return [SPX[j - 1] + (SPX[j] - SPX[j - 1]) * t, SPY[j - 1] + (SPY[j] - SPY[j - 1]) * t, SNX[j - 1] + (SNX[j] - SNX[j - 1]) * t, SNY[j - 1] + (SNY[j] - SNY[j - 1]) * t, SR[j - 1] + (SR[j] - SR[j - 1]) * t];
+    };
+    ctx.lineCap = 'round';
+    for (const [lw, col, off] of shine ? [[width, color, 0], [width * 0.34, shine, -width * 0.22]] : [[width, color, 0]]) {
+      ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+      for (let d0 = pitch * 0.3; d0 < total; d0 += pitch) {
+        const a = at(d0), b = at(Math.min(total, d0 + pitch * 0.5));
+        ctx.moveTo(a[0] + a[2] * a[4] * reach, a[1] + a[3] * a[4] * reach + off);
+        ctx.lineTo(b[0] - b[2] * b[4] * reach, b[1] - b[3] * b[4] * reach + off);
+      }
+      ctx.stroke();
+    }
+  }
+  // Bark detail sits on the 3D surface of the wood, so it turns with the tree and only shows on the side facing you.
+  function barkMarks(n) {
+    if (n._mk) return n._mk;
+    const out = [];
+    for (let k = 0; k < 44; k++) {
+      const r = j => Sim.h01(n.id * 97 + k, j), u = r(1);
+      out.push({ t: r(2) * 0.92, phi: r(3) * TAU, len: 0.12 + r(4) * 0.42, w: 0.6 + r(5) * 0.9, tw: (r(6) - 0.5) * 0.5, kind: k < 10 ? 3 : u < 0.58 ? 0 : u < 0.88 ? 1 : 2 });
+    }
+    return (n._mk = out);
+  }
+  function drawBarkMarks(n, p, rsW, reW, lvl, age) {
+    let dx = n.x - p.x, dy = n.y - p.y, dz = n.z - p.z;
+    const Lw = Math.hypot(dx, dy, dz); if (Lw < 0.5) return;
+    dx /= Lw; dy /= Lw; dz /= Lw;
+    let sx = -dz, sz = dx, sl = Math.hypot(sx, sz);
+    if (sl < 0.15) { sx = 1; sz = 0; sl = 1; }
+    sx /= sl; sz /= sl;
+    const ux = -sz * dy, uy = sz * dx - sx * dz, uz = sx * dy;
+    const Vx = -syw * cpt, Vy = spt, Vz = cyw * cpt, s = cam.s;
+    const old = n.r > 2.5, fade = 1 - lvl * 0.2;
+    const limit = old ? 10 + Math.min(34, Math.round(Lw * n.r / 4.5)) : Math.min(10, Math.round(Lw / 2.2));
+    ctx.lineCap = 'round';
+    const mk = barkMarks(n);
+    for (let k = old ? 10 : 0; k < limit; k++) {
+      const m = mk[k];
+      if (m.kind === 2 && n.r < 4.5) continue;
+      if (!old && age < 40) continue;
+      const cph = Math.cos(m.phi), sph = Math.sin(m.phi);
+      const mx = sx * cph + ux * sph, my = uy * sph, mz = sz * cph + uz * sph;
+      const vis = mx * Vx + my * Vy + mz * Vz;
+      if (vis < 0.15) continue;
+      const t0 = m.t, R0 = (rsW + (reW - rsW) * t0) * 0.95;
+      proj(p.x + dx * Lw * t0 + mx * R0, p.y + dy * Lw * t0 + my * R0, p.z + dz * Lw * t0 + mz * R0);
+      const ax = _x, ay = _y;
+      if (m.kind === 2) {
+        ctx.fillStyle = `rgba(152,168,128,${(vis * fade * 0.55).toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(ax, ay, Math.max(1, m.w * R0 * s * 0.16), 0, TAU); ctx.fill();
+        continue;
+      }
+      if (m.kind === 3) {
+        const c2 = Math.cos(m.phi + 0.2), s2 = Math.sin(m.phi + 0.2);
+        proj(p.x + dx * Lw * t0 + (sx * c2 + ux * s2) * R0, p.y + dy * Lw * t0 + uy * s2 * R0, p.z + dz * Lw * t0 + (sz * c2 + uz * s2) * R0);
+        ctx.strokeStyle = `rgba(214,196,160,${(vis * fade * 0.6).toFixed(3)})`; ctx.lineWidth = 0.7;
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(_x, _y); ctx.stroke();
+        continue;
+      }
+      const t1 = Math.min(1, t0 + (m.kind === 1 ? m.len * 0.45 : m.len)), R1 = (rsW + (reW - rsW) * t1) * 0.95;
+      const ph2 = m.phi + m.tw, c2 = Math.cos(ph2), s2 = Math.sin(ph2);
+      proj(p.x + dx * Lw * t1 + (sx * c2 + ux * s2) * R1, p.y + dy * Lw * t1 + uy * s2 * R1, p.z + dz * Lw * t1 + (sz * c2 + uz * s2) * R1);
+      if (m.kind === 0) {
+        ctx.strokeStyle = `rgba(40,30,24,${(vis * fade * 0.55).toFixed(3)})`; ctx.lineWidth = Math.max(0.6, m.w * 0.8);
+      } else {
+        ctx.strokeStyle = `rgba(${m.w > 1.1 ? '194,154,112' : '170,160,146'},${(vis * fade * 0.42).toFixed(3)})`;
+        ctx.lineWidth = Math.max(1.2, m.w * R0 * s * 0.24);
+      }
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(_x, _y); ctx.stroke();
+    }
+  }
+  // Pointed buds at the tips and along the twigs while the tree is bare; they swell and green up before spring.
+  function drawBuds(n, Bx, By, Cx, Cy, L, ls) {
+    if (n.r > 3 || L < 0.6) return;
+    const s = cam.s, doy = ls.doy, D = DPR;
+    const swell = doy >= 40 && doy < 90 ? 1 + 0.7 * clamp((doy - 40) / 44, 0, 1) : 1;
+    const col = css(mixA(C.bud, C.budSwell, clamp((swell - 1) / 0.7, 0, 1)));
+    const ux = (Cx - Bx) / L, uy = (Cy - By) / L;
+    const put = (ang, size) => {
+      const px = size * swell * s; if (px < 1.6) return;
+      const c = Math.cos(ang), si = Math.sin(ang);
+      const dx = ux * c - uy * si, dy = ux * si + uy * c;
+      ctx.setTransform(D * -dy * px * 0.62, D * dx * px * 0.62, D * -dx * px, D * -dy * px, D * Cx, D * Cy);
+      ctx.fillStyle = col; ctx.fill(BUD);
+    };
+    if (!n.ch.length) put(0, 1.8);
+    else if (n.bud > 0.3) put(n.side * 0.85, 1.25);
+    ctx.setTransform(D, 0, 0, D, 0, 0);
+  }
+
+  // A surface root leaves the trunk a little above the soil and dives back in as it thins.
+  function drawRoot(rt, r0, dayInt) {
+    const s = cam.s, [a0, len, w, curve] = rt, steps = 7, Lp = [], Rp = [];
+    const pts = [];
+    for (let j = 0; j <= steps; j++) {
+      const t = j / steps, rad = r0 * (0.55 + t * len), a = a0 + curve * t;
+      proj(Math.cos(a) * rad, r0 * 0.55 * Math.pow(1 - t, 1.6) + 0.5, Math.sin(a) * rad);
+      pts.push([_x, _y, r0 * w * (1 - 0.82 * t) * s]);
+    }
+    for (let j = 0; j <= steps; j++) {
+      const a = pts[Math.max(0, j - 1)], b = pts[Math.min(steps, j + 1)];
+      let dx = b[0] - a[0], dy = b[1] - a[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+      const hw = pts[j][2];
+      Lp.push([pts[j][0] - dy * hw, pts[j][1] + dx * hw]); Rp.push([pts[j][0] + dy * hw, pts[j][1] - dx * hw]);
+    }
+    proj(Math.cos(a0) * r0 * 1.5, 0.8, Math.sin(a0) * r0 * 1.5);
+    ctx.fillStyle = barkColor(T.nodes[0].ch.length ? T.nodes[T.nodes[0].ch[0]] : T.nodes[0], dayInt, fogLevel(_d));
+    ctx.beginPath(); ctx.moveTo(Lp[0][0], Lp[0][1]);
+    for (let j = 1; j <= steps; j++) ctx.lineTo(Lp[j][0], Lp[j][1]);
+    for (let j = steps; j >= 0; j--) ctx.lineTo(Rp[j][0], Rp[j][1]);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(236,226,212,0.12)';
+    ctx.beginPath(); ctx.moveTo(Lp[0][0], Lp[0][1]);
+    for (let j = 1; j <= steps; j++) ctx.lineTo((Lp[j][0] * 2 + pts[j][0]) / 3, (Lp[j][1] * 2 + pts[j][1]) / 3);
+    for (let j = steps; j >= 0; j--) ctx.lineTo(pts[j][0], pts[j][1]);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(28,20,16,0.22)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(Rp[0][0], Rp[0][1]); for (let j = 1; j <= steps; j++) ctx.lineTo(Rp[j][0], Rp[j][1]); ctx.stroke();
+  }
+  // The flare where the trunk meets the soil
+  function drawBase(r0, dayInt) {
+    const s = cam.s, N = T.nodes, first = N[N[0].ch[0]];
+    proj(0, 0.6, 0); const bx = _x, by = _y;
+    const rise = r0 * 1.7, t = first && first.y > 0 ? Math.min(1, rise / first.y) : 0;
+    proj(first ? first.x * t : 0, rise, first ? first.z * t : 0); const tx = _x, ty = _y;
+    const rb = r0 * 1.45 * s, rt = r0 * 1.02 * s;
+    ctx.fillStyle = barkColor(first || N[0], dayInt, 0);
+    ctx.beginPath(); ctx.ellipse(bx, by, rb, Math.max(rb * spt, 0.6), 0, 0, TAU); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(bx - rb, by); ctx.quadraticCurveTo(tx - rt * 1.05, (by + ty) / 2 + (by - ty) * 0.2, tx - rt, ty);
+    ctx.lineTo(tx + rt, ty); ctx.quadraticCurveTo(tx + rt * 1.05, (by + ty) / 2 + (by - ty) * 0.2, bx + rb, by);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(tx, ty, rt, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(240,230,216,0.12)';
+    ctx.beginPath(); ctx.moveTo(bx - rb * 0.7, by); ctx.quadraticCurveTo(tx - rt * 0.8, (by + ty) / 2, tx - rt * 0.55, ty); ctx.lineTo(tx - rt * 0.1, ty); ctx.quadraticCurveTo(tx - rt * 0.3, (by + ty) / 2, bx - rb * 0.2, by); ctx.closePath(); ctx.fill();
+  }
+
+  // ---------- particles ----------
+  // Only a leaf that is still on the tree, and about to let go, can fall. A bare or defoliated tree drops nothing.
+  function spawnFaller(ls) {
+    if (!LF_COUNT) return;
+    for (let tries = 0; tries < 24; tries++) {
+      const k = Math.floor(Math.random() * LF_COUNT), n = T.nodes[LF_N[k]];
+      if (!n || (n.pk & (1 << LF_K[k]))) continue;
+      const sp = leafSpecs(n)[LF_K[k]];
+      if (!sp || sp.fallT > ls.fall + 0.1) continue;
+      fallers.push({ x: n.x, y: n.y, z: n.z, ph: Math.random() * 6.28, vx: (Math.random() - 0.5) * 6, vz: (Math.random() - 0.5) * 6, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 3, size: (5 + Math.random() * 2) * (n.sm || 1), col: LF_COL[k][0], life: 0, landed: -1, bench: false });
+      return;
+    }
+  }
+  function drawParticles(dt, tSec, ls, wet, winter) {
+    const s = cam.s;
+    if (!reduceMotion && ls.fall > 0.01 && ls.fall < 0.99 && !catchup) {
+      fallerClock += dt * (0.25 + Math.min(3, speedOf().perDay / 4000)) * Math.min(1, LF_COUNT / 120);
+      while (fallerClock > 1) { fallerClock -= 1; if (fallers.length < 30) spawnFaller(ls); }
+    }
+    for (let i = fallers.length - 1; i >= 0; i--) {
+      const f = fallers[i]; f.life += dt;
+      if (f.landed < 0) {
+        f.y -= (14 + 4 * Math.sin(f.ph)) * dt;
+        f.x += (f.vx + 9 * Math.sin(tSec * 2.1 + f.ph)) * dt; f.z += (f.vz + 6 * Math.cos(tSec * 1.7 + f.ph)) * dt; f.rot += f.vr * dt;
+        const inPot = Math.abs(f.x) < POT_W / 2 - 2 && Math.abs(f.z) < POT_D / 2 - 2;
+        const floor = inPot ? 1.2 : BENCH_Y + 0.5;
+        if (f.y <= floor) { f.y = floor; f.landed = f.life; f.bench = !inPot; }
+      }
+      const alpha = f.landed < 0 ? 1 : clamp(1 - (f.life - f.landed) / 2.5, 0, 1);
+      if (alpha <= 0 || f.life > 20) { fallers.splice(i, 1); continue; }
+      if (f.bench) projFixed(f.x * cyw + f.z * syw, f.y, f.z * cyw - f.x * syw); else proj(f.x, f.y, f.z);
+      ctx.save(); ctx.translate(_x, _y); ctx.rotate(f.rot); ctx.scale(f.size * s, f.size * s * (0.55 + 0.45 * Math.abs(Math.sin(tSec * 3 + f.ph))));
+      ctx.globalAlpha = alpha; ctx.fillStyle = f.col; ctx.fill(LEAF); ctx.restore(); ctx.globalAlpha = 1;
+    }
+    // pruned cuttings fall in screen space
+    for (let i = debris.length - 1; i >= 0; i--) {
+      const b = debris[i]; b.life += dt;
+      b.vy += 260 * s * dt; b.dx += b.vx * dt; b.dy += b.vy * dt; b.rot += b.vr * dt;
+      const alpha = clamp(1.6 - b.life, 0, 1);
+      if (alpha <= 0) { debris.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(b.px + b.dx, b.py + b.dy); ctx.rotate(b.rot); ctx.translate(-b.px, -b.py);
+      ctx.lineCap = 'round';
+      for (const sg of b.segs) {
+        ctx.strokeStyle = sg[5]; ctx.lineWidth = Math.max(0.7, sg[4]);
+        ctx.beginPath(); ctx.moveTo(sg[0], sg[1]); ctx.lineTo(sg[2], sg[3]); ctx.stroke();
+      }
+      for (const lf of b.leaves) {
+        ctx.save(); ctx.transform(lf[0], lf[1], lf[2], lf[3], lf[4], lf[5]);
+        ctx.fillStyle = lf[6]; ctx.fill(LEAF); ctx.restore();
+      }
+      ctx.restore();
+    }
+    // watering
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const p = drops[i]; p.t += dt;
+      if (p.t < 0) continue;
+      p.vy -= 200 * dt; p.y += p.vy * dt;
+      if (p.y <= 1.5) { splashes.push({ x: p.x, z: p.z, t: 0 }); drops.splice(i, 1); continue; }
+      proj(p.x, p.y, p.z);
+      ctx.strokeStyle = 'rgba(176,210,238,0.85)'; ctx.lineWidth = Math.max(1, 0.9 * s);
+      ctx.beginPath(); ctx.moveTo(_x, _y); ctx.lineTo(_x, _y - Math.max(4, 3 * s * cpt)); ctx.stroke();
+    }
+    for (let i = splashes.length - 1; i >= 0; i--) {
+      const p = splashes[i]; p.t += dt;
+      if (p.t > 0.4) { splashes.splice(i, 1); continue; }
+      proj(p.x, 1.4, p.z);
+      const rr = (1 + p.t * 14) * s;
+      ctx.strokeStyle = `rgba(190,220,245,${(0.7 * (1 - p.t / 0.4)).toFixed(3)})`; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(_x, _y, rr, Math.max(rr * spt, 0.4 * s), 0, 0, TAU); ctx.stroke();
+    }
+    // weather
+    if (wet && !reduceMotion) {
+      if (winter) {
+        while (snow.length < 70) snow.push({ x: Math.random() * W, y: Math.random() * H, v: 18 + Math.random() * 22, ph: Math.random() * 6.28, r: 1 + Math.random() * 1.6 });
+        ctx.fillStyle = 'rgba(248,250,252,0.85)';
+        for (const f of snow) {
+          f.y += f.v * dt; f.x += Math.sin(tSec + f.ph) * 10 * dt;
+          if (f.y > H) { f.y = -4; f.x = Math.random() * W; }
+          ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, TAU); ctx.fill();
+        }
+      } else {
+        while (rain.length < 90) rain.push({ x: Math.random() * W, y: Math.random() * H, v: 700 + Math.random() * 300, l: 10 + Math.random() * 8 });
+        ctx.strokeStyle = 'rgba(205,218,232,0.42)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (const r of rain) {
+          r.y += r.v * dt; r.x -= r.v * 0.08 * dt;
+          if (r.y > H) { r.y = -r.l; r.x = Math.random() * (W + 40); }
+          ctx.moveTo(r.x, r.y); ctx.lineTo(r.x + r.l * 0.08, r.y - r.l);
+        }
+        ctx.stroke();
+      }
+    } else { rain.length = 0; snow.length = 0; }
+  }
+
+  function drawOverlays(tSec) {
+    if (mode === 'wire') drawWireGuides();
+    if (pluckStroke && pluckStroke.moved) {
+      ctx.beginPath(); ctx.arc(pluckStroke.last.x, pluckStroke.last.y, BRUSH, 0, TAU);
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.stroke();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.stroke();
+    }
+    if (mode === 'pinch') {
+      const N = T.nodes, pulse = reduceMotion ? 0 : Math.sin(tSec * 4) * 0.8;
+      for (let i = 0; i < N.length; i++) {
+        const n = N[i];
+        if (!n.tip || n.pin || n.pi < 0 || n.gf < 0.5) continue;
+        const back = PD[i] < -cam.R * 0.35;
+        ctx.beginPath(); ctx.arc(PX[i], PY[i], (back ? 3.6 : 5) + pulse, 0, TAU);
+        ctx.fillStyle = back ? 'rgba(255,248,214,0.5)' : 'rgba(255,248,214,0.92)'; ctx.fill();
+        ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(30,42,36,0.7)'; ctx.stroke();
+      }
+    }
+    const now = performance.now();
+    while (trail.length && now - trail[0].t > 260) trail.shift();
+    if (trail.length > 1) {
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (const [w, col] of [[6, 'rgba(0,0,0,0.22)'], [2.4, 'rgba(255,255,255,0.92)']]) {
+        ctx.strokeStyle = col; ctx.lineWidth = w;
+        ctx.beginPath(); ctx.moveTo(trail[0].x, trail[0].y);
+        for (let i = 1; i < trail.length; i++) ctx.lineTo(trail[i].x, trail[i].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // ---------- sound & haptics ----------
+  let actx = null;
+  function audio() {
+    if (!prefs.sound) return null;
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
+    return actx;
+  }
+  function noiseBuf(a, len, shape) {
+    const buf = a.createBuffer(1, Math.max(1, Math.floor(a.sampleRate * len)), a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * shape(i / d.length);
+    return buf;
+  }
+  function sndSnip() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const src = a.createBufferSource(); src.buffer = noiseBuf(a, 0.07, x => Math.pow(1 - x, 3));
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3400; f.Q.value = 1.2;
+    const g = a.createGain(); g.gain.value = 0.55; src.connect(f).connect(g).connect(a.destination); src.start(t);
+    const o = a.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(1900, t); o.frequency.exponentialRampToValueAtTime(700, t + 0.04);
+    const og = a.createGain(); og.gain.setValueAtTime(0.1, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    o.connect(og).connect(a.destination); o.start(t); o.stop(t + 0.06);
+  }
+  function sndPinch() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const o = a.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(260, t + 0.08);
+    const g = a.createGain(); g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + 0.12);
+  }
+  function sndWater() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const src = a.createBufferSource(); src.buffer = noiseBuf(a, 1.4, x => (x < 0.12 ? x / 0.12 : 1) * Math.pow(1 - x, 1.4));
+    const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1300;
+    const g = a.createGain(); g.gain.value = 0.32; src.connect(f).connect(g).connect(a.destination); src.start(t);
+  }
+  function sndPluck() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const src = a.createBufferSource(); src.buffer = noiseBuf(a, 0.05, x => Math.pow(1 - x, 2));
+    const f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 2400;
+    const g = a.createGain(); g.gain.value = 0.25; src.connect(f).connect(g).connect(a.destination); src.start(t);
+  }
+  function sndRustle() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const src = a.createBufferSource(); src.buffer = noiseBuf(a, 0.9, x => (x < 0.1 ? x / 0.1 : 1) * Math.pow(1 - x, 1.6) * (0.6 + 0.4 * Math.sin(x * 90)));
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 0.6;
+    const g = a.createGain(); g.gain.value = 0.4; src.connect(f).connect(g).connect(a.destination); src.start(t);
+  }
+  function sndWire() {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    for (const [f, d] of [[2600, 0], [1900, 0.05]]) {
+      const o = a.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(f, t + d);
+      const g = a.createGain(); g.gain.setValueAtTime(0.06, t + d); g.gain.exponentialRampToValueAtTime(0.001, t + d + 0.07);
+      o.connect(g).connect(a.destination); o.start(t + d); o.stop(t + d + 0.08);
+    }
+  }
+  function sndCreak(level) {
+    const a = audio(); if (!a) return; const t = a.currentTime;
+    const src = a.createBufferSource(); src.buffer = noiseBuf(a, 0.22, x => Math.sin(x * 60) * (1 - x));
+    const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 380 + 200 * level; f.Q.value = 4;
+    const g = a.createGain(); g.gain.value = 0.35 + 0.35 * level; src.connect(f).connect(g).connect(a.destination); src.start(t);
+  }
+  const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { /* not supported */ } };
+
+  // ---------- actions ----------
+  function pushUndo() {
+    undoStack.push({ day: T.day, s: JSON.stringify(Sim.serialize(T)) });
+    if (undoStack.length > 12) undoStack.shift();
+  }
+  function undo() {
+    const snap = undoStack.pop();
+    if (!snap) return;
+    if (snap.day !== T.day) { undoStack = []; toast(`A ${dayWord(1)} has passed since then, so that change is settled.`); updateUI(); return; }
+    const keep = { anchorGarden: T.anchorGarden, anchorReal: T.anchorReal, speed: T.speed };
+    const t = Sim.deserialize(JSON.parse(snap.s));
+    if (!t) return;
+    Object.assign(t, keep); T = t;
+    Sim.layout(T, dispDay); debris = []; acted(); updateUI(true);
+    toast('Undone.');
+  }
+
+  function makeDebris(removed, cutPt) {
+    if (!removed.length) return;
+    const ids = new Set(removed.map(n => n.id));
+    const byId = new Map(removed.map(n => [n.id, n]));
+    const ls = Sim.leafState(dispDay), dayInt = Math.floor(dispDay), s = cam.s;
+    const segs = [], leaves = [];
+    proj(cutPt.x, cutPt.y, cutPt.z); const cx = _x, cy = _y;
+    for (const n of removed) {
+      const p = ids.has(n.p) ? byId.get(n.p) : cutPt;
+      proj(p.x, p.y, p.z); const x0 = _x, y0 = _y;
+      proj(n.x, n.y, n.z); const x1 = _x, y1 = _y;
+      segs.push([x0, y0, x1, y1, 2 * n.r * s, css(n._bc || C.twig)]);
+      if (Sim.isLeafy(n) && ls.open > 0.05 && ls.fall < 1) {
+        const base = Math.min(ls.open, clamp((dispDay - n.born - 0.4) / 4, 0, 1));
+        if (base > 0.05) for (const sp of leafSpecs(n)) {
+          if (ls.fall > sp.fallT) continue;
+          const px = sp.size * base * s / (1 + 0.1 * Math.min(n.ord, 6));
+          const ang = Math.random() * TAU, c = Math.cos(ang), si = Math.sin(ang);
+          leaves.push([c * px, si * px, -si * px, c * px, x1 + (Math.random() - 0.5) * 4 * s, y1 + (Math.random() - 0.5) * 4 * s, leafColor(n, sp, ls, dayInt, 0)[0]]);
+        }
+      }
+    }
+    if (debris.length > 14) debris.splice(0, debris.length - 14);
+    debris.push({ segs, leaves, px: cx, py: cy, dx: 0, dy: 0, vx: (Math.random() - 0.5) * 60, vy: -20, rot: 0, vr: (Math.random() - 0.5) * 3, life: 0 });
+  }
+
+  function segDist(ax, ay, bx, by, cx, cy, dx, dy) {
+    const cross = (px, py, qx, qy, rx, ry) => (qx - px) * (ry - py) - (qy - py) * (rx - px);
+    const d1 = cross(ax, ay, bx, by, cx, cy), d2 = cross(ax, ay, bx, by, dx, dy), d3 = cross(cx, cy, dx, dy, ax, ay), d4 = cross(cx, cy, dx, dy, bx, by);
+    if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return 0;
+    const pd = (px, py, x1, y1, x2, y2) => {
+      const vx = x2 - x1, vy = y2 - y1, L = vx * vx + vy * vy;
+      const t = L ? clamp(((px - x1) * vx + (py - y1) * vy) / L, 0, 1) : 0;
+      return Math.hypot(px - (x1 + vx * t), py - (y1 + vy * t));
+    };
+    return Math.min(pd(ax, ay, cx, cy, dx, dy), pd(bx, by, cx, cy, dx, dy), pd(cx, cy, ax, ay, bx, by), pd(dx, dy, ax, ay, bx, by));
+  }
+
+  function pruneAlong(p0, p1, stroke) {
+    const N = T.nodes, cands = [];
+    for (let i = 1; i < N.length; i++) {
+      const n = N[i]; if (n.dl < 0.5) continue;
+      const pi = n.pi;
+      if (segDist(p0.x, p0.y, p1.x, p1.y, PX[pi], PY[pi], PX[i], PY[i]) < n.r * cam.s * Math.max(0.5, n.gf) + 4) cands.push(i);
+    }
+    if (!cands.length) return;
+    // scissors cut what is in front: skip wood hidden on the far side of the tree
+    let front = -Infinity; for (const i of cands) front = Math.max(front, (PD[i] + PD[N[i].pi]) / 2);
+    const near = cands.filter(i => (PD[i] + PD[N[i].pi]) / 2 >= front - 30).map(i => N[i]);
+    const set = new Set(near.map(n => n.id));
+    const chosen = near.filter(n => { let q = n.pi; while (q >= 0) { if (set.has(N[q].id)) return false; q = N[q].pi; } return true; });
+    for (const n of chosen) {
+      if (N[n.pi] && N[n.pi].pi < 0) {
+        if (performance.now() - blockedHint > 2500) { toast('The base of the trunk stays. Cut higher up.'); blockedHint = performance.now(); }
+        continue;
+      }
+      if (!stroke.snapped) { pushUndo(); stroke.snapped = true; }
+      const par = T.nodes[T._idx.get(n.p)];
+      const cutPt = { x: par.x, y: par.y, z: par.z };
+      const res = Sim.cut(T, n.id);
+      if (!res || res.blocked) continue;
+      stroke.cuts++;
+      makeDebris(res.removed, cutPt);
+      sndSnip(); buzz(8);
+    }
+  }
+  function endStroke(stroke) {
+    if (!stroke || !stroke.cuts) return;
+    Sim.logAction(T, dispDay, 'prune', stroke.cuts);
+    acted(); updateUI();
+  }
+
+  function pinchAt(px, py) {
+    const doy = Sim.doyOf(dispDay);
+    if (Sim.growthFactor(doy) <= 0) { toast('Nothing is growing right now. Pinching works on soft shoots in spring and summer. Use Prune instead.'); return; }
+    let best = -1, bd = 30;
+    const N = T.nodes;
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i];
+      if (!n.tip || n.pin || n.pi < 0 || n.gf < 0.5) continue;
+      const d = Math.hypot(PX[i] - px, PY[i] - py) - PD[i] * 0.05;
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best < 0) { toast('Tap one of the glowing shoot tips.'); return; }
+    const tip = N[best];
+    pushUndo();
+    const par = N[tip.pi], cutPt = { x: par.x, y: par.y, z: par.z };
+    const res = Sim.pinch(T, tip.id, dispDay);
+    if (!res) { undoStack.pop(); return; }
+    if (res.removed.length) makeDebris(res.removed, cutPt);
+    Sim.logAction(T, dispDay, 'pinch', 1);
+    sndPinch(); buzz(6); acted(); updateUI();
+    if (pinchHints < 2) { pinchHints++; toast('Pinched. That shoot stops for the season, and buds lower down will push instead.'); }
+  }
+
+  function water() {
+    if (T.moisture > 82) { toast('The soil is still wet. Water once the surface looks dry.'); return; }
+    pushUndo();
+    T.moisture = 100; T.dryDays = 0; T.lastWateredReal = Date.now(); T.stats.waterings++;
+    for (let i = 0; i < 40; i++) drops.push({ x: (Math.random() - 0.5) * POT_W * 0.8, z: (Math.random() - 0.5) * POT_D * 0.8, y: 34 + Math.random() * 40, vy: -40 - Math.random() * 30, t: -Math.random() * 0.7 });
+    sndWater(); buzz(12); acted(); updateUI();
+  }
+
+  function setMode(m) {
+    mode = mode === m ? 'view' : m;
+    $('#toolPrune').setAttribute('aria-pressed', String(mode === 'prune'));
+    $('#toolPinch').setAttribute('aria-pressed', String(mode === 'pinch'));
+    $('#toolWire').setAttribute('aria-pressed', String(mode === 'wire'));
+    $('#toolLeaves').setAttribute('aria-pressed', String(mode === 'leaves'));
+    if (mode !== 'wire') { wireSel = null; bend = null; }
+    canvas.style.cursor = mode === 'prune' || mode === 'leaves' ? 'crosshair' : mode === 'pinch' || mode === 'wire' ? 'pointer' : 'grab';
+    updateUI(true);
+  }
+
+  // ---------- view: turntable, tilt, front ----------
+  function markRotated() { if (!prefs.rotated) { prefs.rotated = true; Store.savePrefs(); } }
+  const relFrontDeg = () => Math.round(wrapAng(cam.yaw - (T.front || 0)) * 180 / Math.PI);
+  function goFront() { cam.tyaw = cam.yaw + angDiff(T.front || 0, cam.yaw); cam.tpitch = DEFAULT_PITCH; cam.auto = true; updateUI(); }
+  function toggleTop() { cam.tpitch = cam.tpitch > 0.9 ? DEFAULT_PITCH : TOP_PITCH; cam.auto = true; markRotated(); updateUI(); }
+  function setFront() {
+    const deg = relFrontDeg();
+    T.front = wrapAng(cam.yaw);
+    cam.tyaw = cam.yaw;
+    Sim.logE(T, dispDay, `Chose a new front, ${Math.abs(deg)}° ${deg > 0 ? 'right' : 'left'} of the old one.`);
+    acted(); updateUI(true);
+    toast('This side is now the front. The Front button brings you back here.');
+  }
+
+  // ---------- wiring ----------
+  const wireMap = new Map();
+  let wireSel = null, bend = null, wirePress = null, wireHints = 0, bendKind = 0;
+  // screen offset (px) of a vector in tree space
+  const P2 = (X, Y, Z) => { const xr = X * cyw + Z * syw, zr = Z * cyw - X * syw; return [xr * cam.s, -(Y * cpt - zr * spt) * cam.s]; };
+  function pointSeg(px, py, x1, y1, x2, y2) {
+    const vx = x2 - x1, vy = y2 - y1, L = vx * vx + vy * vy;
+    const t = L ? clamp(((px - x1) * vx + (py - y1) * vy) / L, 0, 1) : 0;
+    return Math.hypot(px - (x1 + vx * t), py - (y1 + vy * t));
+  }
+  function nearestSegment(px, py, only, tol) {
+    const N = T.nodes; let best = -1, bs = Infinity;
+    const test = i => {
+      const n = N[i]; if (!n || n.pi < 0 || n.dl < 0.5) return;
+      const d = pointSeg(px, py, PX[n.pi], PY[n.pi], PX[i], PY[i]);
+      if (d > (tol || Math.max(10, n.r * cam.s + 6))) return;
+      const score = only ? d : d - (PD[i] + PD[n.pi]) * 0.04 - n.r * cam.s * 0.3;
+      if (score < bs) { bs = score; best = i; }
+    };
+    if (only) for (const i of only) test(i); else for (let i = 1; i < N.length; i++) test(i);
+    return best;
+  }
+  function placeWire(i) {
+    const N = T.nodes;
+    if (wireMap.has(i)) { wireSel = wireMap.get(i); updateUI(); return; }
+    let start = Sim.branchStart(T, i);
+    if (N[N[start].pi].pi < 0) {
+      const next = Sim.chainFrom(T, start, 2)[1];
+      if (next === undefined) { toast('The base of the trunk is too thick to wire. Wire higher up.'); return; }
+      start = next;
+    }
+    let chain = Sim.chainFrom(T, start, 30);
+    const taken = chain.findIndex(k => wireMap.has(k));
+    if (taken === 0) { wireSel = wireMap.get(chain[0]); updateUI(); return; }
+    if (taken > 0) chain = chain.slice(0, taken);
+    pushUndo();
+    const w = Sim.addWire(T, N[start].id, dispDay, chain.length);
+    if (!w) { undoStack.pop(); return; }
+    w._chain = chain; for (const k of chain) wireMap.set(k, w);
+    wireSel = w;
+    sndWire(); buzz(6); Sim.logAction(T, dispDay, 'wire', 1); acted(); updateUI();
+    if (wireHints < 2) { wireHints++; toast('Wired along the whole branch. Pick Up / down or Side to side, then drag from any joint to bend it there.', 6500); }
+  }
+
+  // Grab the wire at a joint and drag: everything beyond that joint turns as one piece, and the branch end follows your finger.
+  function beginBend(w, i, fx, fy) {
+    const N = T.nodes;
+    Sim.layout(T, dispDay);
+    const n = N[i], P = N[n.pi];
+    const cap = Sim.captureBend(T, i, bendKind);
+    pushUndo();
+    const chain = w._chain || Sim.chainFrom(T, T._idx.get(w.id), w.len);
+    const at = Math.max(0, chain.indexOf(i));
+    const E = N[chain[chain.length - 1]];
+    let v = [E.x - P.x, E.y - P.y, E.z - P.z], vl = Math.hypot(v[0], v[1], v[2]);
+    if (vl < 0.5) { v = [n.x - P.x, n.y - P.y, n.z - P.z]; vl = Math.hypot(v[0], v[1], v[2]) || 1; }
+    const lam = Math.max(1, 90 / (vl * cam.s)); // a short lever is geared down so small drags stay precise
+    const k = cap.k, kd = k[0] * v[0] + k[1] * v[1] + k[2] * v[2];
+    const a = [k[0] * kd, k[1] * kd, k[2] * kd], u = [v[0] - a[0], v[1] - a[1], v[2] - a[2]];
+    const wv = [k[1] * u[2] - k[2] * u[1], k[2] * u[0] - k[0] * u[2], k[0] * u[1] - k[1] * u[0]];
+    proj(P.x, P.y, P.z);
+    const A2 = P2(a[0], a[1], a[2]), U2 = P2(u[0], u[1], u[2]), V2 = P2(wv[0], wv[1], wv[2]);
+    const hc = [_x + lam * A2[0], _y + lam * A2[1]], U = [lam * U2[0], lam * U2[1]], V = [lam * V2[0], lam * V2[1]];
+    const a11 = U[0] * U[0] + U[1] * U[1], a22 = V[0] * V[0] + V[1] * V[1], a12 = U[0] * V[0] + U[1] * V[1];
+    const tr = a11 + a22, disc = Math.sqrt(Math.max(0, tr * tr / 4 - (a11 * a22 - a12 * a12)));
+    const major = Math.sqrt(tr / 2 + disc), minor = Math.sqrt(Math.max(0, tr / 2 - disc));
+    const sums = Sim.wireSums(w, n.id), mb = Sim.maxBend(n.r);
+    return { w, cap, id: n.id, kind: bendKind, th: 0, deg: 0, lam, P: [P.x, P.y, P.z], a, u, wv, hc, U, V,
+      h0: [hc[0] + U[0], hc[1] + U[1]], f0: [fx, fy], mu: 0.01 * a11 + 1, sums, mb,
+      strain: Math.hypot(sums[0], sums[1]) / mb, warned: 0, at, joints: chain.length, flat: major > 20 && minor < 0.2 * major };
+  }
+  function moveBend(b, fx, fy) {
+    const tx = b.h0[0] + fx - b.f0[0], ty = b.h0[1] + fy - b.f0[1];
+    const E = th => {
+      const c = Math.cos(th), s = Math.sin(th), d = th - b.th;
+      const x = b.hc[0] + b.U[0] * c + b.V[0] * s - tx, y = b.hc[1] + b.U[1] * c + b.V[1] * s - ty;
+      return x * x + y * y + b.mu * d * d;
+    };
+    let best = b.th, bE = E(best);
+    for (let q = -36; q <= 36; q++) { const th = b.th + q * Math.PI / 36, e = E(th); if (e < bE) { bE = e; best = th; } }
+    let step = Math.PI / 72;
+    for (let it = 0; it < 12; it++) { for (const th of [best - step, best + step]) { const e = E(th); if (e < bE) { bE = e; best = th; } } step *= 0.6; }
+    b.th = best;
+    Sim.bendTo(T, b.cap, best);
+    b.strain = Math.hypot(b.sums[0] + (b.kind ? 0 : best), b.sums[1] + (b.kind ? best : 0)) / b.mb;
+    b.deg = Math.round(best * 180 / Math.PI);
+    if (b.strain < 0.8) b.warned = 0;
+    if (b.strain > 0.85 && b.warned < 1) { b.warned = 1; sndCreak(0.5); buzz(15); }
+    if (b.strain > 1.0 && b.warned < 2) { b.warned = 2; sndCreak(1); buzz(30); }
+    if (b.strain > 1.3) snapBranch(b);
+  }
+  function snapBranch(b) {
+    bend = null;
+    const N = T.nodes, i = T._idx.get(b.id); if (i === undefined) return;
+    const n = N[i], par = N[n.pi];
+    Sim.layout(T, dispDay);
+    const cutPt = { x: par.x, y: par.y, z: par.z };
+    const res = Sim.cut(T, n.id);
+    if (!res || res.blocked) return;
+    makeDebris(res.removed, cutPt);
+    T.vigor = Math.max(8, T.vigor - 4);
+    Sim.logE(T, dispDay, 'A branch snapped while being bent.');
+    sndSnip(); sndCreak(1); buzz(60);
+    if (!T.wires.includes(wireSel)) wireSel = null;
+    acted(); updateUI();
+    toast('Snap. That wood was too thick to bend so far. Undo brings it back.', 5000);
+  }
+  function endBend(b) {
+    if (Math.abs(b.th) < 0.003) { undoStack.pop(); updateUI(); return; }
+    Sim.addWireOp(b.w, b.id, b.kind, b.th);
+    if (b.strain > 1.0) {
+      const i = T._idx.get(b.id);
+      if (i !== undefined) {
+        T.nodes[i].crack = 1; T.vigor = Math.max(8, T.vigor - 6);
+        Sim.logE(T, dispDay, 'A branch cracked while being bent. Left alone, it should heal.');
+        toast('Crack. The branch went past its limit. It should heal if you leave it alone.', 5000);
+      }
+    } else Sim.logAction(T, dispDay, 'bend', 1);
+    acted(); updateUI();
+  }
+  function removeSelectedWire() {
+    if (!wireSel) return;
+    pushUndo();
+    const res = Sim.removeWire(T, wireSel, dispDay);
+    wireSel = null;
+    Sim.logAction(T, dispDay, 'unwire', 1);
+    sndWire(); acted(); updateUI();
+    toast(res.set >= 1 ? 'Wire off. The branch holds its new shape.'
+      : res.set > 0.4 ? 'Wire off early. The branch sprang partway back.'
+      : 'Wire off. The branch hadn’t set yet, so it sprang most of the way back.', 4500);
+  }
+  const readyWires = () => T.wires.filter(w => w.gd >= Sim.SET_DAYS || w.bite > 0.05);
+  function removeSetWires() {
+    const ready = readyWires(); if (!ready.length) return;
+    pushUndo();
+    for (const w of ready) Sim.removeWire(T, w, dispDay);
+    Sim.logAction(T, dispDay, 'unwire', ready.length);
+    sndWire(); acted(); updateUI();
+    toast(ready.length === 1 ? 'Wire off. The branch holds its new shape.' : `${ready.length} wires off. The branches hold their new shapes.`, 4000);
+  }
+  function setBendKind(k) { bendKind = k; prefs.bendKind = k; Store.savePrefs(); updateUI(); }
+  function wireStatus(w) {
+    const days = Math.max(0, Math.round(dispDay - w.day)), set = Math.min(100, Math.round(w.gd / Sim.SET_DAYS * 100));
+    let s = `Wire on for ${days} ${dayWord(days)}, ${set}% set.`;
+    if (w.bite > 0.05) s += ' It’s biting into the bark, so take it off.';
+    else if (set >= 100) s += ' It has set, so the wire can come off.';
+    else if (cam.tpitch > 0.9 && bendKind === 0) s += ' From above, Side to side is easiest to see.';
+    else s += ' Drag from any joint to bend there.';
+    return s;
+  }
+  function bendNote(b) {
+    const verb = b.kind ? `Swung ${Math.abs(b.deg)}°` : b.deg >= 0 ? `Raised ${b.deg}°` : `Lowered ${-b.deg}°`;
+    const feel = b.strain < 0.7 ? 'Bends easily here.' : b.strain < 0.85 ? 'Getting firm.' : b.strain < 1 ? 'Near the limit for wood this thick.' : 'Too far. It’s cracking.';
+    return `${verb} at joint ${b.at + 1} of ${b.joints}. ${feel}` + (b.flat ? ' Turn the tree or use Top to see this better.' : '');
+  }
+  // Joints you can bend at, and while bending, the path the branch end can travel, colored by how hard the wood is working.
+  function drawWireGuides() {
+    const N = T.nodes, w = wireSel; if (!w || !w._chain) return;
+    let active = -1;
+    if (bend) { const i = T._idx.get(bend.id); if (i !== undefined) active = N[i].pi; }
+    else if (wirePress && wirePress.w === w && wirePress.hit >= 0) active = N[wirePress.hit].pi;
+    let lx = -99, ly = -99;
+    for (const c of w._chain) {
+      const p = N[c] ? N[c].pi : -1; if (p < 0) continue;
+      const on = p === active;
+      if (!on && Math.hypot(PX[p] - lx, PY[p] - ly) < 12) continue; // keep crowded joints on short twigs readable
+      lx = PX[p]; ly = PY[p];
+      ctx.beginPath(); ctx.arc(PX[p], PY[p], on ? 6.5 : 3.4, 0, TAU);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
+      ctx.lineWidth = on ? 2.6 : 1.3; ctx.strokeStyle = on ? '#D99A2B' : 'rgba(30,42,36,0.75)'; ctx.stroke();
+    }
+    if (!bend) return;
+    const b = bend, own = b.kind ? b.sums[1] : b.sums[0], other = b.kind ? b.sums[0] : b.sums[1];
+    const D = (1.3 * b.mb) ** 2 - other * other; if (D <= 0) return;
+    const r = Math.sqrt(D), lo = Math.max(b.th - Math.PI, -own - r), hi = Math.min(b.th + Math.PI, -own + r);
+    const at = th => { const c = Math.cos(th), s = Math.sin(th); proj(b.P[0] + b.a[0] + b.u[0] * c + b.wv[0] * s, b.P[1] + b.a[1] + b.u[1] * c + b.wv[1] * s, b.P[2] + b.a[2] + b.u[2] * c + b.wv[2] * s); };
+    const pts = [], steps = 56;
+    for (let q = 0; q <= steps; q++) { const th = lo + (hi - lo) * q / steps; at(th); pts.push([_x, _y, Math.hypot(own + th, other) / b.mb]); }
+    const zone = st => st < 0.85 ? 0 : st < 1 ? 1 : 2, cols = ['rgba(255,255,255,0.95)', '#F2B441', '#E5533F'];
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath();
+    pts.forEach((p, q) => q ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
+    ctx.lineWidth = 2.4; ctx.setLineDash([6, 5]);
+    let q = 1;
+    while (q <= steps) {
+      const z = zone((pts[q][2] + pts[q - 1][2]) / 2);
+      ctx.strokeStyle = cols[z]; ctx.beginPath(); ctx.moveTo(pts[q - 1][0], pts[q - 1][1]);
+      while (q <= steps && zone((pts[q][2] + pts[q - 1][2]) / 2) === z) { ctx.lineTo(pts[q][0], pts[q][1]); q++; }
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    at(b.th);
+    ctx.beginPath(); ctx.arc(_x, _y, 6, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+    ctx.lineWidth = 2.6; ctx.strokeStyle = b.strain < 0.85 ? '#D99A2B' : cols[zone(b.strain)]; ctx.stroke();
+  }
+
+  // ---------- defoliation ----------
+  let pluckStroke = null, pluckHints = 0;
+  const BRUSH = 13;
+  // leaves under a point, keeping only the front layer so a swipe doesn't reach through the canopy
+  function leavesAt(x, y, rad) {
+    const hits = []; let maxD = -Infinity;
+    for (let k = 0; k < LF_COUNT; k++) {
+      const o = k * 6, cx = LF[o + 4] - 0.5 * LF[o + 2], cy = LF[o + 5] - 0.5 * LF[o + 3];
+      const d = Math.hypot(cx - x, cy - y);
+      if (d <= rad + LF_PX[k] * 0.3) { hits.push([k, d]); if (LF_DD[k] > maxD) maxD = LF_DD[k]; }
+    }
+    return hits.filter(h => LF_DD[h[0]] >= maxD - 25);
+  }
+  function dropLeaf(k) {
+    if (debris.length >= 40) return;
+    const o = k * 6;
+    debris.push({ segs: [], leaves: [[LF[o], LF[o + 1], LF[o + 2], LF[o + 3], LF[o + 4], LF[o + 5], LF_COL[k][0]]],
+      px: LF[o + 4] - 0.5 * LF[o + 2], py: LF[o + 5] - 0.5 * LF[o + 3], dx: 0, dy: 0, vx: (Math.random() - 0.5) * 50, vy: -15, rot: 0, vr: (Math.random() - 0.5) * 5, life: 0 });
+  }
+  function pluckLeaf(k, st) {
+    const i = LF_N[k], n = T.nodes[i]; if (!n) return false;
+    if (n.pk & (1 << LF_K[k])) return false;
+    if (!st.snapped) { pushUndo(); st.snapped = true; }
+    if (!Sim.pluck(T, i, LF_K[k], dispDay)) return false;
+    st.n++; dropLeaf(k);
+    return true;
+  }
+  function brushAlong(a, b, st) {
+    const L = Math.hypot(b.x - a.x, b.y - a.y), steps = Math.max(1, Math.ceil(L / 6));
+    let got = 0;
+    for (let j = 1; j <= steps; j++) {
+      const x = a.x + (b.x - a.x) * j / steps, y = a.y + (b.y - a.y) * j / steps;
+      for (const [k] of leavesAt(x, y, BRUSH)) if (pluckLeaf(k, st)) got++;
+    }
+    if (got) { sndPluck(); buzz(4); }
+  }
+  function pluckTap(st, x, y) {
+    const hits = leavesAt(x, y, 14);
+    if (!hits.length) {
+      const ls = Sim.leafState(dispDay);
+      toast(ls.open < 0.3 || ls.fall >= 1 ? 'There are no leaves to remove right now.' : 'Tap a leaf to pluck it, or drag across leaves to pluck several.');
+      return;
+    }
+    hits.sort((a, b) => a[1] - b[1]);
+    if (pluckLeaf(hits[0][0], st)) { sndPluck(); buzz(4); }
+  }
+  function defolMessage(win, count) {
+    const what = count === 1 ? 'that leaf' : 'those leaves';
+    let m = win === 'ideal' ? `A new flush of smaller leaves should open in two to four weeks, and the buds inside get more light.`
+      : win === 'soft' ? `The spring leaves were still soft, so the tree will take longer to push new ones.`
+      : win === 'late' ? `It’s too late in the season for a new flush, so ${what} won’t grow back until spring.`
+      : `The leaves were about to drop on their own.`;
+    if (T.vigor < 45 && (win === 'ideal' || win === 'soft')) m += ' Vigor is low, so recovery will be slow.';
+    return m;
+  }
+  function endPluck(st) {
+    if (!st.n) { if (st.snapped) undoStack.pop(); return; }
+    Sim.logAction(T, dispDay, 'pluck', st.n);
+    acted(); updateUI();
+    if (pluckHints < 1) { pluckHints++; toast(`Plucked ${st.n} lea${st.n === 1 ? 'f' : 'ves'}. ` + defolMessage(Sim.defolWindow(Sim.doyOf(dispDay)), st.n), 6500); }
+  }
+  // Whole-tree defoliation takes the strongest areas first: high, outer, well-lit growth and the biggest leaves.
+  function defoliate(pct) {
+    const ls = Sim.leafState(dispDay);
+    if (ls.open < 0.3 || ls.fall >= 1) { toast('There are no leaves to remove right now.'); return; }
+    const N = T.nodes, list = []; let maxY = 1;
+    for (const n of N) if (n.y > maxY) maxY = n.y;
+    for (let i = 0; i < N.length; i++) {
+      const n = N[i]; if (!Sim.isLeafy(n)) continue;
+      const specs = leafSpecs(n);
+      for (let k = 0; k < specs.length; k++) {
+        if ((n.pk & (1 << k)) || ls.fall > specs[k].fallT) continue;
+        list.push([i, k, n.light * 0.5 + Math.max(0, n.y) / maxY * 0.3 + specs[k].size / 8 * 0.2 + Math.random() * 0.25]);
+      }
+    }
+    if (!list.length) { toast('There are no leaves left to remove.'); return; }
+    list.sort((a, b) => b[2] - a[2]);
+    const take = pct >= 100 ? list.length : Math.max(1, Math.round(list.length * pct / 100));
+    pushUndo();
+    const gone = new Set();
+    for (let q = 0; q < take; q++) if (Sim.pluck(T, list[q][0], list[q][1], dispDay)) gone.add(list[q][0] * 8 + list[q][1]);
+    // let a sample of them fall
+    const drawn = [];
+    for (let k = 0; k < LF_COUNT; k++) if (gone.has(LF_N[k] * 8 + LF_K[k])) drawn.push(k);
+    for (let q = 0; q < Math.min(36, drawn.length); q++) dropLeaf(drawn[Math.floor(Math.random() * drawn.length)]);
+    const win = Sim.defolWindow(Sim.doyOf(dispDay));
+    Sim.logE(T, dispDay, pct >= 100 ? `Fully defoliated the tree (${take} leaves).` : `Defoliated about ${pct}% of the leaves (${take}), strongest areas first.`);
+    sndRustle(); buzz(20); acted(); updateUI();
+    toast(`Removed ${take} lea${take === 1 ? 'f' : 'ves'}. ` + defolMessage(win, take), 7000);
+  }
+  function leavesNote() {
+    const ls = Sim.leafState(dispDay), win = Sim.defolWindow(Sim.doyOf(dispDay));
+    if (ls.open < 0.3 || ls.fall >= 1) return 'There are no leaves to remove right now. Defoliation is an early summer job.';
+    const how = 'Tap a leaf to pluck it, drag to pluck several, or use Whole tree below.';
+    if (win === 'soft') return `${how} The spring leaves are still soft, so it’s better to wait until they harden in early summer.`;
+    if (win === 'ideal') return `${how} Early summer is the right time. The tree answers with a new flush of smaller leaves.`;
+    if (win === 'late') return `${how} It’s late in the season, so removed leaves won’t grow back until spring.`;
+    return 'The leaves are turning and will drop on their own.';
+  }
+
+  // ---------- pointer input ----------
+  const pointers = new Map();
+  let stroke = null, two = null, orbit = null;
+  const pos = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  function twoInfo() {
+    const [a, b] = [...pointers.values()];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, ang: Math.atan2(b.y - a.y, b.x - a.x), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+  }
+  canvas.addEventListener('pointerdown', e => {
+    audio();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    const p = pos(e);
+    pointers.set(e.pointerId, { x: p.x, y: p.y, x0: p.x, y0: p.y, t0: performance.now() });
+    if (pointers.size === 2) {
+      if (stroke) { endStroke(stroke); stroke = null; }
+      if (pluckStroke) { endPluck(pluckStroke); pluckStroke = null; }
+      if (bend) { const b = bend; bend = null; endBend(b); }
+      orbit = null; wirePress = null;
+      const t = twoInfo();
+      two = { d0: t.d, a0: t.ang, s0: cam.s, yaw0: cam.yaw, mx0: t.mx, my0: t.my,
+        vx: cam.cx + (t.mx - W / 2) / cam.s, vy: cam.cy - (t.my - H / 2) / cam.s, zoomed: false };
+      return;
+    }
+    if (pointers.size > 2) return;
+    if (mode === 'prune') { stroke = { last: p, cuts: 0, snapped: false }; trail.push({ x: p.x, y: p.y, t: performance.now() }); }
+    else if (mode === 'leaves') pluckStroke = { x0: p.x, y0: p.y, last: p, n: 0, snapped: false, moved: false };
+    else if (mode === 'wire') {
+      let hit = wireSel && wireSel._chain ? nearestSegment(p.x, p.y, wireSel._chain, 26) : -1;
+      if (hit < 0) hit = nearestSegment(p.x, p.y);
+      const w = hit >= 0 ? wireMap.get(hit) || null : null;
+      wirePress = { x: p.x, y: p.y, hit, w, moved: false };
+      if (!w) orbit = { x: p.x, y: p.y, yaw0: cam.yaw, pitch0: cam.pitch, moved: false };
+    }
+    else if (mode === 'view') orbit = { x: p.x, y: p.y, yaw0: cam.yaw, pitch0: cam.pitch, moved: false };
+  });
+  canvas.addEventListener('pointermove', e => {
+    const pt = pointers.get(e.pointerId); if (!pt) return;
+    const p = pos(e); pt.x = p.x; pt.y = p.y;
+    if (two && pointers.size >= 2) {
+      const t = twoInfo();
+      cam.yaw = cam.tyaw = two.yaw0 + angDiff(t.ang, two.a0);
+      const ns = clamp(two.s0 * t.d / two.d0, 0.4, 9);
+      if (two.zoomed || Math.abs(ns / two.s0 - 1) > 0.04 || Math.hypot(t.mx - two.mx0, t.my - two.my0) > 10) {
+        two.zoomed = true; cam.auto = false; cam.s = ns;
+        cam.cx = two.vx - (t.mx - W / 2) / cam.s; cam.cy = two.vy + (t.my - H / 2) / cam.s;
+      }
+      markRotated(); updateUI(); return;
+    }
+    if (pluckStroke) {
+      if (!pluckStroke.moved && Math.hypot(p.x - pluckStroke.x0, p.y - pluckStroke.y0) < 5) return;
+      if (!pluckStroke.moved) { pluckStroke.moved = true; brushAlong(pluckStroke.last, pluckStroke.last, pluckStroke); }
+      brushAlong(pluckStroke.last, p, pluckStroke); pluckStroke.last = p;
+      return;
+    }
+    if (wirePress && wirePress.w) {
+      if (!wirePress.moved && Math.hypot(p.x - wirePress.x, p.y - wirePress.y) < 6) return;
+      if (!wirePress.moved) { wirePress.moved = true; wireSel = wirePress.w; bend = beginBend(wirePress.w, wirePress.hit, wirePress.x, wirePress.y); }
+      if (bend) moveBend(bend, p.x, p.y);
+      updateUI(); return;
+    }
+    if (stroke) {
+      trail.push({ x: p.x, y: p.y, t: performance.now() });
+      pruneAlong(stroke.last, p, stroke);
+      stroke.last = p;
+    } else if (orbit) {
+      if (!orbit.moved && Math.hypot(p.x - orbit.x, p.y - orbit.y) < 6) return;
+      orbit.moved = true; if (wirePress) wirePress.moved = true;
+      cam.yaw = cam.tyaw = orbit.yaw0 + (p.x - orbit.x) * 0.011;
+      cam.pitch = cam.tpitch = clamp(orbit.pitch0 + (p.y - orbit.y) * 0.007, 0, MAX_PITCH);
+      markRotated(); updateUI();
+    }
+  });
+  function pointerEnd(e) {
+    const pt = pointers.get(e.pointerId); if (!pt) return;
+    pointers.delete(e.pointerId);
+    if (two) { if (pointers.size < 2) two = null; return; }
+    if (stroke) { endStroke(stroke); stroke = null; }
+    if (pluckStroke) {
+      const st = pluckStroke; pluckStroke = null;
+      if (!st.moved && e.type === 'pointerup') pluckTap(st, pt.x, pt.y);
+      endPluck(st);
+    }
+    if (wirePress) {
+      const wp = wirePress; wirePress = null;
+      if (bend) { const b = bend; bend = null; endBend(b); }
+      else if (!wp.moved && e.type === 'pointerup') {
+        if (wp.w) wireSel = wp.w;
+        else if (wp.hit >= 0) placeWire(wp.hit);
+        else wireSel = null;
+        updateUI();
+      }
+    }
+    if (orbit) orbit = null;
+    if (mode === 'pinch' && e.type === 'pointerup' && Math.hypot(pt.x - pt.x0, pt.y - pt.y0) < 10) pinchAt(pt.x, pt.y);
+  }
+  canvas.addEventListener('pointerup', pointerEnd);
+  canvas.addEventListener('pointercancel', pointerEnd);
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (bend) return;
+    const p = pos(e), vx = cam.cx + (p.x - W / 2) / cam.s, vy = cam.cy - (p.y - H / 2) / cam.s;
+    cam.auto = false;
+    cam.s = clamp(cam.s * Math.exp(-e.deltaY * 0.0015), 0.4, 9);
+    cam.cx = vx - (p.x - W / 2) / cam.s; cam.cy = vy + (p.y - H / 2) / cam.s;
+    updateUI();
+  }, { passive: false });
+
+  // ---------- UI text ----------
+  const toastEl = $('#toast');
+  function toast(msg, ms = 3800) {
+    toastEl.textContent = msg; toastEl.classList.add('show'); stage.classList.add('toasting');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.classList.remove('show'); stage.classList.remove('toasting'); }, ms);
+  }
+  const setText = (el, s) => { if (el.textContent !== s) el.textContent = s; };
+  function noteText() {
+    const doy = Sim.doyOf(dispDay);
+    if (catchup) return 'Catching up on the time you were away.';
+    if (T.moisture < 12) return 'The soil is dry. Growth has stopped until you water.';
+    if (mode === 'prune') return 'Swipe across a branch to cut it. Turn the tree with the dial or two fingers.';
+    if (mode === 'pinch') return 'Tap a glowing shoot tip to pinch it.';
+    if (mode === 'leaves') return leavesNote();
+    if (mode === 'wire') {
+      if (bend) return bendNote(bend);
+      if (wireSel) return wireStatus(wireSel);
+      return 'Tap a branch to wire it. Then drag from any joint along it to bend it there.';
+    }
+    if (T.wires.some(w => w.bite > 0.05)) return 'A wire is biting into the bark. Choose Wire, tap it, and take it off.';
+    if (!prefs.rotated) return 'Drag across the tree to turn it. Drag down to look from above.';
+    if (precipToday() && !Sim.isWinter(doy) && T.moisture > 40) return 'Rain today. No need to water.';
+    if (T.vigor < 40 && Sim.growthFactor(doy) > 0) return 'Vigor is low. Let it grow out before cutting more.';
+    if (isReal() && (doy >= 262 || doy < 70)) {
+      const weeks = Math.round(((82 - doy + 365) % 365) / 7);
+      if (weeks >= 2) return `${Sim.phaseNote(doy)} Buds should open again in about ${weeks} weeks.`;
+    }
+    return Sim.phaseNote(doy);
+  }
+  function angleLabel(deg) {
+    if (cam.tpitch > 1.2 && cam.pitch > 1.0) return deg === 0 ? 'Top view, front at bottom' : `Top view, turned ${Math.abs(deg)}°`;
+    if (Math.abs(deg) <= 2) return 'Front view';
+    if (Math.abs(deg) >= 178) return 'Back view';
+    return `${Math.abs(deg)}° ${deg > 0 ? 'right' : 'left'} of front`;
+  }
+  function updateUI(force) {
+    if (!T) return;
+    const doy = Sim.doyOf(dispDay);
+    setText($('#gardenDate'), isReal() ? `${Sim.seasonName(doy)} · ${Sim.dateLabel(doy)}` : `Year ${Sim.yearOf(dispDay)} · ${Sim.seasonName(doy)} · ${Sim.dateLabel(doy)}`);
+    setText($('#clockChip'), isReal() ? 'Real time' : `Practice · ${speedOf().label}`);
+    $('#clockChip').classList.toggle('practice', !isReal());
+    const m = Math.round(T.moisture), v = Math.round(T.vigor);
+    setText($('#soilVal'), m + '%'); setText($('#vigorVal'), v + '%');
+    const sf = $('#soilFill'), vf = $('#vigorFill');
+    sf.style.width = m + '%'; sf.classList.toggle('low', m < 20);
+    vf.style.width = v + '%'; vf.classList.toggle('low', v < 40);
+    setText($('#note'), noteText());
+    const canUndo = undoStack.length > 0 && undoStack[undoStack.length - 1].day === T.day;
+    $('#toolUndo').disabled = !canUndo;
+    $('#fitBtn').hidden = cam.auto;
+    setText($('#fitBtn'), focusOn ? 'Fit branch' : 'Fit tree');
+    $('#leafBar').hidden = mode !== 'leaves';
+    $('#focusBtn').setAttribute('aria-pressed', String(!!prefs.focus));
+    $('#focusLegend').hidden = !(mode === 'wire' && prefs.focus && wireSel);
+    const deg = Math.round(wrapAng(cam.tyaw - (T.front || 0)) * 180 / Math.PI);
+    const range = $('#yawRange');
+    if (!rangeActive && String(deg) !== range.value) range.value = String(deg);
+    setText($('#angleLabel'), angleLabel(deg));
+    range.setAttribute('aria-valuetext', angleLabel(deg));
+    $('#topBtn').setAttribute('aria-pressed', String(cam.tpitch > 0.9));
+    $('#setFrontBtn').hidden = Math.abs(deg) < 8 || cam.tpitch > 0.9 || mode === 'wire';
+    if (wireSel && !T.wires.includes(wireSel)) wireSel = null;
+    $('#wireBar').hidden = mode !== 'wire';
+    $('#bendV').setAttribute('aria-checked', String(bendKind === 0));
+    $('#bendH').setAttribute('aria-checked', String(bendKind === 1));
+    $('#removeWireBtn').hidden = !(mode === 'wire' && wireSel) || !!bend;
+    const ready = mode === 'wire' && !wireSel ? readyWires().length : 0;
+    $('#removeSetBtn').hidden = !ready;
+    if (ready) setText($('#removeSetBtn'), ready === 1 ? 'Remove set wire' : `Remove ${ready} set wires`);
+    const ram = Sim.ramification(T);
+    setText($('#ramVal'), ram.level.toFixed(1));
+    $('#ramFill').style.width = Math.round(clamp(ram.level / 7, 0, 1) * 100) + '%';
+    if ((T.ramHi2 || 0) > ramSeen) {
+      ramSeen = T.ramHi2;
+      const e = [...T.log].reverse().find(x => x.k === 'ram');
+      if (e && !catchup) toast(e.t, 5500);
+    }
+    if (!$('#sheetWrap').hidden && force !== 'skipSheet') renderSheetStats();
+  }
+
+  function relTime(ms) {
+    if (!ms) return 'Not yet';
+    const m = Math.round((Date.now() - ms) / 60000);
+    if (m < 1) return 'Just now';
+    if (m < 60) return m + ' min ago';
+    const h = Math.round(m / 60);
+    if (h < 36) return h + ' h ago';
+    return Math.round(h / 24) + ' days ago';
+  }
+  function careLength(days) {
+    if (days < 14) return days + (days === 1 ? ' day' : ' days');
+    if (days < 120) return Math.round(days / 7) + ' weeks';
+    const y = Math.floor(days / 365), mo = Math.round((days % 365) / 30.4);
+    if (!y) return mo + ' months';
+    return y + (y === 1 ? ' year' : ' years') + (mo ? ', ' + mo + ' mo' : '');
+  }
+  function sizeClass(cm) { return cm < 15 ? 'Mame' : cm < 25 ? 'Shohin' : cm < 40 ? 'Kifu' : cm < 60 ? 'Chuhin' : 'Omono'; }
+  function renderSheetStats() {
+    Sim.layout(T, dispDay);
+    const ram = Sim.ramification(T);
+    const orders = ram.counts.map((c, o) => c && o ? `${Sim.ORD_NAMES[o]} ${c}` : '').filter(Boolean).join(' · ');
+    setText($('#ramOrders'), orders ? `Twigs by branch order: ${orders}.` : '');
+    const hcm = Math.round((Sim.treeHeight(T) + POT_H + 5) / 5);
+    let spread = 0; for (const n of T.nodes) spread = Math.max(spread, Math.hypot(n.x, n.z));
+    const ls = Sim.leafState(dispDay);
+    let leafCount = 0;
+    if (ls.open > 0 && ls.fall < 1) for (const n of T.nodes) if (Sim.isLeafy(n)) leafSpecs(n).forEach((sp, k) => { if (ls.fall <= sp.fallT && !(n.pk & (1 << k))) leafCount++; });
+    const rows = [
+      ['In your care', careLength(isReal() ? Math.max(0, Math.floor((Date.now() - (T.created || Date.now())) / 864e5)) : Math.max(0, Math.floor(dispDay) - T.startDay))],
+      ['Height with pot', `${hcm} cm · ${sizeClass(hcm)}`],
+      ['Crown width', `${Math.round(spread * 2 / 5)} cm`],
+      ['Surface roots', String(T.roots.length)],
+      ['Shoot tips', String(Sim.countTips(T))],
+      ['Leaves', leafCount ? String(Math.round(leafCount * ls.open)) : 'Bare'],
+      ['Cuts made', String(T.stats.cuts)],
+      ['Shoots pinched', String(T.stats.pinches)],
+      ['Wires on', String(T.wires.length)],
+      ['Leaves plucked', String(T.stats.plucked || 0)],
+      ['Ramification', `${ram.level.toFixed(1)} · ~${Math.round(ram.per)} twigs per branch`],
+      ['Finest twigs', Sim.ORD_NAMES[ram.max] ? Sim.ORD_NAMES[ram.max][0].toUpperCase() + Sim.ORD_NAMES[ram.max].slice(1) : 'Trunk'],
+      ['Last watered', relTime(T.lastWateredReal)],
+      ['Clock', speedOf().label],
+    ];
+    const dl = $('#stats');
+    const html = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    if (dl.innerHTML !== html) dl.innerHTML = html;
+  }
+  function journalText(e) {
+    if (e.k === 'prune') return e.c > 1 ? `Pruned ${e.c} branches.` : 'Pruned a branch.';
+    if (e.k === 'pinch') return e.c > 1 ? `Pinched ${e.c} shoots.` : 'Pinched a shoot.';
+    if (e.k === 'wire') return e.c > 1 ? `Wired ${e.c} branches.` : 'Wired a branch.';
+    if (e.k === 'bend') return e.c > 1 ? `Shaped wired branches with ${e.c} bends.` : 'Shaped a wired branch.';
+    if (e.k === 'unwire') return e.c > 1 ? `Took ${e.c} wires off.` : 'Took a wire off.';
+    if (e.k === 'pluck') return e.c > 1 ? `Plucked ${e.c} leaves.` : 'Plucked a leaf.';
+    return e.t;
+  }
+  function renderJournal() {
+    const ol = $('#journal'); ol.textContent = '';
+    for (const e of T.log.slice(-40).reverse()) {
+      const li = document.createElement('li');
+      const tm = document.createElement('time');
+      tm.textContent = isReal() ? `${Sim.shortDate(Sim.doyOf(e.d))}${Math.floor((e.d + T.realOffset) / 365) !== new Date().getFullYear() ? ' ' + Math.floor((e.d + T.realOffset) / 365) : ''}` : `Y${Sim.yearOf(e.d)} · ${Sim.shortDate(Sim.doyOf(e.d))}`;
+      const sp = document.createElement('span'); sp.textContent = journalText(e);
+      li.append(tm, sp); ol.append(li);
+    }
+  }
+  function renderTrees() {
+    const box = $('#treeRadios'); box.textContent = '';
+    const opts = [
+      ['real', 'Real-time tree', 'Follows today\u2019s date and your local time. Buds, growth and setting wire take as long as on a real tree. No shortcuts.'],
+      ['practice', 'Practice tree', 'A separate tree for learning and experimenting. Its clock can run faster.'],
+    ];
+    for (const [k, label, desc] of opts) {
+      const lab = document.createElement('label'); lab.className = 'radio'; lab.htmlFor = 'slot-' + k;
+      lab.innerHTML = `<input type="radio" name="slot" id="slot-${k}" value="${k}"><span><b></b><small></small></span>`;
+      lab.querySelector('b').textContent = label; lab.querySelector('small').textContent = desc;
+      const inp = lab.querySelector('input'); inp.checked = Store.slot === k;
+      inp.addEventListener('change', () => {
+        if (!inp.checked || Store.slot === k) return;
+        const fresh = openSlot(k);
+        closeSheet(); setMode('view');
+        toast(k === 'real' ? 'Back to your real-time tree.' : fresh ? 'A practice tree is in the pot. Pick its clock speed in the menu.' : 'Switched to your practice tree.');
+      });
+      box.append(lab);
+    }
+  }
+  function renderSpeeds() {
+    const box = $('#speedRadios'); box.textContent = '';
+    $('#clockHint').textContent = isReal()
+      ? 'This tree follows the real calendar and your local time, so it can\u2019t be sped up. Buds take days or weeks to open, and spring arrives when it does outside. It keeps growing while the app is closed.'
+      : 'The practice tree keeps growing while the app is closed, at the speed you pick here. Seasons follow its own garden calendar.';
+    box.hidden = isReal();
+    if (isReal()) return;
+    for (const [k, s] of Object.entries(SPEEDS)) {
+      const lab = document.createElement('label'); lab.className = 'radio'; lab.htmlFor = 'speed-' + k;
+      lab.innerHTML = `<input type="radio" name="speed" id="speed-${k}" value="${k}"><span><b>${s.label}</b><small>${s.desc}</small></span>`;
+      const inp = lab.querySelector('input'); inp.checked = T.speed === k;
+      inp.addEventListener('change', () => {
+        if (!inp.checked) return;
+        const now = Date.now();
+        T.anchorGarden = gardenNow(now); T.anchorReal = now; T.speed = k;
+        acted(); renderSheetStats();
+        toast(k === 'lapse' ? 'Time-lapse on. Switch to Steady or Quick when you are done watching.' : `Practice clock set to ${s.label}.`); updateUI();
+      });
+      box.append(lab);
+    }
+  }
+  function openSheet() {
+    $('#sheetWrap').hidden = false; $('#newTreeConfirm').hidden = true;
+    renderSheetStats(); renderJournal(); renderTrees(); renderSpeeds(); renderSync();
+    $('#joinConfirm').hidden = true; $('#importConfirm').hidden = true;
+    setText($('#sheetTitle'), isReal() ? 'Your trident maple' : 'Practice trident maple');
+    setText($('#newTreeLabel'), isReal() ? 'Start over with a new real-time tree' : 'Start over with a new practice tree');
+    $('#soundToggle').checked = prefs.sound;
+    $('#closeSheet').focus();
+  }
+  function closeSheet() { $('#sheetWrap').hidden = true; $('#openSheet').focus(); }
+
+  function bindUI() {
+    $('#toolPrune').addEventListener('click', () => setMode('prune'));
+    $('#toolPinch').addEventListener('click', () => setMode('pinch'));
+    $('#toolWire').addEventListener('click', () => setMode('wire'));
+    $('#toolLeaves').addEventListener('click', () => setMode('leaves'));
+    $('#focusBtn').addEventListener('click', () => { prefs.focus = !prefs.focus; Store.savePrefs(); updateUI(); });
+    for (const b of document.querySelectorAll('#leafBar [data-pct]')) b.addEventListener('click', () => { audio(); defoliate(+b.dataset.pct); });
+    $('#removeWireBtn').addEventListener('click', removeSelectedWire);
+    $('#removeSetBtn').addEventListener('click', removeSetWires);
+    $('#bendV').addEventListener('click', () => setBendKind(0));
+    $('#bendH').addEventListener('click', () => setBendKind(1));
+    $('#toolWater').addEventListener('click', () => { audio(); water(); });
+    $('#toolUndo').addEventListener('click', undo);
+    $('#fitBtn').addEventListener('click', () => { cam.auto = true; updateUI(); });
+    $('#frontBtn').addEventListener('click', goFront);
+    $('#topBtn').addEventListener('click', toggleTop);
+    $('#setFrontBtn').addEventListener('click', setFront);
+    const range = $('#yawRange');
+    range.addEventListener('pointerdown', () => { rangeActive = true; });
+    const endRange = () => { rangeActive = false; };
+    range.addEventListener('pointerup', endRange); range.addEventListener('pointercancel', endRange); range.addEventListener('blur', endRange);
+    range.addEventListener('input', () => {
+      cam.tyaw = (T.front || 0) + (+range.value) * Math.PI / 180;
+      cam.yaw = cam.yaw + angDiff(cam.tyaw, cam.yaw);
+      cam.tyaw = cam.yaw;
+      markRotated(); updateUI();
+    });
+    $('#openSheet').addEventListener('click', openSheet);
+    $('#closeSheet').addEventListener('click', closeSheet);
+    $('#sheetWrap').addEventListener('click', e => { if (e.target === e.currentTarget) closeSheet(); });
+    document.addEventListener('keydown', e => {
+      const sheetOpen = !$('#sheetWrap').hidden;
+      if (e.key === 'Escape' && sheetOpen) { closeSheet(); return; }
+      if (sheetOpen || (e.target && e.target.tagName === 'INPUT')) return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') { e.preventDefault(); undo(); return; }
+      const step = Math.PI / 12;
+      if (e.key === 'ArrowLeft') { cam.tyaw -= step; markRotated(); }
+      else if (e.key === 'ArrowRight') { cam.tyaw += step; markRotated(); }
+      else if (e.key === 'ArrowUp') cam.tpitch = clamp(cam.tpitch + 0.15, 0, MAX_PITCH);
+      else if (e.key === 'ArrowDown') cam.tpitch = clamp(cam.tpitch - 0.15, 0, MAX_PITCH);
+      else return;
+      e.preventDefault(); updateUI();
+    });
+    $('#soundToggle').addEventListener('change', e => { prefs.sound = e.target.checked; Store.savePrefs(); });
+    $('#exportBtn').addEventListener('click', exportTrees);
+    $('#importBtn').addEventListener('click', () => { $('#importFile').value = ''; $('#importFile').click(); });
+    $('#importFile').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0]; if (!f) return;
+      f.text().then(askImport, () => toast('That file couldn’t be read.'));
+    });
+    $('#importYes').addEventListener('click', doImport);
+    $('#importNo').addEventListener('click', () => { pendingImport = null; $('#importConfirm').hidden = true; });
+    $('#syncOnBtn').addEventListener('click', syncTurnOn);
+    let joinKey = null;
+    $('#joinBtn').addEventListener('click', () => {
+      joinKey = Sync.parse($('#joinCode').value);
+      if (!joinKey) { toast('That code doesn’t look right. It has 26 letters and numbers.'); return; }
+      $('#joinConfirm').hidden = false;
+    });
+    $('#joinYes').addEventListener('click', () => { $('#joinConfirm').hidden = true; if (joinKey) syncJoin(joinKey); });
+    $('#joinNo').addEventListener('click', () => { $('#joinConfirm').hidden = true; });
+    $('#syncOffBtn').addEventListener('click', syncTurnOff);
+    $('#copyCodeBtn').addEventListener('click', () => {
+      const code = Sync.pretty(Sync.key);
+      navigator.clipboard.writeText(code).then(() => toast('Code copied.'), () => {
+        const r = document.createRange(); r.selectNodeContents($('#syncCode'));
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        toast('Select the code and copy it.');
+      });
+    });
+    $('#newTreeBtn').addEventListener('click', () => { $('#newTreeConfirm').hidden = false; $('#newTreeNo').focus(); });
+    $('#newTreeNo').addEventListener('click', () => { $('#newTreeConfirm').hidden = true; });
+    $('#newTreeYes').addEventListener('click', () => {
+      const t = makeTree(Store.slot, Date.now());
+      t.fresh = false; t.actedAt = Date.now();
+      setTree(t); saveNow(); closeSheet(); setMode('view');
+      toast('A new trident maple is in the pot.');
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) saveNow();
+      else { lastTs = 0; Store.refresh(adoptRemote); }
+    });
+    addEventListener('pagehide', saveNow);
+    $('#version').textContent = `Living Bonsai · version ${VERSION}`;
+  }
+
+  function randomSeed() {
+    try { return crypto.getRandomValues(new Uint32Array(1))[0]; } catch (e) { return (Math.random() * 4294967296) >>> 0; }
+  }
+
+  // ---------- loop ----------
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    if (document.hidden || !T || !W) return;
+    const busy = catchup || bend || debris.length || drops.length || splashes.length || pointers.size || trail.length || fallers.length || cameraMoving();
+    if (!busy && ts - lastFrame < 31) return;
+    const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0.016;
+    lastTs = ts; lastFrame = ts;
+    const now = Date.now();
+    stepTime(now);
+    const t0 = performance.now();
+    draw(dt, ts / 1000);
+    drawAvg = drawAvg * 0.92 + (performance.now() - t0) * 0.08;
+    if (++qFrames > 45) {
+      if (drawAvg > 26 && Q > 0) { Q--; qFrames = 0; }
+      else if (drawAvg < 11 && Q < 2) { Q++; qFrames = 0; }
+    }
+    if (now - lastUi > 400) { updateUI('skipSheet'); lastUi = now; }
+  }
+
+  function start(data) {
+    Store.loadPrefs();
+    bendKind = prefs.bendKind === 1 ? 1 : 0;
+    const slot = data && (data.slot === 'practice' || data.slot === 'real') ? data.slot : prefs.slot === 'practice' ? 'practice' : 'real';
+    resize();
+    bindUI();
+    const firstRun = openSlot(slot, { initial: true, tree: data && data.tree });
+    setMode('view');
+    requestAnimationFrame(frame);
+    if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ tree: T ? Sim.serialize(T) : null, slot: Store.slot }));
+    Store.initRemote(adoptRemote);
+    if (firstRun && slot === 'real') setTimeout(() => { if (T.fresh) toast('This tree follows the real calendar and grows at a real tree\u2019s pace, even while the app is closed. Drag to turn it and look at it from every side.', 8000); }, 900);
+  }
+
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>

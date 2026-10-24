@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Living Bonsai: each synced pair of trees lives under a 40-character hash of its private sync code.
+    // Trees are encrypted in the browser before upload. Nobody can list the collection;
+    // a tree can only be fetched by someone who has its code.
+    match /bonsai/{space}/trees/{slot} {
+      allow get: if space.size() == 40;
+      allow create, update: if space.size() == 40
+        && slot in ['real', 'practice']
+        && request.resource.data.keys().hasOnly(['c', 'iv', 'a', 's', 'v'])
+        && request.resource.data.c is string
+        && request.resource.data.c.size() < 900000
+        && request.resource.data.iv is string;
+    }
+  }
+}
