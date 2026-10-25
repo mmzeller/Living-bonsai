@@ -1,5 +1,5 @@
 /* Living Bonsai service worker: keeps the app working offline. */
-const CACHE = 'living-bonsai-0.8.0';
+const CACHE = 'living-bonsai-0.8.1';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './firebase-config.js', './icons/favicon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   // cache: 'reload' skips the browser's own cache so an update never installs stale files

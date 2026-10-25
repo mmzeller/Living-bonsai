@@ -481,7 +481,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       </div>
     </section>
 
-    <p class="version" id="version">Living Bonsai · version 0.8.0</p>
+    <p class="version" id="version">Living Bonsai · version 0.8.1</p>
   </div>
 </div>
 
@@ -1545,7 +1545,7 @@ const Sim = (() => {
 
 (() => {
   'use strict';
-  const VERSION = '0.8.0';
+  const VERSION = '0.8.1';
   const WEB_BUILD = /*WEB_BUILD*/true; // true in the GitHub Pages copy
   const $ = s => document.querySelector(s);
   const canvas = $('#scene'), mainCtx = canvas.getContext('2d');
@@ -2158,7 +2158,7 @@ const Sim = (() => {
     const v = y * cpt - z * spt;
     _x = W / 2 + (x - cam.cx) * cam.s; _y = H / 2 - (v - cam.cy) * cam.s; _d = z * cpt + y * spt;
   }
-  function projDir(x, y, z) { // screen direction of a world vector (px per unit, y down)
+  function projDir(x, y, z) { // screen direction of a world vector, y down, before zoom: multiply by cam.s for pixels
     const xr = x * cyw + z * syw, zr = z * cyw - x * syw;
     _x = xr; _y = -(y * cpt - zr * spt);
   }
@@ -2414,7 +2414,7 @@ const Sim = (() => {
   let IT_D = new Float32Array(8192), IT_K = new Uint8Array(8192), IT_I = new Int32Array(8192);
   let LF = new Float32Array(8192 * 6), LF_PX = new Float32Array(8192), PET = new Float32Array(8192 * 4); const LF_COL = [];
   let LF_N = new Int32Array(8192), LF_K = new Uint8Array(8192), LF_DD = new Float32Array(8192), LF_GH = new Uint8Array(8192), LF_COUNT = 0;
-  let NBV = new Float32Array(2048 * 8), NGX = 0, NGY = 1; // per needled shoot: its axes on screen, needle length and droop
+  let NBV = new Float32Array(2048 * 8), NGX = 0, NGY = 1; // per needled shoot: its axes on screen, needle length in pixels and droop
   let Q = 2, drawAvg = 10, qFrames = 0; // detail level adapts to how fast this device draws
   const order = [];
   function ensureCap(nNodes, nItems) {
@@ -2593,7 +2593,7 @@ const Sim = (() => {
           const a = Sim.h01(T.seed + 6, i) * TAU, len = 7 + Sim.h01(T.seed + 8, i) * 5;
           proj(fx, 1, fz); const x0 = _x, y0 = _y;
           projDir(Math.cos(a), 0, Math.sin(a));
-          ctx.moveTo(x0, y0); ctx.lineTo(x0 + _x * len, y0 + _y * len);
+          ctx.moveTo(x0, y0); ctx.lineTo(x0 + _x * len * s, y0 + _y * len * s);
         }
         ctx.stroke();
       }
@@ -2715,7 +2715,7 @@ const Sim = (() => {
       }
     }
     if (pine) {
-      projDir(0, -1, 0); NGX = _x / Math.max(1e-3, s); NGY = _y / Math.max(1e-3, s);
+      projDir(0, -1, 0); NGX = _x; NGY = _y;
       for (let i = 1; i < N.length; i++) {
         const n = N[i];
         if (!(n.nd > 0) || (n.pk & 7) === 7 || n.dl < 0.02) continue;
@@ -2733,7 +2733,7 @@ const Sim = (() => {
         projDir(dx, dy, dz); NBV[o8] = _x; NBV[o8 + 1] = _y;
         projDir(sx, 0, sz); NBV[o8 + 2] = _x; NBV[o8 + 3] = _y;
         projDir(ux, uy, uz); NBV[o8 + 4] = _x; NBV[o8 + 5] = _y;
-        NBV[o8 + 6] = NLw; NBV[o8 + 7] = (n.nd === 3 ? 0.3 : n.nd === 2 ? 0.15 : 0.04) * s;
+        NBV[o8 + 6] = NLw * s; NBV[o8 + 7] = n.nd === 3 ? 0.3 : n.nd === 2 ? 0.15 : 0.04; // needles scale with the zoom like everything else
         const np = needleParams(n, Q);
         for (let g = 0; g < 3; g++) {
           if (n.pk & (1 << g)) continue;
@@ -2741,7 +2741,7 @@ const Sim = (() => {
           const bx = PX[n.pi] + (PX[i] - PX[n.pi]) * t, by = PY[n.pi] + (PY[i] - PY[n.pi]) * t, bd = PD[n.pi] + (PD[i] - PD[n.pi]) * t;
           const o = lfCount * 6;
           LF[o] = 0; LF[o + 1] = 0; LF[o + 2] = 0; LF[o + 3] = 0;
-          LF[o + 4] = bx + NBV[o8] * NLw * 0.35; LF[o + 5] = by + NBV[o8 + 1] * NLw * 0.35;
+          LF[o + 4] = bx + NBV[o8] * NLw * s * 0.35; LF[o + 5] = by + NBV[o8 + 1] * NLw * s * 0.35;
           PET[lfCount * 4] = bx; PET[lfCount * 4 + 1] = by;
           LF_PX[lfCount] = NLw * s;
           LF_COL[lfCount] = needleColor(n, dayInt, fogLevel(bd));
