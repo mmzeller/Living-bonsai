@@ -368,6 +368,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
           <label class="radio" for="add-maple"><input type="radio" name="addSp" id="add-maple" value="maple" checked><span><b>Trident maple</b><small>Acer buergerianum. Deciduous. Buds back readily and answers pinching, pruning and defoliation with fine twigs.</small></span></label>
           <label class="radio" for="add-pine"><input type="radio" name="addSp" id="add-pine" value="pine"><span><b>Japanese black pine</b><small>Pinus thunbergii. Evergreen, with one flush of candles a year. Shaped by candle pinching, decandling, needle work and patience.</small></span></label>
         </div>
+        <div id="addStageBox" hidden>
+          <p class="field-label">Start from</p>
+          <div class="radios">
+            <label class="radio" for="add-young"><input type="radio" name="addStage" id="add-young" value="young" checked><span><b>A young tree in training</b><small>Nursery stock with movement in the trunk and long, untrained branches in whorls. You choose the branches, wire them down and build the pads.</small></span></label>
+            <label class="radio" for="add-finished"><input type="radio" name="addStage" id="add-finished" value="finished"><span><b>A finished bonsai</b><small>Years into refinement: branches wired down into flat pads, short needles and a rounded apex. Your job is keeping it that way.</small></span></label>
+          </div>
+        </div>
         <p class="field-label">Clock</p>
         <div class="radios">
           <label class="radio" for="add-real"><input type="radio" name="addClock" id="add-real" value="real" checked><span><b>Real time</b><small>Follows today’s date and grows at a real tree’s pace. No shortcuts.</small></span></label>
@@ -456,7 +463,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       </div>
     </section>
 
-    <p class="version" id="version">Living Bonsai · version 0.8.1</p>
+    <p class="version" id="version">Living Bonsai · version 0.9.0</p>
   </div>
 </div>
 
@@ -464,7 +471,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 /*SIM-START*/
 const Sim = (() => {
   'use strict';
-  const YEAR = 365, START_DOY = 96, MAX_NODES = 1400, TIP_R = 0.72, HALF_PI = Math.PI / 2, SET_DAYS = 55;
+  const YEAR = 365, START_DOY = 96, MAX_NODES = 1400, TIP_R = 0.72, HALF_PI = Math.PI / 2, TAU = Math.PI * 2, SET_DAYS = 55;
   const SPECIES = {
     maple: { key: 'maple', name: 'Trident maple', latin: 'Acer buergerianum', setDays: 55, stiff: 1.9, startDoy: 96 },
     pine: { key: 'pine', name: 'Japanese black pine', latin: 'Pinus thunbergii', setDays: 100, stiff: 1.7, startDoy: 80 },
@@ -595,13 +602,17 @@ const Sim = (() => {
       place(n, par, n.dl);
     }
   }
+  // A branch is at least as thick as the twigs it carries put together. A pine's many fine shoots add up more slowly
+  // (an exponent above 2), or a refined pine's hundreds of shoot tips would swell the trunk out of proportion.
   function computeRadius(T) {
-    const N = T.nodes;
+    const N = T.nodes, e = T.sp === 'pine' ? 2.4 : 2;
     for (let i = N.length - 1; i >= 0; i--) {
       const n = N[i];
       if (!n.ch.length) { if (n.r < TIP_R) n.r = TIP_R; continue; }
-      let s = 0; for (const c of n.ch) s += N[c].r * N[c].r;
-      const rp = Math.sqrt(s);
+      let s = 0;
+      if (e === 2) { for (const c of n.ch) s += N[c].r * N[c].r; }
+      else for (const c of n.ch) s += Math.pow(N[c].r, e);
+      const rp = e === 2 ? Math.sqrt(s) : Math.pow(s, 1 / e);
       if (rp > n.r) n.r = rp;
     }
   }
@@ -682,10 +693,82 @@ const Sim = (() => {
     return roots;
   }
 
-  // ---------- new tree (nursery stock, informal upright) ----------
+  // ---------- new trees: every one different ----------
   function dirOf(lx, lz) { return [Math.hypot(lx, lz) < 1e-6 ? 0 : Math.atan2(lz, lx), Math.atan2(1, Math.hypot(lx, lz))]; }
-  function newTree(seed, now, sp, startDay) {
-    if (sp === 'pine') return newPine(seed, now, startDay === undefined ? SPECIES.pine.startDoy : startDay);
+  // Trunk styles. lean: how far the apex sits off the base (fraction of height); bends: how many waves of movement;
+  // amp: their size; zr: depth movement relative to side-to-side; decay: how much the movement settles toward the apex;
+  // minEl: the flattest a stretch of trunk may run.
+  const TRUNK_STYLES = {
+    moyogi: { name: 'informal upright', lean: [0.03, 0.12], lp: 1.3, bends: [2, 3], freq: [1.2, 2.5], amp: [0.045, 0.095], zr: 0.5, decay: 0.5, minEl: 0.5 },
+    shakan: { name: 'slanting', lean: [0.24, 0.4], lp: 1.1, bends: [1, 2], freq: [1.2, 2.4], amp: [0.02, 0.05], zr: 0.4, decay: 0.3, minEl: 0.6 },
+    chokkan: { name: 'formal upright', lean: [0, 0.03], lp: 1, bends: [1, 2], freq: [1, 2.5], amp: [0.008, 0.02], zr: 0.5, decay: 0.2, minEl: 1.15 },
+    bunjin: { name: 'literati', lean: [0.1, 0.28], lp: 1.6, bends: [1, 2], freq: [1.6, 3], amp: [0.03, 0.06], zr: 0.6, decay: 0.05, minEl: 0.6 },
+    twist: { name: 'dramatic informal upright', lean: [0.04, 0.12], lp: 1.2, bends: [2, 2], freq: [1.1, 1.7], amp: [0.12, 0.18], zr: 0.45, decay: 0.55, minEl: 0.32 },
+  };
+  function pickStyle(rng, table) {
+    let r = rng() * table.reduce((a, x) => a + x[1], 0);
+    for (const x of table) { r -= x[1]; if (r <= 0) return x[0]; }
+    return table[0][0];
+  }
+  // A trunk line as a function of height fraction t: a lean, a few waves of movement that settle toward the apex,
+  // and an apex that comes forward a little toward the viewer, as bonsai apexes do.
+  function trunkCurve(rng, style, H) {
+    const S = TRUNK_STYLES[style], lean = S.lean[0] + rng() * (S.lean[1] - S.lean[0]);
+    const leanDir = (rng() < 0.5 ? Math.PI : 0) + (rng() - 0.5) * 0.7;
+    const nb = S.bends[0] + Math.floor(rng() * (S.bends[1] - S.bends[0] + 1)), waves = [];
+    for (let k = 0; k < nb; k++) {
+      const a = (S.amp[0] + rng() * (S.amp[1] - S.amp[0])) * H * (style === 'twist' && k ? 0.45 : 1);
+      waves.push({ f: S.freq[0] + rng() * (S.freq[1] - S.freq[0]), px: style === 'twist' && !k ? 0 : rng() * TAU, pz: rng() * TAU, a, sx: rng() < 0.5 ? -1 : 1 });
+    }
+    const fwd = style === 'bunjin' ? 0.02 : 0.04 + rng() * 0.05;
+    const env = t => clamp(t * 5, 0, 1) * (1 - S.decay * t);
+    const curve = { minEl: S.minEl, style, kinks: [] };
+    curve.at = t => {
+      let x = Math.cos(leanDir) * lean * H * Math.pow(t, S.lp), z = Math.sin(leanDir) * lean * 0.5 * H * Math.pow(t, S.lp) + fwd * H * t * t;
+      for (const w of waves) { x += w.sx * w.a * Math.sin(Math.PI * w.f * t + w.px) * env(t); z += w.a * S.zr * Math.sin(Math.PI * w.f * t + w.pz) * env(t); }
+      for (const k of curve.kinks) if (t > k.t) { x += k.dx * (t - k.t) * H; z += k.dz * (t - k.t) * H; }
+      return [x, H * t, z];
+    };
+    // Real trunks aren't smooth waves: where a side branch once took over as the leader, the line turns at a sharper angle.
+    curve.kink = (rng, marks, count, size) => {
+      for (let k = 0; k < count && marks.length; k++) {
+        const t = marks[Math.floor(rng() * marks.length)], a = rng() * TAU, m = size * (0.5 + rng() * 0.5);
+        curve.kinks.push({ t, dx: Math.cos(a) * m, dz: Math.sin(a) * m * 0.6 });
+      }
+      return curve;
+    };
+    return curve;
+  }
+  // Lay a trunk along a curve, with a node at each requested height (where branches leave) and enough in between to keep it smooth.
+  function buildTrunk(add, root, curve, H, marks, maxStep) {
+    const ts = [0, ...marks, 1].sort((a, b) => a - b), all = [0];
+    for (let i = 1; i < ts.length; i++) {
+      const gap = ts[i] - ts[i - 1], k = Math.max(1, Math.ceil(gap * H / maxStep));
+      for (let j = 1; j <= k; j++) all.push(ts[i - 1] + gap * j / k);
+    }
+    const nodes = [], at = [];
+    let prev = root, px = 0, py = 0, pz = 0;
+    for (let i = 1; i < all.length; i++) {
+      const p = curve.at(all[i]);
+      let dx = p[0] - px, dy = p[1] - py, dz = p[2] - pz, hz = Math.hypot(dx, dz);
+      const el0 = Math.atan2(dy, hz);
+      if (el0 < curve.minEl) { const k2 = dy / Math.tan(curve.minEl) / Math.max(1e-6, hz); dx *= k2; dz *= k2; hz *= k2; }
+      const len = Math.hypot(hz, dy), az = hz < 1e-6 ? (prev.az || 0) : Math.atan2(dz, dx), el = Math.atan2(dy, hz);
+      const n = add(prev, az, el, len, 0, all[i]);
+      nodes.push(n); at.push(all[i]); prev = n; px += dx; py += dy; pz += dz;
+    }
+    return { nodes, at };
+  }
+  // the trunk node nearest a height fraction
+  const nodeAt = (trunk, t) => { let b = 0; for (let i = 0; i < trunk.at.length; i++) if (Math.abs(trunk.at[i] - t) < Math.abs(trunk.at[b] - t)) b = i; return trunk.nodes[b]; };
+  // Branches leaving straight toward the viewer hide the trunk, so the lower ones are turned aside.
+  function sideAz(az, t) {
+    const FRONT = HALF_PI, d = angDiff(az, FRONT);
+    if (t < 0.6 && Math.abs(d) < 0.5) return FRONT + (d < 0 ? -0.5 : 0.5);
+    return az;
+  }
+  function newTree(seed, now, sp, startDay, stage) {
+    if (sp === 'pine') return (stage === 'finished' ? finishedPine : newPine)(seed, now, startDay === undefined ? SPECIES.pine.startDoy : startDay);
     if (startDay === undefined) startDay = START_DOY;
     const rng = mulberry32(seed);
     const T = {
@@ -706,29 +789,23 @@ const Sim = (() => {
       return n;
     };
     const root = add(null, 0, HALF_PI, 0, 0);
-    const mx = rng() < 0.5 ? 1 : -1;
-    // S-curve seen from the front, apex leaning slightly toward the viewer
-    const LX = [0.12, 0.36, 0.05, -0.3, -0.08, 0.26, 0.1, -0.1];
-    const LZ = [0.02, 0.04, 0.1, 0.06, -0.04, 0.08, 0.16, 0.24];
-    const lens = [25, 23, 21, 19, 17, 14, 11, 9];
-    const trunk = [];
-    let prev = root;
-    for (let i = 0; i < LX.length; i++) {
-      const [az, el] = dirOf(mx * LX[i] + (rng() - 0.5) * 0.06, LZ[i] + (rng() - 0.5) * 0.06);
-      const n = add(prev, az, el, lens[i] * (0.9 + rng() * 0.2), 0);
-      trunk.push(n); prev = n;
-    }
-    prev.tip = true;
-    // first branch to one side, second to the other, third to the back, then filling in
-    const AZ = [Math.PI + 0.3, -0.25, -HALF_PI + 0.2, Math.PI - 0.8, 0.55, -HALF_PI - 0.9];
-    const primaries = [];
-    for (let i = 1; i < trunk.length - 1; i++) {
-      const tn = trunk[i], hf = i / (trunk.length - 1);
-      let az = AZ[i - 1] + (rng() - 0.5) * 0.35;
-      if (mx < 0) az = Math.PI - az;
-      let el = lerp(-0.06, 0.42, hf) + (rng() - 0.5) * 0.12;
-      const segs = Math.max(2, Math.round(lerp(4, 2, hf)));
-      const blen = lerp(17, 10, hf);
+    // a trunk of its own: the style, height and movement differ from tree to tree
+    const style = pickStyle(rng, [['moyogi', 0.5], ['shakan', 0.16], ['chokkan', 0.14], ['twist', 0.2]]);
+    T.style = style;
+    const H = (style === 'chokkan' ? 145 : style === 'shakan' ? 120 : 130) * (0.85 + rng() * 0.3);
+    const marks = [], nB = 5 + Math.floor(rng() * 3);
+    for (let k = 0, t = 0.18 + rng() * 0.12; k < nB && t < 0.9; k++) { marks.push(t); t += (0.17 - 0.1 * t) * (0.75 + rng() * 0.5); }
+    const curve = trunkCurve(rng, style, H).kink(rng, marks.slice(0, -1), style === 'chokkan' ? 1 : 1 + Math.floor(rng() * 2), style === 'chokkan' ? 0.05 : 0.22);
+    const trunkL = buildTrunk(add, root, curve, H, marks, 24), trunk = trunkL.nodes;
+    trunk[trunk.length - 1].tip = true;
+    // branches spiral around the trunk, the low ones turned aside so the trunk shows from the front
+    const primaries = [], az0 = rng() * TAU;
+    for (let i = 0; i < marks.length; i++) {
+      const tn = nodeAt(trunkL, marks[i]), hf = marks[i];
+      let az = sideAz(az0 + i * 2.4 + (rng() - 0.5) * 0.6, hf);
+      let el = lerp(-0.06, 0.42, hf) + (rng() - 0.5) * 0.2;
+      const segs = Math.max(2, Math.round(lerp(4, 2, hf) + (rng() - 0.5)));
+      const blen = lerp(17, 10, hf) * (0.75 + rng() * 0.5); // some branches stronger than others
       let bp = tn; const prim = [];
       for (let s = 0; s < segs; s++) {
         const n = add(bp, az, el, blen * (0.85 + rng() * 0.3), 1);
@@ -751,7 +828,8 @@ const Sim = (() => {
     index(T);
     computeRadius(T);
     // nursery-grown trunk and branch thickness
-    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(10.5, 2.4, i / (trunk.length - 1))); });
+    const rb = 8.5 + rng() * 3.5;
+    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(rb, 2.4, Math.pow(trunkL.at[i], 0.8))); });
     for (const p of primaries) p.nodes.forEach((n, s) => { n.r = Math.max(n.r, lerp(3.3, 1.1, s / p.nodes.length) * (1 - p.hf * 0.35)); });
     computeRadius(T);
     root.r = trunk[0].r;
@@ -769,14 +847,22 @@ const Sim = (() => {
     const L = clamp((3.5 + 6 * clamp(rel, 0.2, 1.8) / 1.8) * (0.55 + 0.5 * vig), 2.8, 12) * lenScale;
     const up = Math.cos(t.el) >= 0;
     const elEff = up ? t.el : Math.PI - t.el, azEff = up ? t.az : t.az + Math.PI;
-    let dEl = angDiff(HALF_PI, t.el) * (t.ord === 0 ? 0.2 : 0.07), dAz = 0;
-    if (t.ord > 0) {
-      const hd = Math.hypot(t.x, t.z);
-      if (hd > 6) dAz += angDiff(Math.atan2(t.z, t.x), azEff) * 0.08;
-      const e = (0.35 - elEff) * 0.06; dEl += up ? e : -e;
+    let dEl, dAz = 0;
+    if (T.sp === 'pine') {
+      // a candle grows straight, turning up toward the light
+      dEl = t.ord === 0 ? angDiff(HALF_PI, t.el) * 0.25 : 0;
+      if (t.ord > 0) { const e = (0.75 - elEff) * 0.12; dEl += up ? e : -e; }
+      dEl += (rng() - 0.5) * 0.14; dAz = (rng() - 0.5) * 0.16;
+    } else {
+      dEl = angDiff(HALF_PI, t.el) * (t.ord === 0 ? 0.2 : 0.07);
+      if (t.ord > 0) {
+        const hd = Math.hypot(t.x, t.z);
+        if (hd > 6) dAz += angDiff(Math.atan2(t.z, t.x), azEff) * 0.08;
+        const e = (0.35 - elEff) * 0.06; dEl += up ? e : -e;
+      }
+      dEl += (rng() - 0.5) * 0.36;
+      dAz += (rng() - 0.5) * 0.4 + t.side * 0.06;
     }
-    dEl += (rng() - 0.5) * 0.36;
-    dAz += (rng() - 0.5) * 0.4 + t.side * 0.06;
     const c = makeNode(T, t, dAz, dEl, L, born);
     c.tip = true; c.grow = t.grow; c.sl = t.sl + 1; c.ord = t.ord;
     place(c, t, L); c.light = t.light;
@@ -944,6 +1030,7 @@ const Sim = (() => {
   // Pines don't bud back on bare wood, so a cut must leave needles. Decandling in early summer brings a
   // shorter second flush with shorter needles and more shoots.
   const PINE_START = 85; // around March 26, when candles begin to move
+  const PINE_MAX = 2000; // a refined pine carries many short shoots, so it gets a larger node budget than a maple
   const pineFlush = doy => ramp(doy, [[85, 0], [95, 0.7], [106, 1], [140, 1], [155, 0.25], [165, 0]]);
   const pineWood = doy => ramp(doy, [[88, 0], [118, 1], [240, 1], [275, 0]]);
   const pineYear = d => Math.floor((d - PINE_START) / YEAR);
@@ -970,13 +1057,24 @@ const Sim = (() => {
   }
   function whorlShoot(T, i, d, rng, k, extra) {
     const n = T.nodes[i];
-    const phi = (k / Math.max(1, extra)) * Math.PI * 2 + rng() * 0.8;
-    const c = makeNode(T, n, Math.cos(phi) * (0.7 + rng() * 0.3), Math.sin(phi) * 0.5 - 0.12, 2.2 + rng(), d + rng() * 2);
+    let daz, del;
+    if (n.el > 1.05) {
+      // around an upright leader the whorl spreads all the way round, leaning out
+      const az = (k / Math.max(1, extra)) * TAU + h01(n.id, 9) * TAU + (rng() - 0.5) * 0.6;
+      daz = angDiff(az, n.az); del = 0.35 + rng() * 0.4 - n.el;
+    } else if (k % 3 === 0 && k) {
+      daz = (rng() - 0.5) * 0.6; del = -0.35 - rng() * 0.2; // the odd one out hangs below
+    } else {
+      // on a branch the new shoots go out to the sides and a little up
+      daz = (k % 2 ? 1 : -1) * (h01(n.id, 10) < 0.5 ? 1 : -1) * (0.55 + rng() * 0.5); del = 0.08 + (rng() - 0.4) * 0.3;
+    }
+    const c = makeNode(T, n, daz, del, 2.2 + rng(), d + rng() * 2);
     c.tip = true; c.ord = Math.min(6, n.ord + 1); c.sl = 0; c.side = rng() < 0.5 ? 1 : -1; c.nd = 1;
     T.stats.shoots++;
     return c;
   }
-  function maxCandle(t, vig) { return t.ord <= 1 ? 2 + Math.round(3 * vig) : 1 + Math.round(2 * vig); }
+  // how many internodes a candle may make: long on the trunk and main branches, short out in the pads
+  function maxCandle(t, vig) { return t.ord <= 1 ? 2 + Math.round(3 * vig) : t.ord === 2 ? 1 + Math.round(1.5 * vig) : 1 + (vig > 0.7 ? 1 : 0); }
   function growPine(T, d, rng, g, ev) {
     const N = T.nodes, vig = T.vigor / 100;
     let maxY = 20; for (const n of N) if (n.y > maxY) maxY = n.y;
@@ -993,13 +1091,13 @@ const Sim = (() => {
       tips.push(n); ws.push(w); sumW += w;
     }
     if (!tips.length) return;
-    const crowd = N.length > MAX_NODES * 0.8 ? Math.max(0, (MAX_NODES - N.length) / (MAX_NODES * 0.2)) : 1;
+    const crowd = N.length > PINE_MAX * 0.8 ? Math.max(0, (PINE_MAX - N.length) / (PINE_MAX * 0.2)) : 1;
     const budget = 0.7 * Math.sqrt(total) * g * (0.3 + 0.7 * vig) * crowd, wMean = sumW / tips.length;
     for (let i = 0; i < tips.length; i++) {
       let t = tips[i];
       t.grow += Math.min(budget * ws[i] / sumW, 0.7);
       let guard = 0;
-      while (t.grow >= 1 && t.sl < maxCandle(t, vig) && T.nodes.length < MAX_NODES && guard++ < 3) {
+      while (t.grow >= 1 && t.sl < maxCandle(t, vig) && T.nodes.length < PINE_MAX && guard++ < 3) {
         t.grow -= 1;
         t = extend(T, t, d + rng() * 0.9, rng, ws[i] / wMean, vig, 0.8);
         T.stats.internodes++; if (ev) ev.internodes++;
@@ -1027,6 +1125,19 @@ const Sim = (() => {
     removeSubtree(T, new Set(kill));
     logE(T, d, kill.length === 1 ? 'A bare or shaded twig died back. Pines need needles left on a branch to keep it alive.' : `${kill.length} bare or shaded twigs died back. Pines need needles left on a branch to keep it alive.`);
   }
+  // A pine's branches bow a little lower each year under their own weight, most where a branch leaves its parent.
+  // Wired wood holds the shape it was given. New candles still turn up, so old branches arch down to upturned tips.
+  function sagBranches(T) {
+    const N = T.nodes, wired = new Uint8Array(N.length), weight = new Float32Array(N.length);
+    for (const w of T.wires) { const i = T._idx.get(w.id); if (i !== undefined) for (const k of chainFrom(T, i, w.len)) wired[k] = 1; }
+    for (let i = N.length - 1; i > 0; i--) { weight[i] += N[i].dl; if (N[i].pi > 0) weight[N[i].pi] += weight[i]; }
+    for (let i = 1; i < N.length; i++) {
+      const n = N[i], p = N[n.pi];
+      if (n.ord < 1 || wired[i] || n.el < -0.45 || T.day - n.born < 400) continue;
+      const base = p.ord < n.ord;
+      n.del -= (base ? 0.045 : 0.006) * clamp(weight[i] / 160, 0.15, 1);
+    }
+  }
   function stepDayPine(T, ev) {
     const d = T.day + 1, doy = doyOf(d), vig = T.vigor / 100;
     const rng = mulberry32(hash2(T.seed, d));
@@ -1044,7 +1155,7 @@ const Sim = (() => {
       for (let i = 0; i < L; i++) {
         const n = T.nodes[i]; if (!n.tip || n.pi < 0) continue;
         if (!n.bc) { n.pin = true; continue; }
-        for (let k = 1; k < n.bc && T.nodes.length < MAX_NODES; k++) whorlShoot(T, i, d, rng, k, n.bc - 1);
+        for (let k = 1; k < n.bc && T.nodes.length < PINE_MAX; k++) whorlShoot(T, i, d, rng, k, n.bc - 1);
         n.bc = 0;
       }
       logE(T, d, 'Candles are starting to move.');
@@ -1059,7 +1170,7 @@ const Sim = (() => {
       const n = T.nodes[i];
       if (!n.dc || d < n.dc) continue;
       const k = n.dk; n.dc = 0; n.dk = 0;
-      for (let q = 0; q < k && T.nodes.length < MAX_NODES; q++) {
+      for (let q = 0; q < k && T.nodes.length < PINE_MAX; q++) {
         const c = whorlShoot(T, i, d, rng, q, k);
         if (q === 0) { c.ord = n.ord; c.daz = (rng() - 0.5) * 0.3; c.del = (rng() - 0.5) * 0.2; }
         c.f2 = 1; c.sm = 0.62;
@@ -1068,14 +1179,14 @@ const Sim = (() => {
     }
     if (flushed && d - (T._f2Log || -99) > 5) { logE(T, d, 'A second flush of shorter candles is pushing where you decandled.'); T._f2Log = d; }
     if (doy < 240 && gW > 0) {
-      for (const n of T.nodes.slice()) if (n.tip && n.f2 && n.sl < 2 && T.nodes.length < MAX_NODES && rng() < 0.09 * wet) { const c = extend(T, n, d + rng() * 0.9, rng, 0.8, vig, 0.5); c.f2 = 1; c.sm = 0.62; }
+      for (const n of T.nodes.slice()) if (n.tip && n.f2 && n.sl < 2 && T.nodes.length < PINE_MAX && rng() < 0.09 * wet) { const c = extend(T, n, d + rng() * 0.9, rng, 0.8, vig, 0.5); c.f2 = 1; c.sm = 0.62; }
     }
     if (gW > 0) {
       // pines rarely bud back, and only where there are needles
       const N = T.nodes, L = N.length;
       for (let i = 0; i < L; i++) {
         const n = N[i];
-        if (n.pi < 0 || !(n.nd > 0) || n.rel < 0.3 || n.bud <= 0.05 || T.nodes.length >= MAX_NODES) continue;
+        if (n.pi < 0 || !(n.nd > 0) || n.rel < 0.3 || n.bud <= 0.05 || T.nodes.length >= PINE_MAX) continue;
         if (rng() < 0.04 * n.bud * n.rel * gW * clamp((n.light - 0.08) / 0.4, 0, 1) * (0.4 + 0.6 * vig)) { const c = sprout(T, n, d + rng() * 0.9, rng); c.nd = 1; if (ev) ev.shoots++; }
       }
       thicken(T, gW * 0.8);
@@ -1090,6 +1201,7 @@ const Sim = (() => {
       logE(T, d, 'Buds for next spring have set at the shoot tips.');
     }
     if (doy === 300) selfPrunePine(T, d);
+    if (doy === 305) sagBranches(T);
     updateWires(T, d, gW);
     if (gW > 0 && d % 7 === 0) checkRamification(T, d);
     for (const n of T.nodes) {
@@ -1166,7 +1278,11 @@ const Sim = (() => {
     for (const n of T.nodes) if (n.bc > 2) { n.bc = 2; c++; }
     return c;
   }
-  // Nursery stock: an informal upright with movement, branches in loose whorls, needles on the last two years of growth.
+  // Nursery pines in training. The trunk got its movement while young, and the style differs from tree to tree.
+  // Branches leave in whorls a year apart, closer together toward the top, often three or four at one point that
+  // still need reducing. Each branch is tiered by its own yearly whorls and turns up at the tips. Needles cover only
+  // the last two or three years of growth, so the inside is bare. Now and then a long sacrifice branch has been
+  // left on low down to thicken the trunk.
   function newPine(seed, now, startDay) {
     const rng = mulberry32((seed ^ 0x2F6A1B3) >>> 0);
     const T = {
@@ -1180,7 +1296,7 @@ const Sim = (() => {
     T._idx = new Map();
     const ys = pineYearStart(startDay), doy = doyOf(startDay);
     const shoot0 = startDay >= ys + 85 ? ys + 25 : ys - YEAR + 25; // the most recent finished candles
-    const old = startDay - 1600;
+    const bornAgo = y => shoot0 - y * YEAR + Math.floor(rng() * 6);
     const add = (par, az, el, len, ord, born) => {
       const n = blank(T.nextId++, par ? par.id : -1, 0, 0, len, born);
       if (par) { n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el; place(n, par, len); }
@@ -1188,62 +1304,183 @@ const Sim = (() => {
       T._idx.set(n.id, T.nodes.length); T.nodes.push(n);
       return n;
     };
-    const root = add(null, 0, HALF_PI, 0, 0, old);
-    const mx = rng() < 0.5 ? 1 : -1;
-    const LX = [0.18, 0.42, 0.1, -0.34, -0.12, 0.3, 0.16, -0.08, 0.02];
-    const LZ = [0.0, 0.06, 0.12, 0.04, -0.06, 0.06, 0.14, 0.2, 0.1];
-    const lens = [22, 21, 19, 17, 15, 13, 11, 9, 8];
-    const trunk = []; let prev = root;
-    for (let i = 0; i < LX.length; i++) {
-      const [az, el] = dirOf(mx * LX[i] + (rng() - 0.5) * 0.06, LZ[i] + (rng() - 0.5) * 0.06);
-      const yrs = LX.length - 1 - i; // the top of the trunk is the newest wood
-      const n = add(prev, az, el, lens[i] * (0.9 + rng() * 0.2), 0, yrs === 0 ? shoot0 : yrs === 1 ? shoot0 - YEAR : old + i * 60);
-      trunk.push(n); prev = n;
+    const root = add(null, 0, HALF_PI, 0, 0, shoot0 - 20 * YEAR);
+    const style = pickStyle(rng, [['moyogi', 0.42], ['shakan', 0.2], ['chokkan', 0.13], ['bunjin', 0.08], ['twist', 0.17]]);
+    T.style = style;
+    const H = { moyogi: 165, shakan: 150, chokkan: 195, bunjin: 205, twist: 150 }[style] * (0.85 + rng() * 0.3);
+    const rb = { moyogi: 13.5, shakan: 12.5, chokkan: 13, bunjin: 6, twist: 15 }[style] * (0.85 + rng() * 0.3);
+    // one whorl for each year the leader grew, closer together toward the top
+    const whorls = [];
+    for (let t = style === 'bunjin' ? 0.6 + rng() * 0.08 : style === 'chokkan' ? 0.2 + rng() * 0.08 : 0.24 + rng() * 0.12; t < 0.93;) {
+      whorls.push(t); t += (style === 'bunjin' ? 0.09 : 0.21 - 0.13 * t) * (0.8 + rng() * 0.45);
     }
-    prev.tip = true;
-    const AZ = [Math.PI + 0.25, -0.2, -HALF_PI + 0.3, Math.PI - 0.9, 0.6, -HALF_PI - 0.8, HALF_PI + 0.4];
-    const primaries = [];
-    for (let i = 1; i < trunk.length - 1; i++) {
-      const tn = trunk[i], hf = i / (trunk.length - 1);
-      const count = rng() < 0.35 && i < trunk.length - 2 ? 2 : 1; // now and then two branches leave one point, as pines do
-      for (let w = 0; w < count; w++) {
-        let az = AZ[(i - 1) % AZ.length] + w * 2.3 + (rng() - 0.5) * 0.35;
-        if (mx < 0) az = Math.PI - az;
-        let el = lerp(-0.18, 0.32, hf) + (rng() - 0.5) * 0.12;
-        const segs = hf < 0.5 ? 3 : 2, blen = lerp(15, 9, hf);
-        let bp = tn; const prim = [];
-        for (let s = 0; s < segs; s++) {
-          const yrs = segs - 1 - s;
-          const n = add(bp, az, el, blen * (0.85 + rng() * 0.3), 1, yrs === 0 ? shoot0 : yrs === 1 ? shoot0 - YEAR : shoot0 - 2 * YEAR);
-          prim.push(n); bp = n;
-          az += (rng() - 0.5) * 0.3; el += 0.05 + (rng() - 0.5) * 0.12;
+    const curve = trunkCurve(rng, style, H).kink(rng, whorls.slice(0, -1), style === 'chokkan' ? 1 : 1 + Math.floor(rng() * 3), style === 'chokkan' ? 0.06 : style === 'bunjin' ? 0.45 : 0.28);
+    const trunkL = buildTrunk(add, root, curve, H, whorls, 22), trunk = trunkL.nodes;
+    trunk.forEach((n, i) => { n.born = bornAgo(whorls.filter(w => w >= trunkL.at[i] - 1e-6).length); });
+    trunk[trunk.length - 1].tip = true;
+    // A shoot of several years: each year's growth ends in a whorl of smaller side shoots, and the shoot curves up toward its tip.
+    const shoot = (par, az, el, segLen, ord, years, list) => {
+      let bp = par;
+      for (let y = 0; y < years; y++) {
+        const L = segLen * (0.8 + rng() * 0.4) * (ord === 1 ? lerp(1.1, 0.7, y / Math.max(1, years - 1)) : 1), parts = L > 15 ? 2 : 1;
+        for (let q = 0; q < parts; q++) {
+          bp = add(bp, az, el, L / parts, ord, bornAgo(years - 1 - y));
+          if (list) list.push(bp);
+          az += (rng() - 0.5) * 0.2; el = Math.min(1.25, el + (0.04 + rng() * 0.08) / parts);
         }
-        bp.tip = true;
-        primaries.push({ nodes: prim, hf });
-        prim.forEach((pn, k) => {
-          if (k === prim.length - 1) return;
-          const yrs = prim.length - 1 - k;
-          // where last year's candle began, a whorl: shoots to both sides; further in, one side shoot
-          for (const s2 of yrs <= 1 ? [1, -1] : [k % 2 === 0 ? 1 : -1]) {
-            let sp = add(pn, pn.az + s2 * (0.6 + rng() * 0.4), pn.el + (rng() - 0.5) * 0.2, 6 + rng() * 3, 2, yrs <= 1 ? shoot0 : shoot0 - YEAR);
-            if (yrs > 1) sp = add(sp, sp.az + (rng() - 0.5) * 0.3, sp.el + (rng() - 0.4) * 0.15, 5 + rng() * 2, 2, shoot0);
-            sp.tip = true;
-          }
-        });
+        if (y === years - 1 || ord >= 3) continue;
+        const k = ord === 1 ? (rng() < 0.3 ? 1 : rng() < 0.75 ? 2 : 3) : rng() < 0.35 ? 0 : rng() < 0.85 ? 1 : 2;
+        const s0 = rng() < 0.5 ? 1 : -1;
+        for (let q = 0; q < k; q++) {
+          const sd = q === 2 ? 0 : q ? -s0 : s0;
+          const a2 = az + sd * (0.55 + rng() * 0.55) + (q === 2 ? (rng() - 0.5) * 0.8 : 0);
+          const e2 = clamp(el + (q === 2 ? -0.4 : (rng() - 0.5) * 0.35), -0.6, 1.1);
+          shoot(bp, a2, e2, segLen * (ord === 1 ? 0.6 : 0.55), ord + 1, years - 1 - y, null);
+        }
       }
+      bp.tip = true;
+      return bp;
+    };
+    const primaries = [], az0 = rng() * TAU;
+    whorls.forEach((tw, wi) => {
+      const age = whorls.length - wi; // the top whorl is the youngest
+      const tn = nodeAt(trunkL, tw);
+      const cnt = style === 'bunjin' ? 1 + (rng() < 0.4 ? 1 : 0) : tw < 0.42 ? 1 + (rng() < 0.45 ? 1 : 0) : tw < 0.7 ? 2 + (rng() < 0.45 ? 1 : 0) : 3 + (rng() < 0.4 ? 1 : 0);
+      const wa = az0 + wi * 2.4 + (rng() - 0.5) * 0.8;
+      for (let q = 0; q < cnt; q++) {
+        const az = sideAz(wa + q * TAU / cnt + (rng() - 0.5) * 0.5, tw);
+        const years = Math.max(1, Math.min(age, style === 'bunjin' ? 3 : 5 + (rng() < 0.3 ? 1 : 0)));
+        const vig = 0.7 + rng() * 0.6;
+        const reach = H * (style === 'bunjin' ? 0.18 : lerp(0.5, 0.2, tw)) * vig;
+        let el = lerp(0.02, 0.55, tw) + (rng() - 0.5) * 0.35;
+        if (tw < 0.5 && rng() < 0.3) el = -0.22 + rng() * 0.2; // an older branch already bowing under its own weight
+        const nodes = [];
+        shoot(tn, az, el, reach / years, 1, years, nodes);
+        primaries.push({ nodes, tw, vig, sac: false });
+      }
+    });
+    // a sacrifice branch: long, strong and reaching up, left on to thicken the lower trunk
+    if (style !== 'bunjin' && whorls.length > 2 && rng() < 0.38) {
+      const tw = whorls[0], tn = nodeAt(trunkL, tw), nodes = [];
+      const years = Math.min(whorls.length, 6);
+      shoot(tn, sideAz(rng() * TAU, tw), 0.6 + rng() * 0.3, H * (0.7 + rng() * 0.2) / years, 1, years, nodes);
+      primaries.push({ nodes, tw, vig: 1.3, sac: true });
+      T.sacrifice = nodes[0].id;
     }
-    for (const n of T.nodes) if (!n.tip && n.p !== -1) n.bud = 0.25 + rng() * 0.3;
+    for (const n of T.nodes) if (!n.tip && n.pi !== -1 && n.p !== -1) n.bud = 0.25 + rng() * 0.3;
     index(T);
     computeRadius(T);
-    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(9.5, 2.0, i / (trunk.length - 1))); });
-    for (const p of primaries) p.nodes.forEach((n, s) => { n.r = Math.max(n.r, lerp(2.8, 1.0, s / p.nodes.length) * (1 - p.hf * 0.35)); });
+    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(rb, 1.8, Math.pow(trunkL.at[i], 0.75))); });
+    for (const p of primaries) {
+      const r0 = p.sac ? 4.8 + rng() * 1.6 : lerp(3.1, 1.25, p.tw) * (0.7 + 0.35 * p.vig) * (style === 'bunjin' ? 0.7 : 1);
+      p.nodes.forEach((n, k) => { n.r = Math.max(n.r, lerp(r0, 0.85, k / p.nodes.length)); });
+    }
     computeRadius(T);
     root.r = trunk[0].r;
     // buds already set if the tree arrives between late summer and the start of spring
     if (doy >= 232 || doy < PINE_START) for (const n of T.nodes) if (n.tip) n.bc = 1 + Math.floor(rng() * 3);
     updateNeedles(T, startDay);
     layout(T, startDay); computeDepth(T); computeLight(T);
-    logE(T, startDay, 'Your Japanese black pine arrived from the nursery.');
+    logE(T, startDay, `Your Japanese black pine arrived from the nursery: a young ${TRUNK_STYLES[style].name} tree in training.`);
+    return T;
+  }
+
+  // A finished black pine, many years into refinement: a powerful trunk with deep bark plates; branches wired down from
+  // the trunk and then out level into flat pads of short-needled shoots, each split in two where two buds were kept;
+  // gaps between the branches that show the trunk, wider low down and closing toward the top; a soft, rounded apex.
+  function finishedPine(seed, now, startDay) {
+    const rng = mulberry32((seed ^ 0x51F15EED) >>> 0);
+    const T = {
+      v: 2, seed, sp: 'pine', species: 'Japanese black pine', created: now, speed: 'quick', clock: 'practice', realOffset: 0,
+      anchorReal: now, anchorGarden: startDay + 0.35, day: startDay, startDay,
+      moisture: 70, vigor: 84, leafCap: 0, scorch: 0, dryDays: 0, leafy: 0,
+      nextId: 1, nodes: [], log: [], stats: { cuts: 0, pinches: 0, waterings: 0, shoots: 0, internodes: 0, decandled: 0 },
+      lastRain: -99, lastBackbudLog: -99, lastWateredReal: 0, savedAt: now, actedAt: now, fresh: true,
+      front: 0, roots: makeRoots(seed), wires: [], ramHi: 0, ramHi2: 0,
+    };
+    T._idx = new Map();
+    const ys = pineYearStart(startDay), doy = doyOf(startDay);
+    const shoot0 = startDay >= ys + 85 ? ys + 25 : ys - YEAR + 25;
+    const bornAgo = y => shoot0 - y * YEAR + Math.floor(rng() * 6);
+    const add = (par, az, el, len, ord, born) => {
+      const n = blank(T.nextId++, par ? par.id : -1, 0, 0, len, born);
+      if (par) { n.daz = angDiff(az, par.az); n.del = el - par.el; n.az = par.az + n.daz; n.el = el; place(n, par, len); }
+      n.ord = ord; n.side = rng() < 0.5 ? 1 : -1; n.r = 0; n.nd = 0;
+      T._idx.set(n.id, T.nodes.length); T.nodes.push(n);
+      return n;
+    };
+    const root = add(null, 0, HALF_PI, 0, 0, shoot0 - 40 * YEAR);
+    const style = pickStyle(rng, [['moyogi', 0.5], ['twist', 0.22], ['shakan', 0.16], ['chokkan', 0.12]]);
+    T.style = style;
+    const H = { moyogi: 150, twist: 138, shakan: 132, chokkan: 168 }[style] * (0.88 + rng() * 0.24);
+    const rb = { moyogi: 14, twist: 16, shakan: 13.5, chokkan: 13.5 }[style] * (0.88 + rng() * 0.24);
+    const marks = [];
+    for (let t = 0.27 + rng() * 0.1; t < 0.84;) { marks.push(t); t += (0.125 - 0.075 * t) * (0.8 + rng() * 0.4); }
+    const Ht = H * 0.84;
+    const curve = trunkCurve(rng, style, Ht).kink(rng, marks, style === 'chokkan' ? 1 : 1 + Math.floor(rng() * 2), style === 'chokkan' ? 0.05 : 0.22);
+    const trunkL = buildTrunk(add, root, curve, Ht, marks, 20), trunk = trunkL.nodes;
+    trunk.forEach((n, i) => { n.born = bornAgo(Math.round(30 * (1 - trunkL.at[i])) + 4); });
+    // A refined shoot: a short internode, then two shoots where two buds were kept. ago counts years back from the tip.
+    const fork = (par, az, el, len, ord, depth, ago) => {
+      const n = add(par, az, el, len, Math.min(ord, 6), bornAgo(ago));
+      n.sm = 0.62 + rng() * 0.1;
+      if (depth <= 0) { const up = 0.3 + rng() * 0.35; n.tip = true; n.del += up; n.el += up; place(n, par, len); return n; } // this year's shoot turns up
+      const spread = 0.3 + rng() * 0.3, tilt = (rng() - 0.5) * 0.22, next = Math.max(0, ago - 1);
+      fork(n, az + spread, clamp(el + tilt + 0.05, -0.35, 0.75), len * (0.68 + rng() * 0.14), ord, depth - 1, next);
+      if (rng() < 0.9) fork(n, az - spread, clamp(el - tilt + 0.05, -0.35, 0.75), len * (0.68 + rng() * 0.14), ord + 1, depth - 1, next);
+      return n;
+    };
+    const prims = [], side = rng() < 0.5 ? 0 : Math.PI, span = Math.max(0.01, 0.82 - marks[0]);
+    marks.forEach((tm, i) => {
+      const tn = nodeAt(trunkL, tm), f = (tm - marks[0]) / span;
+      // first branch to one side, the second to the other, the third to the back, then on around
+      const az = sideAz((i < 3 ? [side, side + Math.PI, -HALF_PI][i] : side + i * 2.3) + (rng() - 0.5) * 0.5, tm);
+      const L = H * lerp(0.52, 0.18, f) * (0.85 + rng() * 0.3);
+      // wired down from the trunk, then out level into the pad
+      const elDown = -0.22 - rng() * 0.35 * (1 - f), baseLen = L * (0.2 + rng() * 0.1), nodes = [];
+      let bp = tn, a = az, e = elDown;
+      for (let k = 0; k < 2; k++) { bp = add(bp, a, e, baseLen / 2, 1, bornAgo(16 - k * 4)); nodes.push(bp); a += (rng() - 0.5) * 0.25; e += 0.1 + rng() * 0.08; }
+      const padLen = L - baseLen, nPad = 3 + Math.floor(rng() * 2 + (1 - f)), seg = padLen / nPad;
+      e = -0.06 + rng() * 0.12;
+      const depth = f < 0.5 ? 3 : 2;
+      for (let k = 0; k < nPad; k++) {
+        bp = add(bp, a, e, seg, 1, bornAgo(nPad - k + 1)); nodes.push(bp);
+        const w = Math.sin(Math.PI * (0.3 + 0.6 * k / Math.max(1, nPad - 1))); // the pad is widest a little behind its middle
+        for (const sd of [1, -1]) {
+          if (k === 0 && rng() < 0.4) continue;
+          fork(bp, a + sd * (0.8 + rng() * 0.35), e + 0.05 + (rng() - 0.4) * 0.16, padLen * (0.12 + 0.12 * w) * (0.8 + rng() * 0.4), 2, depth - (k === nPad - 1 ? 1 : 0), depth);
+        }
+        // a shoot rising from the top of the pad gives it its mounded shape
+        if (rng() < 0.9) fork(bp, a + (rng() - 0.5) * 0.8, e + 0.55 + rng() * 0.3, padLen * 0.1 * (0.8 + rng() * 0.4), 2, depth - 1, depth - 1);
+        a += (rng() - 0.5) * 0.25; e = clamp(e + (rng() - 0.45) * 0.08, -0.15, 0.15);
+      }
+      fork(bp, a, e + 0.1, seg * 0.7, 2, depth - 1, depth - 1); // the pad's front
+      prims.push({ nodes, f });
+    });
+    // the apex: a low dome of short, divided branches instead of a single leader
+    const top = trunk[trunk.length - 1], nA = 7 + Math.floor(rng() * 3), ar = H * 0.15;
+    for (let k = 0; k < nA; k++) {
+      // a ring spreading out low, and a few shoots rising in the middle to round the crown
+      const az = (k / nA) * TAU + rng() * 0.5, el = k < 3 ? 0.85 + rng() * 0.35 : 0.05 + rng() * 0.4;
+      fork(top, az, el, ar * (k < 3 ? 0.3 : 0.4 + rng() * 0.2), 1, 3, 3);
+    }
+    for (const n of T.nodes) if (!n.tip && n.p !== -1) n.bud = 0.2 + rng() * 0.25;
+    index(T);
+    computeRadius(T);
+    trunk.forEach((n, i) => { n.r = Math.max(n.r, lerp(rb, 3.2, Math.pow(trunkL.at[i], 0.7))); });
+    for (const p of prims) {
+      const r0 = lerp(3.8, 1.7, p.f) * (0.9 + rng() * 0.2);
+      p.nodes.forEach((n, k) => { n.r = Math.max(n.r, lerp(r0, 1.1, k / p.nodes.length)); });
+    }
+    computeRadius(T);
+    root.r = trunk[0].r;
+    // two buds kept at each tip, ready for spring, and last year's needles already pulled
+    if (doy >= 232 || doy < PINE_START) for (const n of T.nodes) if (n.tip) n.bc = rng() < 0.8 ? 2 : 1;
+    updateNeedles(T, startDay);
+    if (doy >= 280 || doy < PINE_START) for (const n of T.nodes) if (n.nd >= 2 && n.ch.length) n.pk = 7;
+    layout(T, startDay); computeDepth(T); computeLight(T);
+    T.ramHi2 = Math.floor(ramification(T).level);
+    logE(T, startDay, `Your Japanese black pine arrived: a finished ${TRUNK_STYLES[style].name} bonsai, years into refinement.`);
     return T;
   }
 
@@ -1439,7 +1676,7 @@ const Sim = (() => {
   }
 
   // ---------- save format ----------
-  const META = ['v', 'seed', 'species', 'created', 'speed', 'anchorReal', 'anchorGarden', 'day', 'startDay', 'moisture', 'vigor', 'leafCap', 'scorch', 'dryDays', 'leafy', 'nextId', 'log', 'stats', 'lastRain', 'lastBackbudLog', 'lastWateredReal', 'savedAt', 'actedAt', 'fresh', 'front', 'roots', 'wires', 'ramHi', 'ramHi2', 'clock', 'realOffset', 'sp'];
+  const META = ['v', 'seed', 'species', 'created', 'speed', 'anchorReal', 'anchorGarden', 'day', 'startDay', 'moisture', 'vigor', 'leafCap', 'scorch', 'dryDays', 'leafy', 'nextId', 'log', 'stats', 'lastRain', 'lastBackbudLog', 'lastWateredReal', 'savedAt', 'actedAt', 'fresh', 'front', 'roots', 'wires', 'ramHi', 'ramHi2', 'clock', 'realOffset', 'sp', 'style'];
   function serialize(T) {
     const o = {};
     for (const k of META) o[k] = T[k];
@@ -1511,7 +1748,7 @@ const Sim = (() => {
   return {
     YEAR, START_DOY, newTree, stepDay, layout, cut, pinch, serialize, deserialize, isLeafy, leafState, growthFactor,
     doyOf, yearOf, seasonName, dateLabel, shortDate, phaseNote, isWinter, h01, countTips, treeHeight, logAction, logE, computeDepth, angDiff,
-    SPECIES, spec, setDays, growthOf, PINE_START, DECANDLE_FROM, DECANDLE_TO, pineYearStart, phaseNotePine,
+    SPECIES, TRUNK_STYLES, spec, setDays, growthOf, PINE_START, DECANDLE_FROM, DECANDLE_TO, pineYearStart, phaseNotePine,
     decandle, decandleMany, candleBase, pullOldNeedles, thinStrong, keepTwoBuds,
     relabel, subtreeOf, leafCount, pluckedFrac, defolWindow, pluck, chainFrom, branchStart, addWire, removeWire, SET_DAYS, captureBend, bendTo, maxBend, wireSums, addWireOp, ramification, ORD_NAMES, checkRamification,
   };
@@ -1520,7 +1757,7 @@ const Sim = (() => {
 
 (() => {
   'use strict';
-  const VERSION = '0.8.1';
+  const VERSION = '0.9.0';
   const WEB_BUILD = /*WEB_BUILD*/false; // true in the GitHub Pages copy
   const $ = s => document.querySelector(s);
   const canvas = $('#scene'), mainCtx = canvas.getContext('2d');
@@ -1570,8 +1807,8 @@ const Sim = (() => {
   // A new tree for a place on the bench. A real-time pine arrives in today's season, so its buds and needles are right for the date.
   function makeTree(entry, now) {
     const real = entry.clock === 'real';
-    const t = entry.sp === 'pine' ? Sim.newTree(randomSeed(), now, 'pine', real ? Math.floor(realDoy(new Date(now))) : undefined) : Sim.newTree(randomSeed(), now, 'maple');
-    if (real) { toRealClock(t, now); t.log.length = 0; Sim.logE(t, t.day, `Your ${SP_LC[t.sp]} arrived from the nursery.`); }
+    const t = entry.sp === 'pine' ? Sim.newTree(randomSeed(), now, 'pine', real ? Math.floor(realDoy(new Date(now))) : undefined, entry.stage) : Sim.newTree(randomSeed(), now, 'maple');
+    if (real) { const first = t.log[0] && t.log[0].t; toRealClock(t, now); t.log.length = 0; Sim.logE(t, t.day, first || `Your ${SP_LC[t.sp]} arrived from the nursery.`); }
     return t;
   }
   // Make sure a loaded tree runs on the clock its place on the bench calls for.
@@ -1694,7 +1931,9 @@ const Sim = (() => {
       for (const e of Array.isArray(list) ? list : []) {
         if (!e || typeof e.id !== 'string' || !/^[a-z0-9-]{1,24}$/.test(e.id) || e.id === 'bench' || seen.has(e.id)) continue;
         seen.add(e.id);
-        out.push({ id: e.id, sp: e.sp === 'pine' ? 'pine' : 'maple', clock: e.clock === 'practice' ? 'practice' : 'real' });
+        const x = { id: e.id, sp: e.sp === 'pine' ? 'pine' : 'maple', clock: e.clock === 'practice' ? 'practice' : 'real' };
+        if (e.stage === 'finished') x.stage = 'finished';
+        out.push(x);
       }
       return out.slice(0, MAX_TREES);
     },
@@ -2037,16 +2276,18 @@ const Sim = (() => {
     if (!$('#sheetWrap').hidden) renderTrees();
   }
   const cap = s => s[0].toUpperCase() + s.slice(1);
-  function addTree(sp, clock) {
+  function addTree(sp, clock, stage) {
     if (Bench.list.length >= MAX_TREES) { toast(`Your bench holds ${MAX_TREES} trees. Take one off to make room.`); return; }
     const now = Date.now(), e = { id: Bench.newId(), sp, clock };
+    if (sp === 'pine' && stage === 'finished') e.stage = 'finished';
     saveNow();
     Bench.list.push(e); Bench.save();
     const t = makeTree(e, now); t.fresh = false; t.actedAt = now;
     try { localStorage.setItem(Store.keyFor(e.id), JSON.stringify(Sim.serialize(t))); } catch (err) { /* openSlot makes one */ }
     openSlot(e.id); saveNow();
     closeSheet(); setMode('view');
-    toast(`${cap(aTree(e))} is on your bench.` + (clock === 'practice' ? ' Its clock runs at Quick. You can change that in the menu under Clock.' : ' It follows the real calendar and grows at a real tree’s pace.'), 6500);
+    const style = Sim.TRUNK_STYLES[T.style];
+    toast(`${cap(aTree(e))} is on your bench: ${e.stage === 'finished' ? 'a finished' : 'a young'} ${style ? style.name : ''} tree${e.stage === 'finished' ? ', years into refinement' : ' in training'}.` + (clock === 'practice' ? ' Its clock runs at Quick. You can change that in the menu under Clock.' : ' It follows the real calendar and grows at a real tree’s pace.'), 6500);
   }
   function removeTree() {
     const id = Store.slot, i = Bench.list.findIndex(e => e.id === id);
@@ -2291,12 +2532,12 @@ const Sim = (() => {
   // pulled separately; needles spiral along each third, more of them on a longer shoot, and a tip carries a forward tuft.
   // Older needles spread wider and droop a little.
   function needleParams(n, q) {
-    const tip = !n.ch.length, per = clamp(Math.round(n.len / 2), 2, 8);
+    const tip = !n.ch.length, per = clamp(Math.round(n.len / 1.5) + 1, 3, 9);
     const key = (tip ? 1 : 0) + q * 2 + n.nd * 8 + per * 64;
     if (n._np && n._npK === key) return n._np;
     const id = n.id, baseA = n.nd === 1 ? 0.62 : n.nd === 2 ? 0.86 : 1.02, g = [], scale = q === 0 ? 0.45 : q === 1 ? 0.7 : 1;
     for (let k = 0; k < 3; k++) {
-      const side = Math.max(1, Math.round(per * scale)), tuft = tip && k === 2 ? Math.max(2, Math.round(6 * scale)) : 0, cnt = side + tuft;
+      const side = Math.max(1, Math.round(per * scale)), tuft = tip && k === 2 ? Math.max(3, Math.round(8 * scale)) : 0, cnt = side + tuft;
       const arr = new Float32Array(cnt * 6), off = Sim.h01(id, 40 + k) * TAU;
       for (let j = 0; j < cnt; j++) {
         const r = m => Sim.h01(id * 13 + j, k * 7 + m), inTuft = j >= side;
@@ -2691,6 +2932,9 @@ const Sim = (() => {
     }
     if (pine) {
       projDir(0, -1, 0); NGX = _x; NGY = _y;
+      // a big, dense pine draws its needle clusters a step simpler, since there are so many of them
+      const qN = (T._needled || 0) > 1300 ? Math.min(Q, 1) : Q;
+      let needled = 0;
       for (let i = 1; i < N.length; i++) {
         const n = N[i];
         if (!(n.nd > 0) || (n.pk & 7) === 7 || n.dl < 0.02) continue;
@@ -2709,7 +2953,7 @@ const Sim = (() => {
         projDir(sx, 0, sz); NBV[o8 + 2] = _x; NBV[o8 + 3] = _y;
         projDir(ux, uy, uz); NBV[o8 + 4] = _x; NBV[o8 + 5] = _y;
         NBV[o8 + 6] = NLw * s; NBV[o8 + 7] = n.nd === 3 ? 0.3 : n.nd === 2 ? 0.15 : 0.04; // needles scale with the zoom like everything else
-        const np = needleParams(n, Q);
+        const np = needleParams(n, qN); needled++;
         for (let g = 0; g < 3; g++) {
           if (n.pk & (1 << g)) continue;
           const t = np.t[g];
@@ -2725,6 +2969,7 @@ const Sim = (() => {
           lfCount++;
         }
       }
+      T._needled = needled;
     }
     LF_COUNT = lfCount;
     order.length = cnt;
@@ -4069,6 +4314,7 @@ const Sim = (() => {
     const rows = [
       ['In your care', careLength(isReal() ? Math.max(0, Math.floor((Date.now() - (T.created || Date.now())) / 864e5)) : Math.max(0, Math.floor(dispDay) - T.startDay))],
       ['Height with pot', `${hcm} cm · ${sizeClass(hcm)}`],
+      ...(Sim.TRUNK_STYLES[T.style] ? [['Style', cap(Sim.TRUNK_STYLES[T.style].name)]] : []),
       ['Crown width', `${Math.round(spread * 2 / 5)} cm`],
       ['Surface roots', String(T.roots.length)],
       ['Shoot tips', String(Sim.countTips(T))],
@@ -4270,14 +4516,16 @@ const Sim = (() => {
     $('#removeTreeNo').addEventListener('click', () => { $('#removeTreeConfirm').hidden = true; });
     $('#removeTreeYes').addEventListener('click', removeTree);
     $('#addTreeBtn').addEventListener('click', () => {
-      $('#addTree').hidden = false; $('#addTreeRow').hidden = true;
+      $('#addTree').hidden = false; $('#addTreeRow').hidden = true; $('#addStageBox').hidden = !$('#add-pine').checked;
       $('#addTree').scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
     });
     $('#addNo').addEventListener('click', () => { $('#addTree').hidden = true; renderTrees(); });
+    const stageBox = () => { $('#addStageBox').hidden = !$('#add-pine').checked; };
+    $('#add-pine').addEventListener('change', stageBox); $('#add-maple').addEventListener('change', stageBox);
     $('#addYes').addEventListener('click', () => {
       const sp = $('#add-pine').checked ? 'pine' : 'maple', clock = $('#add-practice').checked ? 'practice' : 'real';
       $('#addTree').hidden = true;
-      addTree(sp, clock);
+      addTree(sp, clock, $('#add-finished').checked ? 'finished' : 'young');
     });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) saveNow();

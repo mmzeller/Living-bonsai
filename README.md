@@ -16,7 +16,9 @@ After the first visit it works offline.
 
 ## Your bench
 
-Keep up to eight trees. **Menu → Your bench → Add a tree**, then pick a species and a clock:
+Keep up to eight trees. **Menu → Your bench → Add a tree**, then pick a species and a clock. For a black pine you also pick where to start: **a young tree in training** (nursery stock with movement in the trunk and long, untrained branches in whorls) or **a finished bonsai** (years into refinement, with branches wired down into flat pads, short needles and a rounded apex).
+
+Every new tree is different. Each gets its own trunk style (informal upright, slanting, formal upright, literati, or a dramatic informal upright with a deep bend), its own height, lean, bends and taper, and its own branch placement.
 
 - **Real time.** Follows today's date and your local time. It can't be sped up: buds take days or weeks to open, wire takes months of growing season to set, and growth stops for winter. There are no shortcuts.
 - **Practice.** For learning and experimenting. Its clock can run at Steady (a garden week per day), Quick (a week per hour) or Time-lapse (a week every 20 seconds).
@@ -26,7 +28,7 @@ Tap a tree in the list to switch to it. **Settings → Remove** takes the tree y
 ## Species
 
 - **Trident maple** (*Acer buergerianum*). Deciduous. Buds back readily after cutting, and answers pinching, pruning and defoliation with fine twigs.
-- **Japanese black pine** (*Pinus thunbergii*). Evergreen, with one flush of growth a year. Buds set at the shoot tips in late summer open as candles in spring, with spare buds making a whorl. Needles live about three years, and the oldest yellow and drop in autumn. Pines don't bud back on bare wood, so a branch with no needles left dies. Wire takes longer to set than on a maple.
+- **Japanese black pine** (*Pinus thunbergii*). Evergreen, with one flush of growth a year. Buds set at the shoot tips in late summer open as candles in spring, with spare buds making a whorl. Needles live about three years, and the oldest yellow and drop in autumn. Pines don't bud back on bare wood, so a branch with no needles left dies. Branches leave the trunk in whorls, one a year, and bow lower each year under their own weight while new candles turn up at the tips. Wire takes longer to set than on a maple.
 
 ## Tools
 
